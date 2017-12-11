@@ -1,0 +1,16 @@
+Juelich atlas
+--------------
+
+The Juelich atlas is a direct copy of FSL's (Version 5.0) Juelich atlas under
+`$FSL_DIR/data/atlases/Juelich/Juelich-prob-1mm.nii.gz`.
+For further information see http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases.
+ 
+
+References
+----------
+
+Eickhoff, S. B., Stephan, K. E., Mohlberg, H., Grefkes, C., Fink, G. R., Amunts, K., & Zilles, K. (2005). A new SPM toolbox for combining probabilistic cytoarchitectonic maps and functional imaging data. Neuroimage, 25(4), 1325-1335.
+
+Eickhoff, S. B., Heim, S., Zilles, K., & Amunts, K. (2006). Testing anatomically specified hypotheses in functional imaging using cytoarchitectonic maps. Neuroimage, 32(2), 570-582.
+
+Eickhoff, S. B., Paus, T., Caspers, S., Grosbras, M. H., Evans, A. C., Zilles, K., & Amunts, K. (2007). Assignment of functional activations to probabilistic cytoarchitectonic areas revisited. Neuroimage, 36(3), 511-521.

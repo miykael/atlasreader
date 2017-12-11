@@ -1,0 +1,15 @@
+AAL atlas
+---------
+
+The Anatomical Automatic Labeling (AAL) atlas is a copy of SPM12's AAL atlas
+(from 25/08/2015) that can be found here: http://www.gin.cnrs.fr/spip-php-article217
+
+The NIfTI file was converted into MGZ-file format with the following command:
+
+    mri_convert aal_SPM12/AAL.nii aal.mgz
+
+
+References
+----------
+
+Tzourio-Mazoyer, N., Landeau, B., Papathanassiou, D., Crivello, F., Etard, O., Delcroix, N., ... & Joliot, M. (2002). Automated anatomical labeling of activations in SPM using a macroscopic anatomical parcellation of the MNI MRI single-subject brain. Neuroimage, 15(1), 273-289.
