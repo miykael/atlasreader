@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import nibabel as nb
+import pandas as pd
 from os.path import join as opj
 from os.path import dirname as opd
 from os.path import basename as opb
@@ -21,8 +22,8 @@ def get_label(atlastype, labelID):
     """reads out the name of a specific label"""
     if 'freesurfer' in atlastype:
         atlastype = 'freesurfer'
-    labels = np.recfromcsv('atlases/labels_%s.csv' % atlastype)
-    labelIdx = labels.index == labelID
+    labels = np.array(pd.read_csv('atlases/labels_%s.csv' % atlastype))
+    labelIdx = labels[:,0] == labelID
     if labelIdx.sum() == 0:
         label = 'No_label'
     else:
