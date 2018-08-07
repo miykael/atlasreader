@@ -1,14 +1,10 @@
-import os
-import sys
-import numpy as np
-import nibabel as nb
-import pandas as pd
-from os.path import join as opj
-from os.path import dirname as opd
-from os.path import basename as opb
 from os.path import abspath as opa
-from scipy.ndimage import label
+import sys
+import nibabel as nb
 from nilearn.plotting import plot_glass_brain, plot_stat_map
+import numpy as np
+import pandas as pd
+from scipy.ndimage import label
 
 
 def get_vox_coord(affine, coord):
@@ -23,7 +19,7 @@ def get_label(atlastype, labelID):
     if 'freesurfer' in atlastype:
         atlastype = 'freesurfer'
     labels = np.array(pd.read_csv('atlases/labels_%s.csv' % atlastype))
-    labelIdx = labels[:,0] == labelID
+    labelIdx = labels[:, 0] == labelID
     if labelIdx.sum() == 0:
         label = 'No_label'
     else:
@@ -157,7 +153,8 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
 
     sortID = np.argsort(percentage)[::-1]
 
-    return [[percentage[s], labels[s]] for s in sortID if percentage[s] >= probThresh]
+    return [[percentage[s], labels[s]] for s in sortID if
+            percentage[s] >= probThresh]
 
 
 def get_peak_info(coord, atlastype='all', probThresh=5):
@@ -198,7 +195,8 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
     return clusterinfo
 
 
-def create_output(filename, atlas, voxelThresh=2, clusterExtend=5, probabilityThreshold=5):
+def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
+                  probabilityThreshold=5):
     fname = opa(filename)
 
     # Get data from NIfTI file
@@ -224,12 +222,14 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5, probabilityTh
     color_max = np.array([imgdata.min(), imgdata.max()])
     color_max = np.abs(np.min(color_max[color_max != 0]))
     try:
-        plot_glass_brain(new_image, threshold='auto', display_mode='lyrz', black_bg=True,
-                         plot_abs=False, colorbar=True, vmax=color_max,
+        plot_glass_brain(new_image, vmax=color_max,
+                         threshold='auto', display_mode='lyrz', black_bg=True,
+                         plot_abs=False, colorbar=True,
                          output_file='%s_glass.png' % fname[:-7])
     except:
-        plot_glass_brain(new_image, threshold='auto', black_bg=True,
-                         plot_abs=False, colorbar=True, vmax=color_max,
+        plot_glass_brain(new_image, vmax=color_max,
+                         threshold='auto', black_bg=True,
+                         plot_abs=False, colorbar=True,
                          output_file='%s_glass.png' % fname[:-7])
 
     # Get coordinates of peaks
@@ -253,9 +253,13 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5, probabilityTh
         idx = get_vox_coord(img.affine, c)
         clusterID = clusters[idx[0], idx[1], idx[2]]
         clusterinfo = get_cluster_info(
-            clusters == clusterID, img.affine, atlastype=atlas, probThresh=probabilityThreshold)
+            clusters == clusterID,
+            img.affine,
+            atlastype=atlas,
+            probThresh=probabilityThreshold)
         cluster_summary.append(['; '.join(
-            ['% '.join([str(round(e[0], 2)), e[1]]) for e in c[1]]) for c in clusterinfo])
+            ['% '.join([str(round(e[0], 2)), e[1]]) for e in c[1]]) for c in
+             clusterinfo])
         cluster_mean.append(imgdata[clusters == clusterID].mean())
 
         voxel_volume = int(img.header['pixdim'][1:4].prod())
@@ -265,46 +269,53 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5, probabilityTh
     header = [p[0] for p in peakinfo]
     with open('%s.csv' % fname[:-7], 'w') as f:
         f.writelines(','.join(
-            ['ClusterID', 'Peak_Location', 'Cluster_Mean', 'Volume'] + header) + '\n')
+            ['ClusterID', 'Peak_Location', 'Cluster_Mean', 'Volume'] + header)
+            + '\n')
 
         for i, c in enumerate(cluster_summary):
             f.writelines(
                 ','.join(['Cluster%.02d' % (i + 1), '_'.join(
-                    [str(xyz) for xyz in coords[i]]), str(cluster_mean[i]), str(volume_summary[i])] + c) + '\n')
+                    [str(xyz) for xyz in coords[i]]), str(cluster_mean[i]),
+                     str(volume_summary[i])] + c) + '\n')
 
         f.writelines('\n')
 
         f.writelines(
-            ','.join(['PeakID', 'Peak_Location', 'Peak_Value', 'Volume'] + header) + '\n')
+            ','.join(['PeakID', 'Peak_Location', 'Peak_Value', 'Volume'] +
+                     header) + '\n')
 
         for i, p in enumerate(peak_summary):
             f.writelines(
                 ','.join(['Peak%.02d' % (i + 1), '_'.join(
-                    [str(xyz) for xyz in coords[i]]), str(peak_value[i]), str(volume_summary[i])] + p) + '\n')
+                    [str(xyz) for xyz in coords[i]]), str(peak_value[i]),
+                     str(volume_summary[i])] + p) + '\n')
 
     # Plot Clusters
     bgimg = nb.load('templates/MNI152_T1_1mm_brain.nii.gz')
     for idx, coord in enumerate(coords):
         outfile = 'cluster%02d' % (idx + 1)
         try:
-            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord, display_mode='ortho',
-                          colorbar=True, title=outfile, threshold=voxelThresh, draw_cross=True,
+            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
+                          display_mode='ortho', colorbar=True, title=outfile,
+                          threshold=voxelThresh, draw_cross=True,
                           black_bg=True, symmetric_cbar=True, vmax=color_max,
                           output_file='%s%s.png' % (fname[:-7], outfile))
         except:
-            plot_stat_map(new_image,
-                          colorbar=True, title=outfile, threshold=voxelThresh, draw_cross=True,
-                          black_bg=True, symmetric_cbar=True, vmax=color_max,
+            plot_stat_map(new_image, vmax=color_max,
+                          colorbar=True, title=outfile, threshold=voxelThresh,
+                          draw_cross=True, black_bg=True, symmetric_cbar=True,
                           output_file='%s%s.png' % (fname[:-7], outfile))
 
 
 if __name__ == "__main__":
-
+    # TODO : let's use argparse here
     filename = str(sys.argv[1])
     atlas = str(sys.argv[2])
     voxelThresh = float(sys.argv[3])
     clusterExtend = int(sys.argv[4])
     probabilityThreshold = int(sys.argv[5])
 
-    create_output(filename, atlas, voxelThresh=voxelThresh,
-                  clusterExtend=clusterExtend, probabilityThreshold=probabilityThreshold)
+    create_output(filename, atlas,
+                  voxelThresh=voxelThresh,
+                  clusterExtend=clusterExtend,
+                  probabilityThreshold=probabilityThreshold)
