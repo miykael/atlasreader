@@ -13,11 +13,13 @@ DOWNLOAD_URL = ('https://github.com/miykael/{name}/archive/{ver}.tar.gz'
                 .format(name=NAME, ver=__version__))
 
 INSTALL_REQUIRES = [
+    'matplotlib',
     'nibabel',
     'nilearn',
     'numpy',
     'pandas',
-    'scipy'
+    'scipy',
+    'scikit-learn'
 ]
 
 TESTS_REQUIRE = [
