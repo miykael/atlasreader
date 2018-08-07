@@ -23,6 +23,9 @@ before_install:
         pip install coverage coveralls codecov pytest pytest-cov;
       fi
 
+install:
+    - python setup.py install
+
 script:
     - |
       if [ "${STYLE}" == "1" ]; then

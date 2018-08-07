@@ -2,7 +2,7 @@ __version__ = '0.0.1'
 
 NAME = 'mni_atlas_reader'
 MAINTAINER = 'Michael Notter'
-EMAIL = 'miykael@gmail.com'
+EMAIL = 'michaelnotter@hotmail.com'
 VERSION = __version__
 LICENSE = 'MIT'
 DESCRIPTION = ('A toolbox for generating cluster reports from statistical '
