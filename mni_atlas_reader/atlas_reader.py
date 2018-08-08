@@ -46,7 +46,7 @@ def get_label(atlastype, labelID):
     """
     if 'freesurfer' in atlastype:
         atlastype = 'freesurfer'
-    labels = np.array(pd.read_csv('../atlases/labels_%s.csv' % atlastype))
+    labels = np.array(pd.read_csv('atlases/labels_%s.csv' % atlastype))
     labelIdx = labels[:, 0] == labelID
     if labelIdx.sum() == 0:
         label = 'No_label'
@@ -163,10 +163,10 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
                      'freesurfer_desikan-killiany',
                      'freesurfer_destrieux',
                      'Neuromorphometrics']:
-        atlas = nb.load('../atlases/atlas_%s.mgz' % atlastype)
+        atlas = nb.load('atlases/atlas_%s.mgz' % atlastype)
         probAtlas = False
     else:
-        atlas = nb.load('../atlases/atlas_%s.nii.gz' % atlastype)
+        atlas = nb.load('atlases/atlas_%s.nii.gz' % atlastype)
         probAtlas = True
 
     # Get atlas data and affine matrix
@@ -229,10 +229,10 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
                      'freesurfer_desikan-killiany',
                      'freesurfer_destrieux',
                      'Neuromorphometrics']:
-        atlas = nb.load('../atlases/atlas_%s.mgz' % atlastype)
+        atlas = nb.load('atlases/atlas_%s.mgz' % atlastype)
         probAtlas = False
     else:
-        atlas = nb.load('../atlases/atlas_%s.nii.gz' % atlastype)
+        atlas = nb.load('atlases/atlas_%s.nii.gz' % atlastype)
         probAtlas = True
 
     # Get atlas data and affine matrix
@@ -461,7 +461,7 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                      str(volume_summary[i])] + p) + '\n')
 
     # Plot Clusters
-    bgimg = nb.load('../templates/MNI152_T1_1mm_brain.nii.gz')
+    bgimg = nb.load('templates/MNI152_T1_1mm_brain.nii.gz')
     for idx, coord in enumerate(coords):
         outfile = 'cluster%02d' % (idx + 1)
         try:
