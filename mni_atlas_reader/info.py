@@ -2,7 +2,7 @@ __version__ = '0.0.1'
 
 NAME = 'mni_atlas_reader'
 MAINTAINER = 'Michael Notter'
-EMAIL = 'miykael@gmail.com'
+EMAIL = 'michaelnotter@hotmail.com'
 VERSION = __version__
 LICENSE = 'MIT'
 DESCRIPTION = ('A toolbox for generating cluster reports from statistical '
@@ -13,11 +13,13 @@ DOWNLOAD_URL = ('https://github.com/miykael/{name}/archive/{ver}.tar.gz'
                 .format(name=NAME, ver=__version__))
 
 INSTALL_REQUIRES = [
+    'matplotlib',
     'nibabel',
     'nilearn',
     'numpy',
     'pandas',
-    'scipy'
+    'scipy',
+    'scikit-learn'
 ]
 
 TESTS_REQUIRE = [

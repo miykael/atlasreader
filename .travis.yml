@@ -17,11 +17,14 @@ before_install:
     - python -m pip install --upgrade pip
     - pip install --upgrade virtualenv
     - if [ "${STYLE}" == "1" ]; then
-        pip install flake8 flake8-putty;
+        pip install flake8;
       fi
     - if [ "${COVERAGE}" == "1" ]; then
         pip install coverage coveralls codecov pytest pytest-cov;
       fi
+
+install:
+    - python setup.py install
 
 script:
     - |
