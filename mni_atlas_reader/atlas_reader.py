@@ -226,7 +226,7 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                          threshold='auto', display_mode='lyrz', black_bg=True,
                          plot_abs=False, colorbar=True,
                          output_file='%s_glass.png' % fname[:-7])
-    except:
+    except ValueError:
         plot_glass_brain(new_image, vmax=color_max,
                          threshold='auto', black_bg=True,
                          plot_abs=False, colorbar=True,
@@ -300,7 +300,7 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                           threshold=voxelThresh, draw_cross=True,
                           black_bg=True, symmetric_cbar=True, vmax=color_max,
                           output_file='%s%s.png' % (fname[:-7], outfile))
-        except:
+        except ValueError:
             plot_stat_map(new_image, vmax=color_max,
                           colorbar=True, title=outfile, threshold=voxelThresh,
                           draw_cross=True, black_bg=True, symmetric_cbar=True,
