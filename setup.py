@@ -24,7 +24,13 @@ def main():
         packages=find_packages(exclude=['mni_atlas_reader/tests']),
         package_data=ldict['PACKAGE_DATA'],
         tests_require=ldict['TESTS_REQUIRE'],
-        license=ldict['LICENSE'])
+        license=ldict['LICENSE'],
+        entry_points={
+            'console_scripts': [
+                'mni_atlas_reader=mni_atlas_reader.atlas_reader:main'
+            ]
+        }
+    )
 
 
 if __name__ == '__main__':
