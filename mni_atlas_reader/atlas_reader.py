@@ -8,7 +8,7 @@ from scipy.ndimage import label
 
 
 def get_vox_coord(affine, coord):
-    """Computes voxel index from MNI coordinate.
+    """Computes voxel matrix index from MNI coordinate.
 
 
     Parameters
@@ -56,7 +56,9 @@ def get_label(atlastype, labelID):
 
 
 def get_clusters(data, min_extent=5):
-    """
+    """Extracts out clusters from a stat map.
+
+
     Parameters
     ----------
     data : (X, Y, Z) array-like
@@ -70,7 +72,6 @@ def get_clusters(data, min_extent=5):
         Array of numerically labelled clusters
     nclusters : int
         Number of clusters
-
     """
     clusters, nclusters = label(data)
     for idx in range(1, nclusters + 1):
@@ -81,7 +82,8 @@ def get_clusters(data, min_extent=5):
 
 
 def get_peak_coords(img, affine, data):
-    """
+    """Gets MNI coordinates of peak voxel within each cluster.
+
     Parameters
     ----------
     img : (X, Y, Z) array-like
@@ -96,7 +98,6 @@ def get_peak_coords(img, affine, data):
     ------
     coordinates : list of lists
         x, y, z MNI coordinates of peak voxels
-
     """
     coords = []
     clusters = np.setdiff1d(np.unique(img.ravel()), [0])
@@ -117,7 +118,8 @@ def get_peak_coords(img, affine, data):
 
 
 def get_cluster_coords(cluster, affine):
-    """
+    """Get matrix indices of voxels in cluster.
+
     Parameters
     ----------
     cluster : (X, Y, Z) array-like
@@ -145,15 +147,16 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
     atlastype : str
         Name of atlas to use
     coordinate : list of float
+        x, y, z MNI coordinates of voxel
     probThresh : int
-        Probability threshold
+        Probability threshold for atlas
 
     Returns
     ------
     label : list or str
         Atlas label of peak coordinate. If using a probabilistic atlas, then
-        returns a list with the probability and atlas label. Otherwise, the atlas
-        label is returned.
+        returns a list of the probability information organized as
+        [probability, label]. Otherwise, the atlas label is returned.
     """
 
     if atlastype in ['aal',
@@ -203,7 +206,7 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
 def read_atlas_cluster(atlastype, cluster, affine, probThresh):
     """Reads specific atlas and returns segment/probability information.
 
-    It is possible to threshold a given probability atlas [in percentage].
+    It is possible to threshold a given probability atlas (in percentage).
 
     Parameters
     ----------
@@ -214,13 +217,14 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
     affine : (4, 4) array-like
         NIfTI affine matrix
     probThresh : int
-        Probability threshold
+        Probability threshold for atlas
 
     Returns
     ------
-
+    segments : list of lists
+        List of probability information for the cluster, which is organized as
+        [probability, region name]
     """
-
     if atlastype in ['aal',
                      'freesurfer_desikan-killiany',
                      'freesurfer_destrieux',
@@ -262,7 +266,10 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
 
 
 def get_peak_info(coord, atlastype='all', probThresh=5):
-    """
+    """Gets region and probability information for a peak voxel based on the
+    provided atlas.
+
+
     Parameters
     ----------
     coord : list of floats
@@ -270,15 +277,14 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
     atlastype : str
         Name of atlas to use
     probThresh : int
-        Probablility threshold
+        Probability threshold for atlas
 
     Returns
     ------
     peakinfo :
-        List of lists containing atlas name and label of voxel
-
+        List of lists containing atlas name and probability information for the
+        atlas labels associated with the voxel
     """
-
     peakinfo = []
     if atlastype != 'all':
         segment = read_atlas_peak(atlastype, coord, probThresh)
@@ -297,20 +303,26 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
 
 
 def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
-    """
+    """Gets region and probability information for a cluster based on the
+    provided atlas.
+
     Parameters
     ----------
     cluster :
+        Cluster number
     affine : (4, 4) array-like
         NIfTI affine matrix
     atlastype : str
+        Atlas name
     probThresh : int
+        Probability threshold for atlas
 
     Returns
     ------
-
+    clusterinfo : list of lists
+        List containing the cluster information, which includes the atlas name,
+        and the probability information of each atlas label for cluster.
     """
-
     clusterinfo = []
     if atlastype != 'all':
         segment = read_atlas_cluster(atlastype, cluster, affine, probThresh)
@@ -340,10 +352,15 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     Parameters
     ----------
     filename : str
+        File name of stat map
     atlas : str
+        Atlas name to use
     voxelThresh : int
+        Minimum statistical threshold for voxels
     clusterExtend : int
+        Minimum cluster size
     probabilityThreshold : int
+        Probability threshold for atlas
 
     Returns
     ------
