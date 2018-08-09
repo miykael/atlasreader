@@ -435,16 +435,17 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     # Plot Glass Brain
     color_max = np.array([imgdata.min(), imgdata.max()])
     color_max = np.abs(np.min(color_max[color_max != 0]))
+    glass_file = os.path.join(savedir, '{}.png'.format(out_fname)))
     try:
         plot_glass_brain(new_image, vmax=color_max,
                          threshold='auto', display_mode='lyrz', black_bg=True,
                          plot_abs=False, colorbar=True,
-                         output_file=os.path.join(savedir, '{}.png'.format(out_fname)))
+                         output_file=glass_file)
     except ValueError:
         plot_glass_brain(new_image, vmax=color_max,
                          threshold='auto', black_bg=True,
                          plot_abs=False, colorbar=True,
-                         output_file=os.path.join(savedir, '{}.png'.format(out_fname)))
+                         output_file=glass_file)
 
     # Get coordinates of peaks
     coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
@@ -518,14 +519,15 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
 
         try:
             plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
-                          display_mode='ortho', colorbar=True, title=cluster_name,
-                          threshold=voxelThresh, draw_cross=True,
-                          black_bg=True, symmetric_cbar=True, vmax=color_max,
-                          output_file=out_cluster_file)
+                          display_mode='ortho', colorbar=True,
+                          title=cluster_name, threshold=voxelThresh,
+                          draw_cross=True, black_bg=True, symmetric_cbar=True,
+                          vmax=color_max, output_file=out_cluster_file)
         except ValueError:
             plot_stat_map(new_image, vmax=color_max,
-                          colorbar=True, title=cluster_name, threshold=voxelThresh,
-                          draw_cross=True, black_bg=True, symmetric_cbar=True,
+                          colorbar=True, title=cluster_name,
+                          threshold=voxelThresh, draw_cross=True,
+                          black_bg=True, symmetric_cbar=True,
                           output_file=out_cluster_file)
 
 
