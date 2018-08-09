@@ -28,4 +28,5 @@ TESTS_REQUIRE = [
 ]
 
 PACKAGE_DATA = {
+    'mni_atlas_reader': ['data/*']
 }
