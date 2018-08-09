@@ -356,7 +356,6 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
 
     if 'all' not in atlastype:
         for atypes in atlastype:
-            print(atypes)
             segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
             clusterinfo.append([atypes, segment])
     else:
