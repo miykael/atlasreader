@@ -1,10 +1,50 @@
 import argparse
-from os.path import abspath as opa
+import os.path as op
+from pkg_resources import resource_filename
 import nibabel as nb
 from nilearn.plotting import plot_glass_brain, plot_stat_map
 import numpy as np
 import pandas as pd
 from scipy.ndimage import label
+from sklearn.utils import Bunch
+
+
+_ATLASES = [
+    'Desikan-Killiany', 'Juelich', 'Neuromorphometrics', 'Destrieux',
+    'Harvard_Oxford', 'AAL'
+]
+_ACCEPTED_ATLASES = _ATLASES + [a.lower() for a in _ATLASES]
+
+
+def get_atlas(atlas):
+    """
+    Gets `atlas` image and label file from package resources
+
+    Parameters
+    ----------
+    atlas : str
+        Name of atlas for which to get information
+
+    Returns
+    -------
+    info : sklearn.utils.Bunch
+        image : Niimg_like
+            ROI image loaded and ready for use
+        labels : pandas.core.data.DataFrame
+            Dataframe with columns ['index', 'name'] matching regions in
+            `image` to anatomical names
+    """
+    # we accept uppercase atlases via argparse but our filenames are lowercase
+    atlas = atlas.lower()
+
+    # get the path to atlas + label files shipped with package
+    # resource_filename ensures that we're getting the correct path
+    data_dir = resource_filename('mni_atlas_reader', 'data/atlases')
+    atlas_path = op.join(data_dir, 'atlas_{0}.nii.gz'.format(atlas))
+    label_path = op.join(data_dir, 'labels_{0}.csv'.format(atlas))
+
+    # return loaded filenames (we should only have to call this once!)
+    return Bunch(image=nb.load(atlas_path), labels=pd.read_csv(label_path))
 
 
 def get_vox_coord(affine, coord):
@@ -24,19 +64,18 @@ def get_vox_coord(affine, coord):
         x, y, z array index of voxel
     """
     inverse = np.linalg.inv(affine)
-    voxCoord = np.dot(inverse, np.hstack((coord, 1)))[:3]
-    return voxCoord.round().astype('int').tolist()
+    vox_coord = np.dot(inverse, np.hstack((coord, 1)))[:3]
+    return vox_coord.round().astype('int').tolist()
 
 
-def get_label(atlastype, labelID):
-    """
-    Reads out the name of a specific label
+def get_label(atlas, label_id):
+    """Reads out the name of a specific label
 
     Parameters
     ----------
-    atlastype : str
+    atlas : str
         Name of atlas to use
-    labelID : int
+    label_id : int
         Numeric label of cluster
 
     Returns
@@ -44,15 +83,12 @@ def get_label(atlastype, labelID):
     label : str
         Atlas label name
     """
-    if 'freesurfer' in atlastype:
-        atlastype = 'freesurfer'
-    labels = np.array(pd.read_csv('atlases/labels_%s.csv' % atlastype))
-    labelIdx = labels[:, 0] == labelID
-    if labelIdx.sum() == 0:
-        label = 'No_label'
-    else:
-        label = labels[labelIdx][0][1]
-    return label
+
+    labels = get_atlas(atlas).labels
+    try:
+        return labels.query('index=={}'.format(label_id)).name.iloc[0]
+    except IndexError:
+        return 'No_label'
 
 
 def get_clusters(data, min_extent=5):
@@ -93,7 +129,6 @@ def get_peak_coords(img, affine, data):
         NIfTI affine matrix
     data : (X, Y, Z) array-like
         Stat map array
-
 
     Returns
     ------
@@ -162,15 +197,7 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
         [probability, label]. Otherwise, the atlas label is returned.
     """
 
-    if atlastype in ['aal',
-                     'freesurfer_desikan-killiany',
-                     'freesurfer_destrieux',
-                     'Neuromorphometrics']:
-        atlas = nb.load('atlases/atlas_%s.mgz' % atlastype)
-        probAtlas = False
-    else:
-        atlas = nb.load('atlases/atlas_%s.nii.gz' % atlastype)
-        probAtlas = True
+    atlas = get_atlas(atlastype).image
 
     # Get atlas data and affine matrix
     data = atlas.get_data()
@@ -180,7 +207,7 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
     voxID = get_vox_coord(affine, coordinate)
 
     # Get Label information
-    if probAtlas:
+    if atlastype in ['Juelich', 'Harvard_Oxford']:
         probs = data[voxID[0], voxID[1], voxID[2]]
         probs[probs < probThresh] = 0
         idx = np.where(probs)[0]
@@ -229,15 +256,7 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
         List of probability information for the cluster, which is
         organized as [probability, region name]
     """
-    if atlastype in ['aal',
-                     'freesurfer_desikan-killiany',
-                     'freesurfer_destrieux',
-                     'Neuromorphometrics']:
-        atlas = nb.load('atlases/atlas_%s.mgz' % atlastype)
-        probAtlas = False
-    else:
-        atlas = nb.load('atlases/atlas_%s.nii.gz' % atlastype)
-        probAtlas = True
+    atlas = get_atlas(atlastype).image
 
     # Get atlas data and affine matrix
     atlas_data = atlas.get_data()
@@ -250,7 +269,7 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
     voxIDs = [get_vox_coord(atlas_affine, c) for c in coords]
 
     # Get Label information
-    if probAtlas:
+    if atlastype in ['Juelich', 'Harvard_Oxford']:
         labelIDs = [np.argmax(atlas_data[v[0], v[1], v[2]]) if np.sum(
             atlas_data[v[0], v[1], v[2]]) != 0 else -1 for v in voxIDs]
 
@@ -294,12 +313,7 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
         segment = read_atlas_peak(atlastype, coord, probThresh)
         peakinfo.append([atlastype, segment])
     else:
-        for atypes in ['HarvardOxford',
-                       'Juelich',
-                       'freesurfer_desikan-killiany',
-                       'freesurfer_destrieux',
-                       'aal',
-                       'Neuromorphometrics']:
+        for atypes in _ATLASES:
             segment = read_atlas_peak(atypes, coord, probThresh)
             peakinfo.append([atypes, segment])
 
@@ -329,17 +343,13 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
         atlas name, and the probability information of each atlas label
         for cluster.
     """
+
     clusterinfo = []
     if atlastype != 'all':
         segment = read_atlas_cluster(atlastype, cluster, affine, probThresh)
         clusterinfo.append([atlastype, segment])
     else:
-        for atypes in ['HarvardOxford',
-                       'Juelich',
-                       'freesurfer_desikan-killiany',
-                       'freesurfer_destrieux',
-                       'aal',
-                       'Neuromorphometrics']:
+        for atypes in _ATLASES:
             segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
             clusterinfo.append([atypes, segment])
 
@@ -374,10 +384,9 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     ------
     None
     """
-    fname = opa(filename)
 
     # Get data from NIfTI file
-    img = nb.load(fname)
+    img = nb.load(filename)
     imgdata = img.get_data()
     if len(imgdata.shape) != 3:
         imgdata = imgdata[:, :, :, 0]
@@ -402,12 +411,12 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
         plot_glass_brain(new_image, vmax=color_max,
                          threshold='auto', display_mode='lyrz', black_bg=True,
                          plot_abs=False, colorbar=True,
-                         output_file='%s_glass.png' % fname[:-7])
+                         output_file='%s_glass.png' % filename[:-7])
     except ValueError:
         plot_glass_brain(new_image, vmax=color_max,
                          threshold='auto', black_bg=True,
                          plot_abs=False, colorbar=True,
-                         output_file='%s_glass.png' % fname[:-7])
+                         output_file='%s_glass.png' % filename[:-7])
 
     # Get coordinates of peaks
     coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
@@ -419,15 +428,20 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     cluster_mean = []
     volume_summary = []
 
-    for c in coords:
+    # get template image for plotting cluster maps
+    bgimg = resource_filename('mni_atlas_reader',
+                              'data/templates/MNI152_T1_1mm_brain.nii.gz')
+
+    for n, coord in enumerate(coords):
+        print(coord)
         peakinfo = get_peak_info(
-            c, atlastype=atlas, probThresh=probabilityThreshold)
+            coord, atlastype=atlas, probThresh=probabilityThreshold)
         peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
             ['% '.join(e) for e in np.array(p[1])]) for p in peakinfo])
-        voxID = get_vox_coord(img.affine, c)
+        voxID = get_vox_coord(img.affine, coord)
         peak_value.append(imgdata[voxID[0], voxID[1], voxID[2]])
 
-        idx = get_vox_coord(img.affine, c)
+        idx = get_vox_coord(img.affine, coord)
         clusterID = clusters[idx[0], idx[1], idx[2]]
         clusterinfo = get_cluster_info(
             clusters == clusterID,
@@ -435,16 +449,30 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
             atlastype=atlas,
             probThresh=probabilityThreshold)
         cluster_summary.append(['; '.join(
-            ['% '.join([str(round(e[0], 2)), e[1]]) for e in c[1]]) for c in
-             clusterinfo])
+            ['% '.join([str(round(e[0], 2)), e[1]]) for e in coord[1]]) for
+             coord in clusterinfo])
         cluster_mean.append(imgdata[clusters == clusterID].mean())
 
         voxel_volume = int(img.header['pixdim'][1:4].prod())
         volume_summary.append(np.sum(clusters == clusterID) * voxel_volume)
 
+        # plot cluster map
+        outfile = 'cluster%02d' % (n + 1)
+        try:
+            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
+                          display_mode='ortho', colorbar=True, title=outfile,
+                          threshold=voxelThresh, draw_cross=True,
+                          black_bg=True, symmetric_cbar=True, vmax=color_max,
+                          output_file='%s%s.png' % (filename[:-7], outfile))
+        except ValueError:
+            plot_stat_map(new_image, vmax=color_max,
+                          colorbar=True, title=outfile, threshold=voxelThresh,
+                          draw_cross=True, black_bg=True, symmetric_cbar=True,
+                          output_file='%s%s.png' % (filename[:-7], outfile))
+
     # Write output file
     header = [p[0] for p in peakinfo]
-    with open('%s.csv' % fname[:-7], 'w') as f:
+    with open('%s.csv' % filename[:-7], 'w') as f:
         f.writelines(','.join(
             ['ClusterID', 'Peak_Location', 'Cluster_Mean', 'Volume'] + header)
             + '\n')
@@ -466,22 +494,6 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                 ','.join(['Peak%.02d' % (i + 1), '_'.join(
                     [str(xyz) for xyz in coords[i]]), str(peak_value[i]),
                      str(volume_summary[i])] + p) + '\n')
-
-    # Plot Clusters
-    bgimg = nb.load('templates/MNI152_T1_1mm_brain.nii.gz')
-    for idx, coord in enumerate(coords):
-        outfile = 'cluster%02d' % (idx + 1)
-        try:
-            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
-                          display_mode='ortho', colorbar=True, title=outfile,
-                          threshold=voxelThresh, draw_cross=True,
-                          black_bg=True, symmetric_cbar=True, vmax=color_max,
-                          output_file='%s%s.png' % (fname[:-7], outfile))
-        except ValueError:
-            plot_stat_map(new_image, vmax=color_max,
-                          colorbar=True, title=outfile, threshold=voxelThresh,
-                          draw_cross=True, black_bg=True, symmetric_cbar=True,
-                          output_file='%s%s.png' % (fname[:-7], outfile))
 
 
 def check_limit(num, limits=[0, 100]):
@@ -510,15 +522,12 @@ def check_limit(num, limits=[0, 100]):
 def _get_parser():
     """ Reads command line arguments and returns """
     parser = argparse.ArgumentParser()
-    parser.add_argument('filename', type=opa, metavar='file',
+    parser.add_argument('filename', type=op.abspath, metavar='file',
                         help='The full or relative path to the statistical map'
                              'from which cluster information should be '
                              'extracted.')
-    parser.add_argument('-a', '--atlas', type=str, default='all', choices=[
-                            'all', 'HarvardOxford', 'Neuromorphometrics',
-                            'Juelich', 'aal', 'freesurfer_desikan-killiany',
-                            'freesurfer_destrieux'
-                        ], metavar='atlas', nargs='+',
+    parser.add_argument('-a', '--atlas', type=str, default='all', nargs='+',
+                        choices=_ACCEPTED_ATLASES + ['all'], metavar='atlas',
                         help='Atlas(es) to use for examining anatomical '
                              'delineation of clusters in provided statistical '
                              'map. Default: all available atlases.')
@@ -557,5 +566,5 @@ def main():
                   probabilityThreshold=opts.probabilityThreshold)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

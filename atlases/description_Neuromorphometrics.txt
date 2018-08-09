@@ -1,9 +1,0 @@
-Neuromorphometrics atlas
-------------------------
-
-The Neuromorphometrics atlas is a copied from SPM12's TPM folder (from 02/08/2017). The description file of this atlas contains the following content:
-"Maximum probability tissue labels derived from the ``MICCAI 2012 Grand Challenge and Workshop on Multi-Atlas Labeling'' (https://masi.vuse.vanderbilt.edu/workshop2012/index.php/Challenge_Details). These data were released under the Creative Commons Attribution-NonCommercial (CC BY-NC) with no end date. Users should credit the MRI scans as originating from the OASIS project (http://www.oasis-brains.org/) and the labeled data as "provided by Neuromorphometrics, Inc. (http://Neuromorphometrics.com/) under academic subscription".  These references should be included in all workshop and final publications.""
-
-The NIfTI file was converted into MGZ-file format with the following command:
-
-    mri_convert mri_convert SPM12/tpm/labels_Neuromorphometrics.nii atlas_Neuromorphometrics.mgz
