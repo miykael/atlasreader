@@ -390,8 +390,8 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     probabilityThreshold : int
         Probability threshold for when using a probabilistic atlas
     outDir : str or None
-        The full or relative path of an output directory created files are
-        saved
+        Path to the output directory. If None is specified, output will be
+        stored in the same folder as the input files.
 
     Returns
     ------
