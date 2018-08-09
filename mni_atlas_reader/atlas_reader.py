@@ -310,9 +310,13 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
         for the atlas labels associated with the voxel
     """
     peakinfo = []
-    if atlastype != 'all':
-        segment = read_atlas_peak(atlastype, coord, probThresh)
-        peakinfo.append([atlastype, segment])
+    if isinstance(atlastype, str):
+        atlastype = [atlastype]
+
+    if 'all' not in atlastype:
+        for atypes in atlastype:
+            segment = read_atlas_peak(atypes, coord, probThresh)
+            peakinfo.append([atypes, segment])
     else:
         for atypes in _ATLASES:
             segment = read_atlas_peak(atypes, coord, probThresh)
@@ -346,9 +350,15 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
     """
 
     clusterinfo = []
-    if atlastype != 'all':
-        segment = read_atlas_cluster(atlastype, cluster, affine, probThresh)
-        clusterinfo.append([atlastype, segment])
+
+    if isinstance(atlastype, str):
+        atlastype = [atlastype]
+
+    if 'all' not in atlastype:
+        for atypes in atlastype:
+            print(atypes)
+            segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
+            clusterinfo.append([atypes, segment])
     else:
         for atypes in _ATLASES:
             segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
@@ -447,12 +457,7 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     cluster_mean = []
     volume_summary = []
 
-    # get template image for plotting cluster maps
-    bgimg = resource_filename('mni_atlas_reader',
-                              'data/templates/MNI152_T1_1mm_brain.nii.gz')
-
     for n, coord in enumerate(coords):
-        print(coord)
         peakinfo = get_peak_info(
             coord, atlastype=atlas, probThresh=probabilityThreshold)
         peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
@@ -500,8 +505,14 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                     [str(xyz) for xyz in coords[i]]), str(peak_value[i]),
                      str(volume_summary[i])] + p) + '\n')
 
+    # get template image for plotting cluster maps
+    bgimg = nb.load(
+        resource_filename(
+            'mni_atlas_reader',
+            'data/templates/MNI152_T1_1mm_brain.nii.gz'
+        )
+    )
     # Plot Clusters
-    bgimg = nb.load('templates/MNI152_T1_1mm_brain.nii.gz')
     for idx, coord in enumerate(coords):
         cluster_name = '{}_cluster0{}'.format(out_fname, idx + 1)
         out_cluster_file = os.path.join(savedir, '{}.png'.format(cluster_name))
