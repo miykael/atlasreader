@@ -48,7 +48,8 @@ def get_atlas(atlas):
 
 
 def get_vox_coord(affine, coord):
-    """Computes voxel matrix index from MNI coordinate.
+    """
+    Computes voxel matrix index from MNI coordinate.
 
     Parameters
     ----------
@@ -91,7 +92,8 @@ def get_label(atlas, label_id):
 
 
 def get_clusters(data, min_extent=5):
-    """Extracts out clusters from a stat map.
+    """
+    Extracts out clusters from a stat map.
 
     Parameters
     ----------
@@ -116,7 +118,8 @@ def get_clusters(data, min_extent=5):
 
 
 def get_peak_coords(img, affine, data):
-    """Gets MNI coordinates of peak voxel within each cluster.
+    """
+    Gets MNI coordinates of peak voxel within each cluster.
 
     Parameters
     ----------
@@ -151,7 +154,8 @@ def get_peak_coords(img, affine, data):
 
 
 def get_cluster_coords(cluster, affine):
-    """Get matrix indices of voxels in cluster.
+    """
+    Get matrix indices of voxels in cluster.
 
     Parameters
     ----------
@@ -171,7 +175,8 @@ def get_cluster_coords(cluster, affine):
 
 
 def read_atlas_peak(atlastype, coordinate, probThresh=5):
-    """Reads specific atlas and returns segment/probability information.
+    """
+    Reads specific atlas and returns segment/probability information.
 
     It is possible to threshold a given probability atlas [in percentage].
 
@@ -182,13 +187,13 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
     coordinate : list of float
         x, y, z MNI coordinates of voxel
     probThresh : int
-        Probability threshold for atlas
+        Probability threshold for when using a probabilistic atlas
 
     Returns
     ------
     label : list or str
-        Atlas label of peak coordinate. If using a probabilistic atlas, then
-        returns a list of the probability information organized as
+        Atlas label of peak coordinate. If using a probabilistic atlas,
+        then returns a list of the probability information organized as
         [probability, label]. Otherwise, the atlas label is returned.
     """
 
@@ -229,7 +234,8 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
 
 
 def read_atlas_cluster(atlastype, cluster, affine, probThresh):
-    """Reads specific atlas and returns segment/probability information.
+    """
+    Reads specific atlas and returns segment/probability information.
 
     It is possible to threshold a given probability atlas (in percentage).
 
@@ -242,13 +248,13 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
     affine : (4, 4) array-like
         NIfTI affine matrix
     probThresh : int
-        Probability threshold for atlas
+        Probability threshold for when using a probabilistic atlas
 
     Returns
     ------
     segments : list of lists
-        List of probability information for the cluster, which is organized as
-        [probability, region name]
+        List of probability information for the cluster, which is
+        organized as [probability, region name]
     """
     atlas = get_atlas(atlastype).image
 
@@ -283,7 +289,8 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
 
 
 def get_peak_info(coord, atlastype='all', probThresh=5):
-    """Gets region and probability information for a peak voxel based on the
+    """
+    Gets region and probability information for a peak voxel based on the
     provided atlas.
 
     Parameters
@@ -293,13 +300,13 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
     atlastype : str
         Name of atlas to use
     probThresh : int
-        Probability threshold for atlas
+        Probability threshold for when using a probabilistic atlas
 
     Returns
     ------
     peakinfo :
-        List of lists containing atlas name and probability information for the
-        atlas labels associated with the voxel
+        List of lists containing atlas name and probability information
+        for the atlas labels associated with the voxel
     """
     peakinfo = []
     if atlastype != 'all':
@@ -314,7 +321,8 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
 
 
 def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
-    """Gets region and probability information for a cluster based on the
+    """
+    Gets region and probability information for a cluster based on the
     provided atlas.
 
     Parameters
@@ -326,13 +334,14 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
     atlastype : str
         Atlas name
     probThresh : int
-        Probability threshold for atlas
+        Probability threshold for when using a probabilistic atlas
 
     Returns
     ------
     clusterinfo : list of lists
-        List containing the cluster information, which includes the atlas name,
-        and the probability information of each atlas label for cluster.
+        List containing the cluster information, which includes the
+        atlas name, and the probability information of each atlas label
+        for cluster.
     """
 
     clusterinfo = []
@@ -349,7 +358,8 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
 
 def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                   probabilityThreshold=5):
-    """Generates output table containing each clusters' number of voxels,
+    """
+    Generates output table containing each clusters' number of voxels,
     average activation across voxels, peak voxel coordinates, and
     neuroanatomical location of the peak voxel based on the specified atlas.
 
@@ -359,15 +369,16 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     Parameters
     ----------
     filename : str
-        File name of stat map
+        The full or relative path to the statistical map to use
     atlas : str
         Atlas name to use
     voxelThresh : int
-        Minimum statistical threshold for voxels
+        Value threshold for voxels to be considered in cluster extraction
     clusterExtend : int
-        Minimum cluster size
+        Required number of contiguous voxels for a cluster to be retained for
+        analysis
     probabilityThreshold : int
-        Probability threshold for atlas
+        Probability threshold for when using a probabilistic atlas
 
     Returns
     ------
