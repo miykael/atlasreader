@@ -9,3 +9,4 @@ dist/*
 .coverage
 localtest
 .pytest_cache/
+.ipynb_checkpoints
