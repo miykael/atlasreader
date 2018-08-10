@@ -1,4 +1,5 @@
 import argparse
+import os
 import os.path as op
 from pkg_resources import resource_filename
 import nibabel as nb
@@ -309,9 +310,13 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
         for the atlas labels associated with the voxel
     """
     peakinfo = []
-    if atlastype != 'all':
-        segment = read_atlas_peak(atlastype, coord, probThresh)
-        peakinfo.append([atlastype, segment])
+    if isinstance(atlastype, str):
+        atlastype = [atlastype]
+
+    if 'all' not in atlastype:
+        for atypes in atlastype:
+            segment = read_atlas_peak(atypes, coord, probThresh)
+            peakinfo.append([atypes, segment])
     else:
         for atypes in _ATLASES:
             segment = read_atlas_peak(atypes, coord, probThresh)
@@ -345,9 +350,14 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
     """
 
     clusterinfo = []
-    if atlastype != 'all':
-        segment = read_atlas_cluster(atlastype, cluster, affine, probThresh)
-        clusterinfo.append([atlastype, segment])
+
+    if isinstance(atlastype, str):
+        atlastype = [atlastype]
+
+    if 'all' not in atlastype:
+        for atypes in atlastype:
+            segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
+            clusterinfo.append([atypes, segment])
     else:
         for atypes in _ATLASES:
             segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
@@ -357,7 +367,7 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
 
 
 def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
-                  probabilityThreshold=5):
+                  probabilityThreshold=5, outDir=None):
     """
     Generates output table containing each clusters' number of voxels,
     average activation across voxels, peak voxel coordinates, and
@@ -379,11 +389,29 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
         analysis
     probabilityThreshold : int
         Probability threshold for when using a probabilistic atlas
+    outDir : str or None
+        Path to the output directory. If None is specified, output will be
+        stored in the same folder as the input files.
 
     Returns
     ------
     None
     """
+
+    fname = os.path.abspath(filename)
+
+    # set up output directory
+    if outDir is not None:
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
+        savedir = outDir
+
+    else:
+        savedir = os.path.dirname(fname)
+
+    # set up output file name which is the same name (no extension) of input
+    # file
+    out_fname = os.path.basename(fname).split('.')[0]
 
     # Get data from NIfTI file
     img = nb.load(filename)
@@ -407,16 +435,16 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     # Plot Glass Brain
     color_max = np.array([imgdata.min(), imgdata.max()])
     color_max = np.abs(np.min(color_max[color_max != 0]))
+    glass_file = os.path.join(savedir, '{}.png'.format(out_fname))
     try:
-        plot_glass_brain(new_image, vmax=color_max,
-                         threshold='auto', display_mode='lyrz', black_bg=True,
+        plot_glass_brain(new_image, vmax=color_max, threshold='auto',
+                         display_mode='lyrz', black_bg=True,
                          plot_abs=False, colorbar=True,
-                         output_file='%s_glass.png' % filename[:-7])
+                         output_file=glass_file)
     except ValueError:
-        plot_glass_brain(new_image, vmax=color_max,
-                         threshold='auto', black_bg=True,
-                         plot_abs=False, colorbar=True,
-                         output_file='%s_glass.png' % filename[:-7])
+        plot_glass_brain(new_image, vmax=color_max, threshold='auto',
+                         black_bg=True, plot_abs=False, colorbar=True,
+                         output_file=glass_file)
 
     # Get coordinates of peaks
     coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
@@ -428,12 +456,7 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
     cluster_mean = []
     volume_summary = []
 
-    # get template image for plotting cluster maps
-    bgimg = resource_filename('mni_atlas_reader',
-                              'data/templates/MNI152_T1_1mm_brain.nii.gz')
-
     for n, coord in enumerate(coords):
-        print(coord)
         peakinfo = get_peak_info(
             coord, atlastype=atlas, probThresh=probabilityThreshold)
         peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
@@ -456,23 +479,9 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
         voxel_volume = int(img.header['pixdim'][1:4].prod())
         volume_summary.append(np.sum(clusters == clusterID) * voxel_volume)
 
-        # plot cluster map
-        outfile = 'cluster%02d' % (n + 1)
-        try:
-            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
-                          display_mode='ortho', colorbar=True, title=outfile,
-                          threshold=voxelThresh, draw_cross=True,
-                          black_bg=True, symmetric_cbar=True, vmax=color_max,
-                          output_file='%s%s.png' % (filename[:-7], outfile))
-        except ValueError:
-            plot_stat_map(new_image, vmax=color_max,
-                          colorbar=True, title=outfile, threshold=voxelThresh,
-                          draw_cross=True, black_bg=True, symmetric_cbar=True,
-                          output_file='%s%s.png' % (filename[:-7], outfile))
-
-    # Write output file
+    # Write output .csv file
     header = [p[0] for p in peakinfo]
-    with open('%s.csv' % filename[:-7], 'w') as f:
+    with open(os.path.join(savedir, '{}.csv'.format(out_fname)), 'w') as f:
         f.writelines(','.join(
             ['ClusterID', 'Peak_Location', 'Cluster_Mean', 'Volume'] + header)
             + '\n')
@@ -494,6 +503,31 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                 ','.join(['Peak%.02d' % (i + 1), '_'.join(
                     [str(xyz) for xyz in coords[i]]), str(peak_value[i]),
                      str(volume_summary[i])] + p) + '\n')
+
+    # get template image for plotting cluster maps
+    bgimg = nb.load(
+        resource_filename(
+            'mni_atlas_reader',
+            'data/templates/MNI152_T1_1mm_brain.nii.gz'
+        )
+    )
+    # Plot Clusters
+    for idx, coord in enumerate(coords):
+        cluster_name = '{}_cluster0{}'.format(out_fname, idx + 1)
+        out_cluster_file = os.path.join(savedir, '{}.png'.format(cluster_name))
+
+        try:
+            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
+                          display_mode='ortho', colorbar=True,
+                          title=cluster_name, threshold=voxelThresh,
+                          draw_cross=True, black_bg=True, symmetric_cbar=True,
+                          vmax=color_max, output_file=out_cluster_file)
+        except ValueError:
+            plot_stat_map(new_image, vmax=color_max,
+                          colorbar=True, title=cluster_name,
+                          threshold=voxelThresh, draw_cross=True,
+                          black_bg=True, symmetric_cbar=True,
+                          output_file=out_cluster_file)
 
 
 def check_limit(num, limits=[0, 100]):
@@ -547,6 +581,12 @@ def _get_parser():
                              'cluster locations. Value will apply to all '
                              'request probabilistic atlases, and should range '
                              'between 0 and 100.')
+    parser.add_argument('-o', '--outdir', type=str, dest='outDir',
+                        metavar='outdir',
+                        help='Output directory for created files. If it is '
+                        'not specified, then output files are created in the '
+                        'same directory as the statistical map that is '
+                        'provided.')
 
     return parser.parse_args()
 
@@ -563,7 +603,8 @@ def main():
     create_output(opts.filename, opts.atlas,
                   voxelThresh=opts.voxelThresh,
                   clusterExtend=opts.clusterExtend,
-                  probabilityThreshold=opts.probabilityThreshold)
+                  probabilityThreshold=opts.probabilityThreshold,
+                  outDir=opts.outDir)
 
 
 if __name__ == '__main__':
