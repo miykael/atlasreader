@@ -24,10 +24,9 @@ $ python setup.py install
 (Make sure to omit the `$` if copying and pasting these commands!)
 
 ## Usage
-The API of `mni_atlas_reader` is under active development, so it's not quite stable enough for example usage instructions.
-If you're *super eager* to get started, create an [issue](https://github.com/miykael/mni_atlas_reader/issues) to let the developers know there is external interest in these sorts of things.
-Otherwise, check back soon!
-
+The API of `mni_atlas_reader` is under active development, so the API is liable to change quite frequently.
+Nonetheless, we will do our best to maintain an up-to-date [Jupyter notebook](notebooks/MNI_atlas_reader.ipynb) with some examples demonstrating how to use this package.
+If you have any questions, create an [issue](https://github.com/miykael/mni_atlas_reader/issues) and one of the developers will get back to within a few days.
 
 ## How to get involved
 We're thrilled to welcome new contributors!
