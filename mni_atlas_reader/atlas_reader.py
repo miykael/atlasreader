@@ -208,7 +208,7 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
     voxID = get_vox_coord(affine, coordinate)
 
     # Get Label information
-    if atlastype in ['Juelich', 'Harvard_Oxford']:
+    if atlastype.lower() in ['juelich', 'harvard_oxford']:
         probs = data[voxID[0], voxID[1], voxID[2]]
         probs[probs < probThresh] = 0
         idx = np.where(probs)[0]
@@ -270,7 +270,7 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
     voxIDs = [get_vox_coord(atlas_affine, c) for c in coords]
 
     # Get Label information
-    if atlastype in ['Juelich', 'Harvard_Oxford']:
+    if atlastype.lower() in ['juelich', 'harvard_oxford']:
         labelIDs = [np.argmax(atlas_data[v[0], v[1], v[2]]) if np.sum(
             atlas_data[v[0], v[1], v[2]]) != 0 else -1 for v in voxIDs]
 
