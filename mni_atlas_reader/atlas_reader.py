@@ -1,3 +1,6 @@
+"""
+Primary functions of mni_atlas_reader
+"""
 import argparse
 import os
 import os.path as op
@@ -11,104 +14,152 @@ from sklearn.utils import Bunch
 
 
 _ATLASES = [
-    'Desikan-Killiany', 'Juelich', 'Neuromorphometrics', 'Destrieux',
-    'Harvard_Oxford', 'AAL'
+    'AAL', 'Desikan-Killiany', 'Destrieux', 'Harvard_Oxford', 'Juelich',
+    'Neuromorphometrics',
 ]
 _ACCEPTED_ATLASES = _ATLASES + [a.lower() for a in _ATLASES]
 
 
-def get_atlas(atlas):
+def get_atlas(atlastype):
     """
-    Gets `atlas` image and label file from package resources
+    Gets `atlastype` image and corresponding label file from package resources
 
     Parameters
     ----------
-    atlas : str
-        Name of atlas for which to get information
+    atlastype : str
+        Name of atlas to query
 
     Returns
     -------
     info : sklearn.utils.Bunch
         image : Niimg_like
-            ROI image loaded and ready for use
+            ROI image loaded with integer-based labels indicating parcels
         labels : pandas.core.data.DataFrame
-            Dataframe with columns ['index', 'name'] matching regions in
-            `image` to anatomical names
+            Dataframe with columns ['index', 'name'] matching region IDs in
+            `image` to anatomical `name`
     """
     # we accept uppercase atlases via argparse but our filenames are lowercase
-    atlas = atlas.lower()
+    atlastype = atlastype.lower()
 
     # get the path to atlas + label files shipped with package
     # resource_filename ensures that we're getting the correct path
     data_dir = resource_filename('mni_atlas_reader', 'data/atlases')
-    atlas_path = op.join(data_dir, 'atlas_{0}.nii.gz'.format(atlas))
-    label_path = op.join(data_dir, 'labels_{0}.csv'.format(atlas))
+    atlas_path = op.join(data_dir, 'atlas_{0}.nii.gz'.format(atlastype))
+    label_path = op.join(data_dir, 'labels_{0}.csv'.format(atlastype))
 
     # return loaded filenames (we should only have to call this once!)
     return Bunch(image=nb.load(atlas_path), labels=pd.read_csv(label_path))
 
 
-def get_vox_coord(affine, coord):
+def _check_coord_inputs(coords):
     """
-    Computes voxel matrix index from MNI coordinate.
+    Confirms `coords` are appropriate shape for coordinate transform
+
+    Parameters
+    ----------
+    coords : array-like
+
+    Returns
+    -------
+    coords : (4 x N) numpy.ndarray
+    """
+    coords = np.atleast_2d(coords).T
+    if 3 not in coords.shape:
+        raise ValueError('Input coordinates must be of shape (3 x N). '
+                         'Provided coordinate shape: {}'.format(coords.shape))
+    if coords.shape[0] != 3:
+        coords = coords.T
+    # add constant term to coords to make 4 x N
+    coords = np.row_stack([coords, np.ones_like(coords[0])])
+    return coords
+
+
+def coord_ijk_to_xyz(affine, coords):
+    """
+    Converts voxel `coords` in cartesian space to `affine` space
 
     Parameters
     ----------
     affine : (4, 4) array-like
-        Affine matrix.
-    coord : list of floats
-        x, y, z MNI coordinates
+        Affine matrix
+    coords : (N,) list of list
+        Image coordinate values, where each entry is a length three list of int
+        denoting ijk coordinates in cartesian space
 
     Returns
     ------
-    coordinates : list
-        x, y, z array index of voxel
+    xyz : (N,) list of list
+        Provided `coords` in `affine` space, where each entry is a length three
+        list of float denoting xyz coordinates
     """
-    inverse = np.linalg.inv(affine)
-    vox_coord = np.dot(inverse, np.hstack((coord, 1)))[:3]
-    return vox_coord.round().astype('int').tolist()
+    coords = _check_coord_inputs(coords)
+    mni_coords = np.dot(affine, coords)[:3].T
+    return mni_coords.squeeze().tolist()
 
 
-def get_label(atlas, label_id):
-    """Reads out the name of a specific label
+def coord_xyz_to_ijk(affine, coords):
+    """
+    Converts voxel `coords` in `affine` space to cartesian space
 
     Parameters
     ----------
-    atlas : str
+    affine : (4, 4) array-like
+        Affine matrix
+    coords : (N,) list of list
+        Image coordinate values, where each entry is a length three list of int
+        denoting xyz coordinates in `affine` space
+
+    Returns
+    ------
+    ijk : (N,) list of list
+        Provided `coords` in cartesian space, where each entry is a length
+        three list of float denoting ijk coordinates
+    """
+    coords = _check_coord_inputs(coords)
+    vox_coords = np.linalg.solve(affine, coords)[:3].T.astype(int)
+    return vox_coords.squeeze().tolist()
+
+
+def get_label(atlastype, label_id):
+    """
+    Gets anatomical name of `label_id` in `atlastype`
+
+    Parameters
+    ----------
+    atlastype : str
         Name of atlas to use
     label_id : int
-        Numeric label of cluster
+        Numerical ID representing label
 
     Returns
     ------
     label : str
-        Atlas label name
+        Neuroanatomical region of `label_id` in `atlastype`
     """
-
-    labels = get_atlas(atlas).labels
+    labels = get_atlas(atlastype).labels
     try:
-        return labels.query('index=={}'.format(label_id)).name.iloc[0]
+        return labels.query('index == {}'.format(label_id)).name.iloc[0]
     except IndexError:
-        return 'No_label'
+        return 'no_label'
 
 
 def get_clusters(data, min_extent=5):
     """
-    Extracts out clusters from a stat map.
+    Extracts clusters from statistical map `data`
 
     Parameters
     ----------
     data : (X, Y, Z) array-like
-        Stat map array
-    min_extent : int
-        Minimum extension of cluster
+        Thresholded data from statistical map
+    min_extent : int, optional
+        Minimum number of voxels required to consider a cluster. Default: 5
 
     Returns
     ------
-    clusters : ndarray
+    clusters : numpy.ndarray
         Array of numerically labelled clusters
     nclusters : int
-        Number of clusters
+        Number of clusters in `data`
     """
     clusters, nclusters = label(data)
     for idx in range(1, nclusters + 1):
@@ -120,50 +171,49 @@ def get_clusters(data, min_extent=5):
 
 def get_peak_coords(img, affine, data):
     """
-    Gets MNI coordinates of peak voxel within each cluster.
+    Gets MNI coordinates of peak voxels within each cluster of `data`
 
     Parameters
     ----------
     img : (X, Y, Z) array-like
         Array of numerically labelled clusters
     affine : (4, 4) array-like
-        NIfTI affine matrix
+        Affine matrix
     data : (X, Y, Z) array-like
-        Stat map array
+        Thresholded data from statistical map
 
     Returns
     ------
     coordinates : list of lists
-        x, y, z MNI coordinates of peak voxels
+        Coordinates of peak voxels in `data`
     """
     coords = []
     clusters = np.setdiff1d(np.unique(img.ravel()), [0])
-    cs = []
+    clust_size = []
     maxcoords = []
     for lab in clusters:
-        cs.append(np.sum(img == lab))
-        maxval = np.max(data[img == lab])
+        clust_size.append(np.sum(img == lab))  # get cluster size
+        maxval = np.max(data[img == lab])      # find peak value of cluster
         maxidx = np.nonzero(np.multiply(data, img == lab) == maxval)
         maxcoords.append([m[0] for m in maxidx])
 
     maxcoords = np.asarray(maxcoords)
-    maxcoords = maxcoords[np.argsort(cs)[::-1], :]
-    for i, lab in enumerate(clusters[np.argsort(cs)[::-1]]):
-        coords.append(np.dot(affine,
-                             np.hstack((maxcoords[i], 1)))[:3].tolist())
+    maxcoords = maxcoords[np.argsort(clust_size)[::-1], :]
+    for i, lab in enumerate(clusters[np.argsort(clust_size)[::-1]]):
+        coords.append(coord_ijk_to_xyz(affine, maxcoords[i]))
     return coords
 
 
 def get_cluster_coords(cluster, affine):
     """
-    Get matrix indices of voxels in cluster.
+    Get `affine` coordinates of voxels in `cluster`
 
     Parameters
     ----------
     cluster : (X, Y, Z) array-like
-        Boolean mask of cluster
+        Boolean mask of a single cluster
     affine : (4, 4) array-like
-        NIfTI affine matrix
+        Affine matrix
 
     Returns
     ------
@@ -171,15 +221,16 @@ def get_cluster_coords(cluster, affine):
         List of coordinates for voxels in cluster
     """
     coords_vox = np.rollaxis(np.array(np.where(cluster)), 1)
-    coords = [np.dot(affine, np.hstack((c, 1)))[:3] for c in coords_vox]
+    coords = [coord_ijk_to_xyz(affine, c) for c in coords_vox]
     return coords
 
 
-def read_atlas_peak(atlastype, coordinate, probThresh=5):
+def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
     """
-    Reads specific atlas and returns segment/probability information.
+    Returns label of `coordinate` from corresponding `atlastype`
 
-    It is possible to threshold a given probability atlas [in percentage].
+    If `atlastype` is probabilistic, `prob_thresh` determines (in percentage
+    units) the threshold to apply before getting label of `coordinate`
 
     Parameters
     ----------
@@ -187,30 +238,32 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
         Name of atlas to use
     coordinate : list of float
         x, y, z MNI coordinates of voxel
-    probThresh : int
-        Probability threshold for when using a probabilistic atlas
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply if `atlastype` is
+        probabilistic
 
     Returns
     ------
-    label : list or str
-        Atlas label of peak coordinate. If using a probabilistic atlas,
-        then returns a list of the probability information organized as
-        [probability, label]. Otherwise, the atlas label is returned.
+    label : str or list of lists
+        If `atlastype` is deterministic, this is the corresponding atlas label
+        of `coordinate`. If `atlastype` is probabilistic, this is a list of
+        lists where each entry denotes the probability and corresponding label
+        of `coordinate`.
     """
 
     atlas = get_atlas(atlastype).image
 
-    # Get atlas data and affine matrix
+    # get atlas data and affine matrix
     data = atlas.get_data()
     affine = atlas.affine
 
-    # Get voxel index
-    voxID = get_vox_coord(affine, coordinate)
+    # get voxel index
+    voxID = coord_xyz_to_ijk(affine, coordinate)
 
-    # Get Label information
+    # get label information
     if atlastype.lower() in ['juelich', 'harvard_oxford']:
         probs = data[voxID[0], voxID[1], voxID[2]]
-        probs[probs < probThresh] = 0
+        probs[probs < prob_thresh] = 0
         idx = np.where(probs)[0]
 
         # sort list by probability
@@ -222,9 +275,9 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
             label = get_label(atlastype, i)
             probLabel.append([probs[i], label])
 
-        # If no labels found
+        # if no labels found
         if probLabel == []:
-            probLabel = [[0, 'No_label']]
+            probLabel = [[0, 'no_label']]
 
         return probLabel
 
@@ -234,46 +287,47 @@ def read_atlas_peak(atlastype, coordinate, probThresh=5):
         return label
 
 
-def read_atlas_cluster(atlastype, cluster, affine, probThresh):
+def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     """
-    Reads specific atlas and returns segment/probability information.
+    Returns label of `cluster` from corresponding `atlastype`
 
-    It is possible to threshold a given probability atlas (in percentage).
+    If `atlastype` is probabilistic, `prob_thresh` determines (in percentage
+    units) the threshold to apply before getting label of `coordinate`
 
     Parameters
     ----------
     atlastype : str
-        Name of atlas to use.
+        Name of atlas to use
     cluster : (X, Y, Z) array-like
         Boolean mask of cluster
-    affine : (4, 4) array-like
-        NIfTI affine matrix
-    probThresh : int
-        Probability threshold for when using a probabilistic atlas
+    coordinate : list of float
+        x, y, z MNI coordinates of voxel
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply if `atlastype` is
+        probabilistic
 
     Returns
     ------
     segments : list of lists
-        List of probability information for the cluster, which is
-        organized as [probability, region name]
+        Where each entry is of the form [probability, label] denoting the
+        extent to which `cluster` overlaps with region `label` in `atlastype`
     """
     atlas = get_atlas(atlastype).image
 
-    # Get atlas data and affine matrix
+    # get atlas data and affine matrix
     atlas_data = atlas.get_data()
     atlas_affine = atlas.affine
 
-    # Get coordinates of each voxel in cluster
+    # get coordinates of each voxel in cluster
     coords = get_cluster_coords(cluster, affine)
 
-    # Get voxel indexes
-    voxIDs = [get_vox_coord(atlas_affine, c) for c in coords]
+    # get voxel indexes
+    voxIDs = [coord_xyz_to_ijk(atlas_affine, c) for c in coords]
 
-    # Get Label information
+    # get label information
     if atlastype.lower() in ['juelich', 'harvard_oxford']:
         labelIDs = [np.argmax(atlas_data[v[0], v[1], v[2]]) if np.sum(
             atlas_data[v[0], v[1], v[2]]) != 0 else -1 for v in voxIDs]
-
     else:
         labelIDs = [int(atlas_data[v[0], v[1], v[2]]) for v in voxIDs]
 
@@ -286,28 +340,28 @@ def read_atlas_cluster(atlastype, cluster, affine, probThresh):
     sortID = np.argsort(percentage)[::-1]
 
     return [[percentage[s], labels[s]] for s in sortID if
-            percentage[s] >= probThresh]
+            percentage[s] >= prob_thresh]
 
 
-def get_peak_info(coord, atlastype='all', probThresh=5):
+def get_peak_info(coord, atlastype='all', prob_thresh=5):
     """
-    Gets region and probability information for a peak voxel based on the
-    provided atlas.
+    Gets region and probability information for `coord` in `atlastype`
 
     Parameters
     ----------
-    coord : list of floats
+    coordinate : list of float
         x, y, z MNI coordinates of voxel
-    atlastype : str
-        Name of atlas to use
-    probThresh : int
-        Probability threshold for when using a probabilistic atlas
+    atlastype : str or list, optional
+        Name of atlas(es) to use. Default: 'all'
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlastype` if it is
+        probabilistic
 
     Returns
-    ------
-    peakinfo :
-        List of lists containing atlas name and probability information
-        for the atlas labels associated with the voxel
+    -------
+    peakinfo : list of lists
+        Where each entry contains the atlas name and probability information
+        of region labels associated with `coordinate` in the atlas
     """
     peakinfo = []
     if isinstance(atlastype, str):
@@ -315,38 +369,37 @@ def get_peak_info(coord, atlastype='all', probThresh=5):
 
     if 'all' not in atlastype:
         for atypes in atlastype:
-            segment = read_atlas_peak(atypes, coord, probThresh)
+            segment = read_atlas_peak(atypes, coord, prob_thresh)
             peakinfo.append([atypes, segment])
     else:
         for atypes in _ATLASES:
-            segment = read_atlas_peak(atypes, coord, probThresh)
+            segment = read_atlas_peak(atypes, coord, prob_thresh)
             peakinfo.append([atypes, segment])
 
     return peakinfo
 
 
-def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
+def get_cluster_info(cluster, affine, atlastype='all', prob_thresh=5):
     """
-    Gets region and probability information for a cluster based on the
-    provided atlas.
+    Gets region and probability information for `cluster` in `atlastype`
 
     Parameters
     ----------
-    cluster :
-        Cluster number
+    cluster : (X, Y, Z) array-like
+        Boolean mask of cluster
     affine : (4, 4) array-like
-        NIfTI affine matrix
-    atlastype : str
-        Atlas name
-    probThresh : int
-        Probability threshold for when using a probabilistic atlas
+        Affine matrix mapping `cluster` to MNI space
+    atlastype : str or list, optional
+        Name of atlas(es) to use. Default: 'all'
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlastype`, if it is
+        probabilistic
 
     Returns
     ------
     clusterinfo : list of lists
-        List containing the cluster information, which includes the
-        atlas name, and the probability information of each atlas label
-        for cluster.
+        Where each entry contains the atlas name and probability information of
+        region labels associated with `cluster` in the atlas
     """
 
     clusterinfo = []
@@ -356,83 +409,81 @@ def get_cluster_info(cluster, affine, atlastype='all', probThresh=5):
 
     if 'all' not in atlastype:
         for atypes in atlastype:
-            segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
+            segment = read_atlas_cluster(atypes, cluster, affine, prob_thresh)
             clusterinfo.append([atypes, segment])
     else:
         for atypes in _ATLASES:
-            segment = read_atlas_cluster(atypes, cluster, affine, probThresh)
+            segment = read_atlas_cluster(atypes, cluster, affine, prob_thresh)
             clusterinfo.append([atypes, segment])
 
     return clusterinfo
 
 
-def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
-                  probabilityThreshold=5, outDir=None):
+def create_output(filename, atlas='all', voxel_thresh=1.96,
+                  cluster_extent=20, prob_thresh=5, outdir=None):
     """
-    Generates output table containing each clusters' number of voxels,
-    average activation across voxels, peak voxel coordinates, and
-    neuroanatomical location of the peak voxel based on the specified atlas.
+    Performs full cluster analysis on `filename`
 
-    In addition, separate stat maps are created for each cluster. In each
-    image, cross hairs are located on the cluster's peak voxel.
+    Generates output table containing information on each cluster in `filename`
+    including: (1) number of voxels in cluster, (2) average activation across
+    voxels, (3) MNI coordinates of peak voxel, and (4) neuroanatomical location
+    of peak voxel based on specified `atlas`.
+
+    In addition, screenshots of statistical maps are separately created for
+    each cluster in which cross hairs are focused on the cluster peak voxel.
 
     Parameters
     ----------
     filename : str
-        The full or relative path to the statistical map to use
-    atlas : str
-        Atlas name to use
-    voxelThresh : int
-        Value threshold for voxels to be considered in cluster extraction
-    clusterExtend : int
-        Required number of contiguous voxels for a cluster to be retained for
-        analysis
-    probabilityThreshold : int
-        Probability threshold for when using a probabilistic atlas
-    outDir : str or None
-        Path to the output directory. If None is specified, output will be
-        stored in the same folder as the input files.
-
-    Returns
-    ------
-    None
+        Path to input statistical map
+    atlas : str, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    voxel_thresh : int, optional
+        Threshold applied to `filename` before performing cluster analysis.
+        Default: 1.96
+    cluster_extent : int, optional
+        Minimum number of contiguous voxels required to consider a cluster in
+        `filename`. Default: 20
+    prob_thresh : int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+    outdir : str or None, optional
+        Path to desired output directory. If None, generated files will be
+        saved to the same folder as `filename`. Default: None
     """
 
     fname = os.path.abspath(filename)
 
     # set up output directory
-    if outDir is not None:
-        if not os.path.exists(outDir):
-            os.makedirs(outDir)
-        savedir = outDir
-
+    if outdir is not None:
+        os.makedirs(outdir, exist_ok=True)
+        savedir = outdir
     else:
         savedir = os.path.dirname(fname)
 
-    # set up output file name which is the same name (no extension) of input
-    # file
+    # set up output filename, which is the same name as input w/o extension
     out_fname = os.path.basename(fname).split('.')[0]
 
-    # Get data from NIfTI file
+    # get data from NIfTI file
     img = nb.load(filename)
     imgdata = img.get_data()
     if len(imgdata.shape) != 3:
         imgdata = imgdata[:, :, :, 0]
 
-    # Get top x-% of voxels if voxelThresh is negative
-    if voxelThresh < 0:
-        voxelThresh = np.percentile(
-            np.abs(imgdata[imgdata != 0]), (100 + voxelThresh))
+    # get top x-% of voxels if voxel_thresh is negative
+    if voxel_thresh < 0:
+        voxel_thresh = np.percentile(
+            np.abs(imgdata[imgdata != 0]), (100 + voxel_thresh))
 
-    # Get clusters from data
+    # get clusters from data
     clusters, nclusters = get_clusters(
-        abs(imgdata) > voxelThresh, min_extent=clusterExtend)
+        np.abs(imgdata) > voxel_thresh, min_extent=cluster_extent)
 
-    # Clean img data
+    # clean img data
     imgdata[clusters == 0] = 0
     new_image = nb.Nifti1Image(imgdata, img.affine, img.header)
 
-    # Plot Glass Brain
+    # plot glass brain
     color_max = np.array([imgdata.min(), imgdata.max()])
     color_max = np.abs(np.min(color_max[color_max != 0]))
     glass_file = os.path.join(savedir, '{}.png'.format(out_fname))
@@ -446,10 +497,10 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
                          black_bg=True, plot_abs=False, colorbar=True,
                          output_file=glass_file)
 
-    # Get coordinates of peaks
+    # get coordinates of peaks
     coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
 
-    # Get Peak and Cluster information
+    # get peak and cluster information
     peak_summary = []
     peak_value = []
     cluster_summary = []
@@ -458,19 +509,19 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
 
     for n, coord in enumerate(coords):
         peakinfo = get_peak_info(
-            coord, atlastype=atlas, probThresh=probabilityThreshold)
+            coord, atlastype=atlas, prob_thresh=prob_thresh)
         peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
             ['% '.join(e) for e in np.array(p[1])]) for p in peakinfo])
-        voxID = get_vox_coord(img.affine, coord)
+        voxID = coord_xyz_to_ijk(img.affine, coord)
         peak_value.append(imgdata[voxID[0], voxID[1], voxID[2]])
 
-        idx = get_vox_coord(img.affine, coord)
+        idx = coord_xyz_to_ijk(img.affine, coord)
         clusterID = clusters[idx[0], idx[1], idx[2]]
         clusterinfo = get_cluster_info(
             clusters == clusterID,
             img.affine,
             atlastype=atlas,
-            probThresh=probabilityThreshold)
+            prob_thresh=prob_thresh)
         cluster_summary.append(['; '.join(
             ['% '.join([str(round(e[0], 2)), e[1]]) for e in coord[1]]) for
              coord in clusterinfo])
@@ -479,7 +530,7 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
         voxel_volume = int(img.header['pixdim'][1:4].prod())
         volume_summary.append(np.sum(clusters == clusterID) * voxel_volume)
 
-    # Write output .csv file
+    # write output .csv file
     header = [p[0] for p in peakinfo]
     with open(os.path.join(savedir, '{}.csv'.format(out_fname)), 'w') as f:
         f.writelines(','.join(
@@ -511,21 +562,22 @@ def create_output(filename, atlas, voxelThresh=2, clusterExtend=5,
             'data/templates/MNI152_T1_1mm_brain.nii.gz'
         )
     )
-    # Plot Clusters
+    # plot clusters
     for idx, coord in enumerate(coords):
-        cluster_name = '{}_cluster0{}'.format(out_fname, idx + 1)
+        cluster_name = '{}_cluster{:02d}'.format(out_fname, idx + 1)
         out_cluster_file = os.path.join(savedir, '{}.png'.format(cluster_name))
 
         try:
-            plot_stat_map(new_image, bg_img=bgimg, cut_coords=coord,
-                          display_mode='ortho', colorbar=True,
-                          title=cluster_name, threshold=voxelThresh,
-                          draw_cross=True, black_bg=True, symmetric_cbar=True,
-                          vmax=color_max, output_file=out_cluster_file)
+            plot_stat_map(new_image, vmax=color_max,
+                          colorbar=True, title=cluster_name,
+                          threshold=voxel_thresh, draw_cross=True,
+                          black_bg=True, symmetric_cbar=True,
+                          output_file=out_cluster_file,
+                          bg_img=bgimg, cut_coords=coord, display_mode='ortho')
         except ValueError:
             plot_stat_map(new_image, vmax=color_max,
                           colorbar=True, title=cluster_name,
-                          threshold=voxelThresh, draw_cross=True,
+                          threshold=voxel_thresh, draw_cross=True,
                           black_bg=True, symmetric_cbar=True,
                           output_file=out_cluster_file)
 
@@ -554,7 +606,7 @@ def check_limit(num, limits=[0, 100]):
 
 
 def _get_parser():
-    """ Reads command line arguments and returns """
+    """ Reads command line arguments and returns input specifications """
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', type=op.abspath, metavar='file',
                         help='The full or relative path to the statistical map'
@@ -566,27 +618,27 @@ def _get_parser():
                              'delineation of clusters in provided statistical '
                              'map. Default: all available atlases.')
     parser.add_argument('-t', '--threshold', type=float, default=2,
-                        dest='voxelThresh', metavar='threshold',
+                        dest='voxel_thresh', metavar='threshold',
                         help='Value threshold that voxels in provided file '
                              'must surpass in order to be considered in '
                              'cluster extraction.')
     parser.add_argument('-c', '--cluster', type=float, default=5,
-                        dest='clusterExtend', metavar='extent',
+                        dest='cluster_extent', metavar='extent',
                         help='Required number of contiguous voxels for a '
                              'cluster to be retained for analysis.')
     parser.add_argument('-p', '--probability', type=check_limit, default=5,
-                        dest='probabilityThreshold', metavar='threshold',
+                        dest='prob_thresh', metavar='threshold',
                         help='Threshold to consider when using a '
                              'probabilistic atlas for extracting anatomical '
                              'cluster locations. Value will apply to all '
                              'request probabilistic atlases, and should range '
                              'between 0 and 100.')
-    parser.add_argument('-o', '--outdir', type=str, dest='outDir',
-                        metavar='outdir',
+    parser.add_argument('-o', '--outdir', type=str, default=None,
+                        dest='outdir', metavar='outdir',
                         help='Output directory for created files. If it is '
-                        'not specified, then output files are created in the '
-                        'same directory as the statistical map that is '
-                        'provided.')
+                             'not specified, then output files are created in '
+                             'the same directory as the statistical map that '
+                             'is provided.')
 
     return parser.parse_args()
 
@@ -600,12 +652,15 @@ def main():
     """
 
     opts = _get_parser()
-    create_output(opts.filename, opts.atlas,
-                  voxelThresh=opts.voxelThresh,
-                  clusterExtend=opts.clusterExtend,
-                  probabilityThreshold=opts.probabilityThreshold,
-                  outDir=opts.outDir)
+    create_output(opts.filename,
+                  atlas=opts.atlas,
+                  voxel_thresh=opts.voxel_thresh,
+                  cluster_extent=opts.cluster_extent,
+                  prob_thresh=opts.prob_thresh,
+                  outdir=opts.outdir)
 
 
 if __name__ == '__main__':
-    main()
+    raise RuntimeError('`mni_atlas_reader/atlas_reader.py` should not be run '
+                       'directly. Please `pip install` mni_atlas_reader and '
+                       'use the `mni_atlas_reader` command, instead.')

@@ -6,7 +6,7 @@ EMAIL = 'michaelnotter@hotmail.com'
 VERSION = __version__
 LICENSE = 'MIT'
 DESCRIPTION = ('A toolbox for generating cluster reports from statistical '
-               'maps in MNI space')
+               'maps')
 LONG_DESCRIPTION = ('')
 URL = 'http://github.com/miykael/{name}'.format(name=NAME)
 DOWNLOAD_URL = ('https://github.com/miykael/{name}/archive/{ver}.tar.gz'
@@ -28,5 +28,10 @@ TESTS_REQUIRE = [
 ]
 
 PACKAGE_DATA = {
-    'mni_atlas_reader': ['data/*']
+    'mni_atlas_reader': [
+        'data/*', 'data/atlases/*', 'data/templates/*'
+    ],
+    'mni_atlas_reader.tests': [
+        'data/*'
+    ]
 }
