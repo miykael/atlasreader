@@ -53,7 +53,10 @@ def test_create_output(tmpdir):
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
     assert os.path.isfile(
-        os.path.join(output_dir, '{}.csv'.format(stat_img_name))
+        os.path.join(output_dir, '{}_clusters.csv'.format(stat_img_name))
+    )
+    assert os.path.isfile(
+        os.path.join(output_dir, '{}_peaks.csv'.format(stat_img_name))
     )
     assert os.path.isfile(
         os.path.join(output_dir, '{}.png'.format(stat_img_name))

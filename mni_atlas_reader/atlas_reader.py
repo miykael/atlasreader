@@ -532,10 +532,12 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
 
     # write output .csv file
     header = [p[0] for p in peakinfo]
-    with open(os.path.join(savedir, '{}.csv'.format(out_fname)), 'w') as f:
+    cluster_fname = os.path.join(savedir, '{}_clusters.csv'.format(out_fname))
+    with open(cluster_fname, 'w') as f:
         f.writelines(','.join(
             ['ClusterID', 'Peak_Location', 'Cluster_Mean', 'Volume'] + header)
-            + '\n')
+            + '\n'
+        )
 
         for i, c in enumerate(cluster_summary):
             f.writelines(
@@ -545,15 +547,20 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
 
         f.writelines('\n')
 
-        f.writelines(
-            ','.join(['PeakID', 'Peak_Location', 'Peak_Value', 'Volume'] +
-                     header) + '\n')
+    peaks_fname = os.path.join(savedir, '{}_peaks.csv'.format(out_fname))
+    with open(peaks_fname, 'w') as f:
+        f.writelines(','.join(
+            ['PeakID', 'Peak_Location', 'Peak_Value', 'Volume'] + header)
+            + '\n'
+        )
 
         for i, p in enumerate(peak_summary):
             f.writelines(
                 ','.join(['Peak%.02d' % (i + 1), '_'.join(
                     [str(xyz) for xyz in coords[i]]), str(peak_value[i]),
                      str(volume_summary[i])] + p) + '\n')
+
+        f.writelines('\n')
 
     # get template image for plotting cluster maps
     bgimg = nb.load(
