@@ -187,20 +187,24 @@ def get_peak_coords(img, affine, data):
     coordinates : list of lists
         Coordinates of peak voxels in `data`
     """
-    coords = []
-    clusters = np.setdiff1d(np.unique(img.ravel()), [0])
     clust_size = []
     maxcoords = []
-    for lab in clusters:
-        clust_size.append(np.sum(img == lab))  # get cluster size
-        maxval = np.max(data[img == lab])      # find peak value of cluster
-        maxidx = np.nonzero(np.multiply(data, img == lab) == maxval)
+    for lab in np.setdiff1d(np.unique(img.ravel()), [0]):
+        # get cluster size
+        clust_size.append(np.sum(img == lab))
+        # find indices of peak values in cluster
+        clust = data * (img == lab)
+        maxidx = np.nonzero(clust == clust.max())
+        # only take first voxel if there are multiple with same peak value
         maxcoords.append([m[0] for m in maxidx])
 
+    # sort peak cluster coordinates by cluster size (largest cluster first)
     maxcoords = np.asarray(maxcoords)
-    maxcoords = maxcoords[np.argsort(clust_size)[::-1], :]
-    for i, lab in enumerate(clusters[np.argsort(clust_size)[::-1]]):
-        coords.append(coord_ijk_to_xyz(affine, maxcoords[i]))
+    maxcoords = maxcoords[np.argsort(clust_size)[::-1]]
+
+    # convert coordinates to MNI space
+    coords = coord_ijk_to_xyz(affine, maxcoords)
+
     return coords
 
 
@@ -221,7 +225,7 @@ def get_cluster_coords(cluster, affine):
         List of coordinates for voxels in cluster
     """
     coords_vox = np.rollaxis(np.array(np.where(cluster)), 1)
-    coords = [coord_ijk_to_xyz(affine, c) for c in coords_vox]
+    coords = coord_ijk_to_xyz(affine, coords_vox)
     return coords
 
 
@@ -250,7 +254,6 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
         lists where each entry denotes the probability and corresponding label
         of `coordinate`.
     """
-
     atlas = get_atlas(atlastype).image
 
     # get atlas data and affine matrix
@@ -261,26 +264,24 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
     voxID = coord_xyz_to_ijk(affine, coordinate)
 
     # get label information
+    # probabilistic atlas is requested
     if atlastype.lower() in ['juelich', 'harvard_oxford']:
         probs = data[voxID[0], voxID[1], voxID[2]]
         probs[probs < prob_thresh] = 0
         idx = np.where(probs)[0]
 
+        # if no labels found
+        if len(idx) == 0:
+            return [[0, 'no_label']]
+
         # sort list by probability
         idx = idx[np.argsort(probs[idx])][::-1]
 
         # get probability and label names
-        probLabel = []
-        for i in idx:
-            label = get_label(atlastype, i)
-            probLabel.append([probs[i], label])
-
-        # if no labels found
-        if probLabel == []:
-            probLabel = [[0, 'no_label']]
+        probLabel = [[probs[i], get_label(atlastype, i)] for i in idx]
 
         return probLabel
-
+    # non-probabilistic atlas is requested
     else:
         labelID = int(data[voxID[0], voxID[1], voxID[2]])
         label = get_label(atlastype, labelID)
@@ -322,7 +323,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     coords = get_cluster_coords(cluster, affine)
 
     # get voxel indexes
-    voxIDs = [coord_xyz_to_ijk(atlas_affine, c) for c in coords]
+    voxIDs = coord_xyz_to_ijk(atlas_affine, coords)
 
     # get label information
     if atlastype.lower() in ['juelich', 'harvard_oxford']:
@@ -364,17 +365,9 @@ def get_peak_info(coord, atlastype='all', prob_thresh=5):
         of region labels associated with `coordinate` in the atlas
     """
     peakinfo = []
-    if isinstance(atlastype, str):
-        atlastype = [atlastype]
-
-    if 'all' not in atlastype:
-        for atypes in atlastype:
-            segment = read_atlas_peak(atypes, coord, prob_thresh)
-            peakinfo.append([atypes, segment])
-    else:
-        for atypes in _ATLASES:
-            segment = read_atlas_peak(atypes, coord, prob_thresh)
-            peakinfo.append([atypes, segment])
+    for atypes in check_atlases(atlastype):
+        segment = read_atlas_peak(atypes, coord, prob_thresh)
+        peakinfo.append([atypes, segment])
 
     return peakinfo
 
@@ -401,22 +394,35 @@ def get_cluster_info(cluster, affine, atlastype='all', prob_thresh=5):
         Where each entry contains the atlas name and probability information of
         region labels associated with `cluster` in the atlas
     """
-
     clusterinfo = []
+    for atypes in check_atlases(atlastype):
+        segment = read_atlas_cluster(atypes, cluster, affine, prob_thresh)
+        clusterinfo.append([atypes, segment])
 
+    return clusterinfo
+
+
+def check_atlases(atlastype):
+    """
+    Converts `atlastype` to list and expands 'all', if present
+
+    Parameters
+    ----------
+    atlastype : str or list
+        Name of atlas(es) to use
+
+    Returns
+    -------
+    atlases : list
+        Names of atlas(es) to use
+    """
     if isinstance(atlastype, str):
         atlastype = [atlastype]
 
     if 'all' not in atlastype:
-        for atypes in atlastype:
-            segment = read_atlas_cluster(atypes, cluster, affine, prob_thresh)
-            clusterinfo.append([atypes, segment])
+        return atlastype
     else:
-        for atypes in _ATLASES:
-            segment = read_atlas_cluster(atypes, cluster, affine, prob_thresh)
-            clusterinfo.append([atypes, segment])
-
-    return clusterinfo
+        return _ATLASES.copy()
 
 
 def create_output(filename, atlas='all', voxel_thresh=1.96,
@@ -436,7 +442,7 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
     ----------
     filename : str
         Path to input statistical map
-    atlas : str, optional
+    atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'all'
     voxel_thresh : int, optional
         Threshold applied to `filename` before performing cluster analysis.
@@ -451,7 +457,6 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
     """
-
     fname = os.path.abspath(filename)
 
     # set up output directory
@@ -464,7 +469,7 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
     # set up output filename, which is the same name as input w/o extension
     out_fname = os.path.basename(fname).split('.')[0]
 
-    # get data from NIfTI file
+    # get data from input file
     img = nb.load(filename)
     imgdata = img.get_data()
     if len(imgdata.shape) != 3:
@@ -476,14 +481,79 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
             np.abs(imgdata[imgdata != 0]), (100 + voxel_thresh))
 
     # get clusters from data
-    clusters, nclusters = get_clusters(
-        np.abs(imgdata) > voxel_thresh, min_extent=cluster_extent)
+    clusters, nclusters = get_clusters(np.abs(imgdata) > voxel_thresh,
+                                       min_extent=cluster_extent)
 
     # clean img data
     imgdata[clusters == 0] = 0
-    new_image = nb.Nifti1Image(imgdata, img.affine, img.header)
+
+    # get coordinates of peaks
+    coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
+
+    # get peak and cluster information
+    peak_summary = []
+    peak_value = []
+    cluster_summary = []
+    cluster_mean = []
+    volume_summary = []
+
+    for n, coord in enumerate(coords):
+        peakinfo = get_peak_info(coord,
+                                 atlastype=atlas,
+                                 prob_thresh=prob_thresh)
+        peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
+            ['% '.join(e) for e in np.array(p[1])]) for p in peakinfo])
+        voxID = coord_xyz_to_ijk(img.affine, coord)
+        peak_value.append(imgdata[voxID[0], voxID[1], voxID[2]])
+
+        idx = coord_xyz_to_ijk(img.affine, coord)
+        clusterID = clusters[idx[0], idx[1], idx[2]]
+        clusterinfo = get_cluster_info(clusters == clusterID,
+                                       img.affine,
+                                       atlastype=atlas,
+                                       prob_thresh=prob_thresh)
+        cluster_summary.append(['; '.join(
+            ['% '.join([str(round(e[0], 2)), e[1]]) for e in coord[1]]) for
+             coord in clusterinfo])
+        cluster_mean.append(imgdata[clusters == clusterID].mean())
+
+        voxel_volume = int(img.header['pixdim'][1:4].prod())
+        volume_summary.append(np.sum(clusters == clusterID) * voxel_volume)
+
+    # write output .csv file
+    header = [p[0] for p in peakinfo]
+    cluster_fname = os.path.join(savedir, '{}_clusters.csv'.format(out_fname))
+    with open(cluster_fname, 'w') as f:
+        f.writelines(','.join([
+            'cluster_id', 'peak_x', 'peak_y', 'peak_z' 'cluster_mean', 'volume'
+        ] + header) + '\n')
+
+        for i, c in enumerate(cluster_summary):
+            line = [
+                'cluster{:02d}'.format(i + 1),
+                ','.join([str(xyz) for xyz in coords[i]]),
+                str(cluster_mean[i]),
+                str(volume_summary[i])
+            ]
+            f.writelines(','.join(line + c) + '\n')
+
+    peaks_fname = os.path.join(savedir, '{}_peaks.csv'.format(out_fname))
+    with open(peaks_fname, 'w') as f:
+        f.writelines(','.join([
+            'peak_id', 'peak_x', 'peak_y', 'peak_z', 'peak_value', 'volume'
+        ] + header) + '\n')
+
+        for i, p in enumerate(peak_summary):
+            line = [
+                'peak{:02d}'.format(i + 1),
+                ','.join([str(xyz) for xyz in coords[i]]),
+                str(peak_value[i]),
+                str(volume_summary[i])
+            ]
+            f.writelines(','.join(line + p) + '\n')
 
     # plot glass brain
+    new_image = nb.Nifti1Image(imgdata, img.affine, img.header)
     color_max = np.array([imgdata.min(), imgdata.max()])
     color_max = np.abs(np.min(color_max[color_max != 0]))
     glass_file = os.path.join(savedir, '{}.png'.format(out_fname))
@@ -497,71 +567,6 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
                          black_bg=True, plot_abs=False, colorbar=True,
                          output_file=glass_file)
 
-    # get coordinates of peaks
-    coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
-
-    # get peak and cluster information
-    peak_summary = []
-    peak_value = []
-    cluster_summary = []
-    cluster_mean = []
-    volume_summary = []
-
-    for n, coord in enumerate(coords):
-        peakinfo = get_peak_info(
-            coord, atlastype=atlas, prob_thresh=prob_thresh)
-        peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
-            ['% '.join(e) for e in np.array(p[1])]) for p in peakinfo])
-        voxID = coord_xyz_to_ijk(img.affine, coord)
-        peak_value.append(imgdata[voxID[0], voxID[1], voxID[2]])
-
-        idx = coord_xyz_to_ijk(img.affine, coord)
-        clusterID = clusters[idx[0], idx[1], idx[2]]
-        clusterinfo = get_cluster_info(
-            clusters == clusterID,
-            img.affine,
-            atlastype=atlas,
-            prob_thresh=prob_thresh)
-        cluster_summary.append(['; '.join(
-            ['% '.join([str(round(e[0], 2)), e[1]]) for e in coord[1]]) for
-             coord in clusterinfo])
-        cluster_mean.append(imgdata[clusters == clusterID].mean())
-
-        voxel_volume = int(img.header['pixdim'][1:4].prod())
-        volume_summary.append(np.sum(clusters == clusterID) * voxel_volume)
-
-    # write output .csv file
-    header = [p[0] for p in peakinfo]
-    cluster_fname = os.path.join(savedir, '{}_clusters.csv'.format(out_fname))
-    with open(cluster_fname, 'w') as f:
-        f.writelines(','.join(
-            ['ClusterID', 'Peak_Location', 'Cluster_Mean', 'Volume'] + header)
-            + '\n'
-        )
-
-        for i, c in enumerate(cluster_summary):
-            f.writelines(
-                ','.join(['Cluster%.02d' % (i + 1), '_'.join(
-                    [str(xyz) for xyz in coords[i]]), str(cluster_mean[i]),
-                     str(volume_summary[i])] + c) + '\n')
-
-        f.writelines('\n')
-
-    peaks_fname = os.path.join(savedir, '{}_peaks.csv'.format(out_fname))
-    with open(peaks_fname, 'w') as f:
-        f.writelines(','.join(
-            ['PeakID', 'Peak_Location', 'Peak_Value', 'Volume'] + header)
-            + '\n'
-        )
-
-        for i, p in enumerate(peak_summary):
-            f.writelines(
-                ','.join(['Peak%.02d' % (i + 1), '_'.join(
-                    [str(xyz) for xyz in coords[i]]), str(peak_value[i]),
-                     str(volume_summary[i])] + p) + '\n')
-
-        f.writelines('\n')
-
     # get template image for plotting cluster maps
     bgimg = nb.load(
         resource_filename(
@@ -569,6 +574,7 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
             'data/templates/MNI152_T1_1mm_brain.nii.gz'
         )
     )
+
     # plot clusters
     for idx, coord in enumerate(coords):
         cluster_name = '{}_cluster{:02d}'.format(out_fname, idx + 1)
@@ -601,7 +607,6 @@ def check_limit(num, limits=[0, 100]):
         Lower and upper bounds that `num` must be between to be considered
         valid
     """
-
     lo, hi = limits
     num = float(num)
 
@@ -660,7 +665,7 @@ def main():
 
     opts = _get_parser()
     create_output(opts.filename,
-                  atlas=opts.atlas,
+                  atlas=check_atlases(opts.atlas),
                   voxel_thresh=opts.voxel_thresh,
                   cluster_extent=opts.cluster_extent,
                   prob_thresh=opts.prob_thresh,
