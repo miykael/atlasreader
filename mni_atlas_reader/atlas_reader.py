@@ -402,31 +402,8 @@ def get_cluster_info(cluster, affine, atlastype='all', prob_thresh=5):
     return clusterinfo
 
 
-def check_atlases(atlastype):
-    """
-    Converts `atlastype` to list and expands 'all', if present
-
-    Parameters
-    ----------
-    atlastype : str or list
-        Name of atlas(es) to use
-
-    Returns
-    -------
-    atlases : list
-        Names of atlas(es) to use
-    """
-    if isinstance(atlastype, str):
-        atlastype = [atlastype]
-
-    if 'all' not in atlastype:
-        return atlastype
-    else:
-        return _ATLASES.copy()
-
-
-def create_output(filename, atlas='all', voxel_thresh=1.96,
-                  cluster_extent=20, prob_thresh=5, outdir=None):
+def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
+                  prob_thresh=5, outdir=None):
     """
     Performs full cluster analysis on `filename`
 
@@ -457,23 +434,24 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
     """
-    fname = os.path.abspath(filename)
+    fname = op.abspath(filename)
 
     # set up output directory
     if outdir is not None:
         os.makedirs(outdir, exist_ok=True)
         savedir = outdir
     else:
-        savedir = os.path.dirname(fname)
+        savedir = op.dirname(fname)
 
     # set up output filename, which is the same name as input w/o extension
-    out_fname = os.path.basename(fname).split('.')[0]
+    out_fname = op.basename(fname).split('.')[0]
 
     # get data from input file
     img = nb.load(filename)
     imgdata = img.get_data()
     if len(imgdata.shape) != 3:
         imgdata = imgdata[:, :, :, 0]
+    voxel_volume = int(img.header['pixdim'][1:4].prod())
 
     # get top x-% of voxels if voxel_thresh is negative
     if voxel_thresh < 0:
@@ -483,80 +461,60 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
     # get clusters from data
     clusters, nclusters = get_clusters(np.abs(imgdata) > voxel_thresh,
                                        min_extent=cluster_extent)
-
     # clean img data
     imgdata[clusters == 0] = 0
-
     # get coordinates of peaks
     coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
 
     # get peak and cluster information
-    peak_summary = []
-    peak_value = []
-    cluster_summary = []
-    cluster_mean = []
-    volume_summary = []
-
+    clust_info = []
+    peaks_info = []
     for n, coord in enumerate(coords):
-        peakinfo = get_peak_info(coord,
-                                 atlastype=atlas,
-                                 prob_thresh=prob_thresh)
-        peak_summary.append([p[1] if type(p[1]) != list else '; '.join(
-            ['% '.join(e) for e in np.array(p[1])]) for p in peakinfo])
-        voxID = coord_xyz_to_ijk(img.affine, coord)
-        peak_value.append(imgdata[voxID[0], voxID[1], voxID[2]])
+        voxel_id = coord_xyz_to_ijk(img.affine, coord)
+        peak_value = imgdata[voxel_id[0], voxel_id[1], voxel_id[2]]
+        clust_id = clusters[voxel_id[0], voxel_id[1], voxel_id[2]]
+        clust_mean = imgdata[clusters == clust_id].mean()
+        clust_volume = np.sum(clusters == clust_id) * voxel_volume
+        peak_info = get_peak_info(coord,
+                                  atlastype=atlas,
+                                  prob_thresh=prob_thresh)
+        peak_summary = [
+            peak if type(peak) != list else
+            '; '.join(['{}% {}'.format(*e) for e in peak])
+            for (_, peak) in peak_info
+        ]
+        cluster_info = get_cluster_info(clusters == clust_id,
+                                        img.affine,
+                                        atlastype=atlas,
+                                        prob_thresh=prob_thresh)
+        clust_summary = [
+            '; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
+            for (_, cluster) in cluster_info
+        ]
 
-        idx = coord_xyz_to_ijk(img.affine, coord)
-        clusterID = clusters[idx[0], idx[1], idx[2]]
-        clusterinfo = get_cluster_info(clusters == clusterID,
-                                       img.affine,
-                                       atlastype=atlas,
-                                       prob_thresh=prob_thresh)
-        cluster_summary.append(['; '.join(
-            ['% '.join([str(round(e[0], 2)), e[1]]) for e in coord[1]]) for
-             coord in clusterinfo])
-        cluster_mean.append(imgdata[clusters == clusterID].mean())
+        clust_info += [coord + [clust_mean, clust_volume] + clust_summary]
+        peaks_info += [coord + [peak_value, clust_volume] + peak_summary]
 
-        voxel_volume = int(img.header['pixdim'][1:4].prod())
-        volume_summary.append(np.sum(clusters == clusterID) * voxel_volume)
+    clust_frame = pd.DataFrame(clust_info,
+                               index=pd.Series(range(len(clust_info)),
+                                               name='cluster_id'),
+                               columns=['peak_x', 'peak_y', 'peak_z',
+                                        'cluster_mean', 'volume'] + atlas)
+    peaks_frame = pd.DataFrame(peaks_info,
+                               index=pd.Series(range(len(peaks_info)),
+                                               name='peak_id'),
+                               columns=['peak_x', 'peak_y', 'peak_z',
+                                        'peak_value', 'volume'] + atlas)
 
     # write output .csv file
-    header = [p[0] for p in peakinfo]
-    cluster_fname = os.path.join(savedir, '{}_clusters.csv'.format(out_fname))
-    with open(cluster_fname, 'w') as f:
-        f.writelines(','.join([
-            'cluster_id', 'peak_x', 'peak_y', 'peak_z' 'cluster_mean', 'volume'
-        ] + header) + '\n')
-
-        for i, c in enumerate(cluster_summary):
-            line = [
-                'cluster{:02d}'.format(i + 1),
-                ','.join([str(xyz) for xyz in coords[i]]),
-                str(cluster_mean[i]),
-                str(volume_summary[i])
-            ]
-            f.writelines(','.join(line + c) + '\n')
-
-    peaks_fname = os.path.join(savedir, '{}_peaks.csv'.format(out_fname))
-    with open(peaks_fname, 'w') as f:
-        f.writelines(','.join([
-            'peak_id', 'peak_x', 'peak_y', 'peak_z', 'peak_value', 'volume'
-        ] + header) + '\n')
-
-        for i, p in enumerate(peak_summary):
-            line = [
-                'peak{:02d}'.format(i + 1),
-                ','.join([str(xyz) for xyz in coords[i]]),
-                str(peak_value[i]),
-                str(volume_summary[i])
-            ]
-            f.writelines(','.join(line + p) + '\n')
+    clust_frame.to_csv(op.join(savedir, '{}_clusters.csv'.format(out_fname)))
+    peaks_frame.to_csv(op.join(savedir, '{}_peaks.csv'.format(out_fname)))
 
     # plot glass brain
     new_image = nb.Nifti1Image(imgdata, img.affine, img.header)
     color_max = np.array([imgdata.min(), imgdata.max()])
     color_max = np.abs(np.min(color_max[color_max != 0]))
-    glass_file = os.path.join(savedir, '{}.png'.format(out_fname))
+    glass_file = op.join(savedir, '{}.png'.format(out_fname))
     try:
         plot_glass_brain(new_image, vmax=color_max, threshold='auto',
                          display_mode='lyrz', black_bg=True,
@@ -574,12 +532,10 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
             'data/templates/MNI152_T1_1mm_brain.nii.gz'
         )
     )
-
     # plot clusters
     for idx, coord in enumerate(coords):
         cluster_name = '{}_cluster{:02d}'.format(out_fname, idx + 1)
-        out_cluster_file = os.path.join(savedir, '{}.png'.format(cluster_name))
-
+        out_cluster_file = op.join(savedir, '{}.png'.format(cluster_name))
         try:
             plot_stat_map(new_image, vmax=color_max,
                           colorbar=True, title=cluster_name,
@@ -593,6 +549,29 @@ def create_output(filename, atlas='all', voxel_thresh=1.96,
                           threshold=voxel_thresh, draw_cross=True,
                           black_bg=True, symmetric_cbar=True,
                           output_file=out_cluster_file)
+
+
+def check_atlases(atlastype):
+    """
+    Converts `atlastype` to list and expands 'all', if present
+
+    Parameters
+    ----------
+    atlastype : str or list
+        Name of atlas(es) to use
+
+    Returns
+    -------
+    atlases : list
+        Names of atlas(es) to use
+    """
+    if isinstance(atlastype, str):
+        atlastype = [atlastype]
+
+    if 'all' not in atlastype:
+        return atlastype
+    else:
+        return _ATLASES.copy()
 
 
 def check_limit(num, limits=[0, 100]):
