@@ -2,17 +2,25 @@
 Utility functions for testing mni_atlas_reader.
 """
 
-from os.path import abspath, dirname, join, sep
+from os.path import join as pjoin
+from pkg_resources import resource_filename
 
 
-def get_test_data_path():
+def get_test_data_path(fname=None):
     """
-    Returns the path to test datasets, terminated with separator.
+    Returns path to test data directory
 
-    Test-related data should be in kept in mni_atlas_reader/tests/data, and can
-    be accessed by joining the path returned from this function with the
-    desired data filename.
+    If `fname` is supplied, return path to `fname` in test data directory
 
-    Based on a function by Yaroslav Halchenko used in Neurosynth.
+    Parameters
+    ----------
+    fname : str, optional
+        Filename of test data. Default: None
+
+    Returns
+    -------
+    path : str
+        Path to test data
     """
-    return abspath(join(dirname(__file__), 'data') + sep)
+    path = resource_filename('mni_atlas_reader', 'tests/data')
+    return pjoin(path, fname) if fname is not None else path
