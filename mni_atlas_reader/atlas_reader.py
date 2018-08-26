@@ -14,7 +14,7 @@ from sklearn.utils import Bunch
 
 
 _ATLASES = [
-    'AAL', 'Desikan-Killiany', 'Destrieux', 'Harvard_Oxford', 'Juelich',
+    'AAL', 'Desikan_Killiany', 'Destrieux', 'Harvard_Oxford', 'Juelich',
     'Neuromorphometrics',
 ]
 _ACCEPTED_ATLASES = _ATLASES + [a.lower() for a in _ATLASES]
