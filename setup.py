@@ -7,7 +7,7 @@ def main():
     # from nipype setup.py file
     ldict = locals()
     curr_path = os.path.dirname(__file__)
-    ver_file = os.path.join(curr_path, 'mni_atlas_reader', 'info.py')
+    ver_file = os.path.join(curr_path, 'atlasreader', 'info.py')
     with open(ver_file) as infofile:
         exec(infofile.read(), globals(), ldict)
 
@@ -21,13 +21,13 @@ def main():
         url=ldict['URL'],
         download_url=ldict['DOWNLOAD_URL'],
         install_requires=ldict['INSTALL_REQUIRES'],
-        packages=find_packages(exclude=['mni_atlas_reader/tests']),
+        packages=find_packages(exclude=['atlasreader/tests']),
         package_data=ldict['PACKAGE_DATA'],
         tests_require=ldict['TESTS_REQUIRE'],
         license=ldict['LICENSE'],
         entry_points={
             'console_scripts': [
-                'mni_atlas_reader=mni_atlas_reader.cli:main'
+                'atlasreader=atlasreader.cli:main'
             ]
         }
     )

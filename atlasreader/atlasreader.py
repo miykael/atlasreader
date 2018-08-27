@@ -1,5 +1,5 @@
 """
-Primary functions of mni_atlas_reader
+Primary functions of atlasreader
 """
 import os
 import os.path as op
@@ -44,7 +44,7 @@ def get_atlas(atlastype):
 
     # get the path to atlas + label files shipped with package
     # resource_filename ensures that we're getting the correct path
-    data_dir = resource_filename('mni_atlas_reader', 'data/atlases')
+    data_dir = resource_filename('atlasreader', 'data/atlases')
     atlas_path = op.join(data_dir, 'atlas_{0}.nii.gz'.format(atlastype))
     label_path = op.join(data_dir, 'labels_{0}.csv'.format(atlastype))
 
@@ -630,7 +630,7 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     # get template image for plotting cluster maps
     bgimg = nb.load(
         resource_filename(
-            'mni_atlas_reader',
+            'atlasreader',
             'data/templates/MNI152_T1_1mm_brain.nii.gz'
         )
     )

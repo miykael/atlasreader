@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from mni_atlas_reader import atlas_reader
+from atlasreader import atlasreader
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 
@@ -30,12 +30,12 @@ def test_coords_transform():
     aff = EXAMPLE_COORDS['affine']
     for coords in EXAMPLE_COORDS['coords']:
         ijk, xyz = coords['ijk'], coords['xyz']
-        assert atlas_reader.coord_xyz_to_ijk(aff, xyz) == ijk
-        assert atlas_reader.coord_ijk_to_xyz(aff, ijk) == xyz
+        assert atlasreader.coord_xyz_to_ijk(aff, xyz) == ijk
+        assert atlasreader.coord_ijk_to_xyz(aff, ijk) == xyz
     with pytest.raises(ValueError):
-        atlas_reader.coord_xyz_to_ijk(aff, [[10, 10], [20, 30]])
+        atlasreader.coord_xyz_to_ijk(aff, [[10, 10], [20, 30]])
     with pytest.raises(ValueError):
-        atlas_reader.coord_ijk_to_xyz(aff, [[10, 10], [20, 30]])
+        atlasreader.coord_ijk_to_xyz(aff, [[10, 10], [20, 30]])
 
 
 def test_create_output(tmpdir):
@@ -46,8 +46,8 @@ def test_create_output(tmpdir):
 
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
-    atlas_reader.create_output(stat_img, atlas=['Harvard_Oxford'],
-                               outdir=output_dir)
+    atlasreader.create_output(stat_img, atlas=['Harvard_Oxford'],
+                              outdir=output_dir)
 
     # test if output exists and if the key .csv and .png files were created
     assert os.path.exists(output_dir)

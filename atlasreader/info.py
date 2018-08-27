@@ -1,6 +1,6 @@
 __version__ = '0.0.1'
 
-NAME = 'mni_atlas_reader'
+NAME = 'atlasreader'
 MAINTAINER = 'Michael Notter'
 EMAIL = 'michaelnotter@hotmail.com'
 VERSION = __version__
@@ -28,10 +28,10 @@ TESTS_REQUIRE = [
 ]
 
 PACKAGE_DATA = {
-    'mni_atlas_reader': [
+    'atlasreader': [
         'data/*', 'data/atlases/*', 'data/templates/*'
     ],
-    'mni_atlas_reader.tests': [
+    'atlasreader.tests': [
         'data/*'
     ]
 }

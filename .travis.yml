@@ -29,12 +29,12 @@ install:
 script:
     - |
       if [ "${STYLE}" == "1" ]; then
-          flake8 mni_atlas_reader
+          flake8 atlasreader
       else
           if [ "${COVERAGE}" == "1" ]; then
-              TEST_ARGS="--cov-report term-missing --cov=mni_atlas_reader";
+              TEST_ARGS="--cov-report term-missing --cov=atlasreader";
           fi
-          py.test ${TEST_ARGS} mni_atlas_reader;
+          py.test ${TEST_ARGS} atlasreader;
       fi
 
 after_success:
