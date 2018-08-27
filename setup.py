@@ -27,7 +27,7 @@ def main():
         license=ldict['LICENSE'],
         entry_points={
             'console_scripts': [
-                'mni_atlas_reader=mni_atlas_reader.atlas_reader:main'
+                'mni_atlas_reader=mni_atlas_reader.cli:main'
             ]
         }
     )

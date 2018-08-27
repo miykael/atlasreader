@@ -1,15 +1,17 @@
 """
 Primary functions of mni_atlas_reader
 """
-import argparse
 import os
 import os.path as op
 from pkg_resources import resource_filename
+import warnings
 import nibabel as nb
-from nilearn.plotting import plot_glass_brain, plot_stat_map
+from nilearn import image, plotting
+from nilearn.regions import connected_regions
+from nilearn._utils import check_niimg
 import numpy as np
 import pandas as pd
-from scipy.ndimage import label
+from scipy import ndimage
 from sklearn.utils import Bunch
 
 
@@ -17,7 +19,6 @@ _ATLASES = [
     'AAL', 'Desikan_Killiany', 'Destrieux', 'Harvard_Oxford', 'Juelich',
     'Neuromorphometrics',
 ]
-_ACCEPTED_ATLASES = _ATLASES + [a.lower() for a in _ATLASES]
 
 
 def get_atlas(atlastype):
@@ -143,67 +144,65 @@ def get_label(atlastype, label_id):
         return 'no_label'
 
 
-def get_clusters(data, min_extent=5):
+def clusterize_img(stat_img, cluster_extent=20):
     """
-    Extracts clusters from statistical map `data`
+    Extracts clusters from statistical map `stat_img`
 
     Parameters
     ----------
-    data : (X, Y, Z) array-like
-        Thresholded data from statistical map
-    min_extent : int, optional
-        Minimum number of voxels required to consider a cluster. Default: 5
+    stat_img : Niimg_like object
+        Thresholded statistical map image
+    cluster_extent : int, optional
+        Minimum number of voxels required to consider a cluster. Default: 20
 
     Returns
     ------
-    clusters : numpy.ndarray
-        Array of numerically labelled clusters
-    nclusters : int
-        Number of clusters in `data`
+    cluster_img : Nifti1Image
+        4D image of brain regions, where each volume is a distinct cluster
     """
-    clusters, nclusters = label(data)
-    for idx in range(1, nclusters + 1):
-        if np.sum(clusters == idx) < min_extent:
-            clusters[clusters == idx] = 0
-    nclusters = len(np.setdiff1d(np.unique(clusters), [0]))
-    return clusters, nclusters
+
+    stat_img = check_niimg(stat_img)
+    min_region_size = cluster_extent * np.prod(stat_img.header.get_zooms())
+    cluster_img = connected_regions(stat_img,
+                                    min_region_size=min_region_size,
+                                    extract_type='connected_components')[0]
+
+    return cluster_img
 
 
-def get_peak_coords(img, affine, data):
+def get_peak_coords(cluster_img):
     """
-    Gets MNI coordinates of peak voxels within each cluster of `data`
+    Gets MNI coordinates of peak voxels within each cluster of `cluster_img`
 
     Parameters
     ----------
-    img : (X, Y, Z) array-like
-        Array of numerically labelled clusters
-    affine : (4, 4) array-like
-        Affine matrix
-    data : (X, Y, Z) array-like
-        Thresholded data from statistical map
+    cluster_img : 4D-niimg_like
+        4D image of brain regions, where each volume is a separated cluster
 
     Returns
     ------
     coordinates : list of lists
-        Coordinates of peak voxels in `data`
+        Coordinates of peak voxels in `cluster_img`
     """
-    clust_size = []
-    maxcoords = []
-    for lab in np.setdiff1d(np.unique(img.ravel()), [0]):
-        # get cluster size
-        clust_size.append(np.sum(img == lab))
-        # find indices of peak values in cluster
-        clust = data * (img == lab)
-        maxidx = np.nonzero(clust == clust.max())
-        # only take first voxel if there are multiple with same peak value
-        maxcoords.append([m[0] for m in maxidx])
 
-    # sort peak cluster coordinates by cluster size (largest cluster first)
-    maxcoords = np.asarray(maxcoords)
-    maxcoords = maxcoords[np.argsort(clust_size)[::-1]]
+    # check cluster image and make it 4D, if not already
+    cluster_img = check_niimg(cluster_img, atleast_4d=True)
+
+    # create empty arrays to hold cluster size + peak coordinates
+    clust_size = np.zeros(cluster_img.shape[-1])
+    maxcoords = np.zeros((cluster_img.shape[-1], 3))
+
+    # iterate through clusters and get info
+    for n, cluster in enumerate(image.iter_img(cluster_img)):
+        cluster = np.abs(cluster.get_data())
+        clust_size[n] = np.sum(cluster != 0)
+        maxcoords[n] = ndimage.center_of_mass(cluster == cluster.max())
+
+    # sort peak coordinates by cluster size
+    maxcoords = np.floor(maxcoords)[np.argsort(clust_size)[::-1]]
 
     # convert coordinates to MNI space
-    coords = coord_ijk_to_xyz(affine, maxcoords)
+    coords = coord_ijk_to_xyz(cluster_img.affine, maxcoords)
 
     return coords
 
@@ -301,8 +300,8 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
         Name of atlas to use
     cluster : (X, Y, Z) array-like
         Boolean mask of cluster
-    coordinate : list of float
-        x, y, z MNI coordinates of voxel
+    affine : (4, 4) array-like
+        Affine matrix
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply if `atlastype` is
         probabilistic
@@ -402,155 +401,6 @@ def get_cluster_info(cluster, affine, atlastype='all', prob_thresh=5):
     return clusterinfo
 
 
-def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
-                  prob_thresh=5, outdir=None):
-    """
-    Performs full cluster analysis on `filename`
-
-    Generates output table containing information on each cluster in `filename`
-    including: (1) number of voxels in cluster, (2) average activation across
-    voxels, (3) MNI coordinates of peak voxel, and (4) neuroanatomical location
-    of peak voxel based on specified `atlas`.
-
-    In addition, screenshots of statistical maps are separately created for
-    each cluster in which cross hairs are focused on the cluster peak voxel.
-
-    Parameters
-    ----------
-    filename : str
-        Path to input statistical map
-    atlas : str or list, optional
-        Name of atlas(es) to consider for cluster analysis. Default: 'all'
-    voxel_thresh : int, optional
-        Threshold applied to `filename` before performing cluster analysis.
-        Default: 1.96
-    cluster_extent : int, optional
-        Minimum number of contiguous voxels required to consider a cluster in
-        `filename`. Default: 20
-    prob_thresh : int, optional
-        Probability (percentage) threshold to apply to `atlas`, if it is
-        probabilistic. Default: 5
-    outdir : str or None, optional
-        Path to desired output directory. If None, generated files will be
-        saved to the same folder as `filename`. Default: None
-    """
-    fname = op.abspath(filename)
-
-    # set up output directory
-    if outdir is not None:
-        os.makedirs(outdir, exist_ok=True)
-        savedir = outdir
-    else:
-        savedir = op.dirname(fname)
-
-    # set up output filename, which is the same name as input w/o extension
-    out_fname = op.basename(fname).split('.')[0]
-
-    # get data from input file
-    img = nb.load(filename)
-    imgdata = img.get_data()
-    if len(imgdata.shape) != 3:
-        imgdata = imgdata[:, :, :, 0]
-    voxel_volume = int(img.header['pixdim'][1:4].prod())
-
-    # get top x-% of voxels if voxel_thresh is negative
-    if voxel_thresh < 0:
-        voxel_thresh = np.percentile(
-            np.abs(imgdata[imgdata != 0]), (100 + voxel_thresh))
-
-    # get clusters from data
-    clusters, nclusters = get_clusters(np.abs(imgdata) > voxel_thresh,
-                                       min_extent=cluster_extent)
-    # clean img data
-    imgdata[clusters == 0] = 0
-    # get coordinates of peaks
-    coords = get_peak_coords(clusters, img.affine, np.abs(imgdata))
-
-    # get peak and cluster information
-    clust_info = []
-    peaks_info = []
-    for n, coord in enumerate(coords):
-        voxel_id = coord_xyz_to_ijk(img.affine, coord)
-        peak_value = imgdata[voxel_id[0], voxel_id[1], voxel_id[2]]
-        clust_id = clusters[voxel_id[0], voxel_id[1], voxel_id[2]]
-        clust_mean = imgdata[clusters == clust_id].mean()
-        clust_volume = np.sum(clusters == clust_id) * voxel_volume
-        peak_info = get_peak_info(coord,
-                                  atlastype=atlas,
-                                  prob_thresh=prob_thresh)
-        peak_summary = [
-            peak if type(peak) != list else
-            '; '.join(['{}% {}'.format(*e) for e in peak])
-            for (_, peak) in peak_info
-        ]
-        cluster_info = get_cluster_info(clusters == clust_id,
-                                        img.affine,
-                                        atlastype=atlas,
-                                        prob_thresh=prob_thresh)
-        clust_summary = [
-            '; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
-            for (_, cluster) in cluster_info
-        ]
-
-        clust_info += [coord + [clust_mean, clust_volume] + clust_summary]
-        peaks_info += [coord + [peak_value, clust_volume] + peak_summary]
-
-    clust_frame = pd.DataFrame(clust_info,
-                               index=pd.Series(range(len(clust_info)),
-                                               name='cluster_id'),
-                               columns=['peak_x', 'peak_y', 'peak_z',
-                                        'cluster_mean', 'volume'] + atlas)
-    peaks_frame = pd.DataFrame(peaks_info,
-                               index=pd.Series(range(len(peaks_info)),
-                                               name='peak_id'),
-                               columns=['peak_x', 'peak_y', 'peak_z',
-                                        'peak_value', 'volume'] + atlas)
-
-    # write output .csv file
-    clust_frame.to_csv(op.join(savedir, '{}_clusters.csv'.format(out_fname)))
-    peaks_frame.to_csv(op.join(savedir, '{}_peaks.csv'.format(out_fname)))
-
-    # plot glass brain
-    new_image = nb.Nifti1Image(imgdata, img.affine, img.header)
-    color_max = np.array([imgdata.min(), imgdata.max()])
-    color_max = np.abs(np.min(color_max[color_max != 0]))
-    glass_file = op.join(savedir, '{}.png'.format(out_fname))
-    try:
-        plot_glass_brain(new_image, vmax=color_max, threshold='auto',
-                         display_mode='lyrz', black_bg=True,
-                         plot_abs=False, colorbar=True,
-                         output_file=glass_file)
-    except ValueError:
-        plot_glass_brain(new_image, vmax=color_max, threshold='auto',
-                         black_bg=True, plot_abs=False, colorbar=True,
-                         output_file=glass_file)
-
-    # get template image for plotting cluster maps
-    bgimg = nb.load(
-        resource_filename(
-            'mni_atlas_reader',
-            'data/templates/MNI152_T1_1mm_brain.nii.gz'
-        )
-    )
-    # plot clusters
-    for idx, coord in enumerate(coords):
-        cluster_name = '{}_cluster{:02d}'.format(out_fname, idx + 1)
-        out_cluster_file = op.join(savedir, '{}.png'.format(cluster_name))
-        try:
-            plot_stat_map(new_image, vmax=color_max,
-                          colorbar=True, title=cluster_name,
-                          threshold=voxel_thresh, draw_cross=True,
-                          black_bg=True, symmetric_cbar=True,
-                          output_file=out_cluster_file,
-                          bg_img=bgimg, cut_coords=coord, display_mode='ortho')
-        except ValueError:
-            plot_stat_map(new_image, vmax=color_max,
-                          colorbar=True, title=cluster_name,
-                          threshold=voxel_thresh, draw_cross=True,
-                          black_bg=True, symmetric_cbar=True,
-                          output_file=out_cluster_file)
-
-
 def check_atlases(atlastype):
     """
     Converts `atlastype` to list and expands 'all', if present
@@ -574,84 +424,231 @@ def check_atlases(atlastype):
         return _ATLASES.copy()
 
 
-def check_limit(num, limits=[0, 100]):
+def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
     """
-    Ensures that `num` is within provided `limits`
+    Parameters
+    ----------
+    stat_img : Niimg_like object
+        Thresholded statistical map image
+    voxel_thresh : int, optional
+        Threshold to apply to `stat_img`. If a negative number is provided a
+        percentile threshold is used instead, where the percentile is
+        determined by the equation `100 - voxel_thresh`. Default: 1.96
+    cluster_extent : int, optional
+        Minimum number of voxels required to consider a cluster. Default: 20
+
+    Returns
+    -------
+    cluster_img : Nifti1Image
+        4D image of brain regions, where each volume is a distinct cluster
+    """
+    # get input data image
+    stat_img = image.index_img(check_niimg(stat_img, atleast_4d=True), 0)
+
+    # threshold image
+    if voxel_thresh < 0:
+        voxel_thresh = '{}%'.format(100 + voxel_thresh)
+    thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
+
+    # extract clusters
+    cluster_img = clusterize_img(thresh_img, cluster_extent=cluster_extent)
+
+    return cluster_img
+
+
+def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
+                     cluster_extent=20, prob_thresh=5):
+    """
+    Extract peaks and cluster information from `clust_img` for `atlas`
 
     Parameters
     ----------
-    num : float
-        Number to assess
-    limits : list, optional
-        Lower and upper bounds that `num` must be between to be considered
-        valid
+    cluster_img : Niimg_like
+        4D image of brain regions, where each volume is a distinct cluster
+    atlas : str or list, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    voxel_thresh : int, optional
+        Threshold to apply to `stat_img`. If a negative number is provided a
+        percentile threshold is used instead, where the percentile is
+        determined by the equation `100 - voxel_thresh`. Default: 1.96
+    cluster_extent : int, optional
+        Minimum number of contiguous voxels required to consider a cluster in
+        `filename`. Default: 20
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+
+    Returns
+    -------
+    clust_frame : pandas.DataFrame
+        Dataframe wih information on clusters, including peak coordinates,
+        average cluster value, volume of cluster, and percent overlap with
+        neuroanatomical regions defined in `atlas`
+    peaks_frame : pandas.DataFrame
+        Dataframe with information on peaks, including peak coordinates, peak
+        value, volume of cluster, and neuroanatomical location defined in
+        `atlas`
     """
-    lo, hi = limits
-    num = float(num)
+    stat_img = check_niimg(stat_img)
+    atlas = check_atlases(atlas)
+    voxel_volume = stat_img.header.get('pixdim')[1:4].prod()
 
-    if num < lo or num > hi:
-        raise ValueError('Provided value {} is outside expected limits {}.'
-                         .format(num, limits))
+    # threshold + clusterize image
+    clust_img = process_img(stat_img,
+                            voxel_thresh=voxel_thresh,
+                            cluster_extent=cluster_extent)
 
-    return num
+    # get peak and cluster information
+    clust_info, peaks_info = [], []
+    for n, coord in enumerate(get_peak_coords(clust_img)):
+        clust_data = image.index_img(clust_img, n).get_data()
+        clust_mask = clust_data != 0
+        peak_index = tuple(coord_xyz_to_ijk(clust_img.affine, coord))
+
+        # basic info on cluster / peak
+        peak_value = clust_data[peak_index]
+        clust_mean = clust_data[clust_mask].mean()
+        clust_volume = np.sum(clust_mask) * voxel_volume
+
+        # atlas info on peak
+        peak_info = get_peak_info(coord,
+                                  atlastype=atlas,
+                                  prob_thresh=prob_thresh)
+        peak_summary = [
+            peak if type(peak) != list else
+            '; '.join(['{}% {}'.format(*e) for e in peak])
+            for (_, peak) in peak_info
+        ]
+
+        # atlas info on cluster
+        cluster_info = get_cluster_info(clust_mask,
+                                        clust_img.affine,
+                                        atlastype=atlas,
+                                        prob_thresh=prob_thresh)
+        clust_summary = [
+            '; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
+            for (_, cluster) in cluster_info
+        ]
+
+        # append to output list
+        clust_info += [coord + [clust_mean, clust_volume] + clust_summary]
+        peaks_info += [coord + [peak_value, clust_volume] + peak_summary]
+
+    clust_frame = pd.DataFrame(clust_info,
+                               index=pd.Series(range(len(clust_info)),
+                                               name='cluster_id'),
+                               columns=['peak_x', 'peak_y', 'peak_z',
+                                        'cluster_mean', 'volume'] + atlas)
+    peaks_frame = pd.DataFrame(peaks_info,
+                               index=pd.Series(range(len(peaks_info)),
+                                               name='peak_id'),
+                               columns=['peak_x', 'peak_y', 'peak_z',
+                                        'peak_value', 'volume'] + atlas)
+
+    return clust_frame, peaks_frame
 
 
-def _get_parser():
-    """ Reads command line arguments and returns input specifications """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('filename', type=op.abspath, metavar='file',
-                        help='The full or relative path to the statistical map'
-                             'from which cluster information should be '
-                             'extracted.')
-    parser.add_argument('-a', '--atlas', type=str, default='all', nargs='+',
-                        choices=_ACCEPTED_ATLASES + ['all'], metavar='atlas',
-                        help='Atlas(es) to use for examining anatomical '
-                             'delineation of clusters in provided statistical '
-                             'map. Default: all available atlases.')
-    parser.add_argument('-t', '--threshold', type=float, default=2,
-                        dest='voxel_thresh', metavar='threshold',
-                        help='Value threshold that voxels in provided file '
-                             'must surpass in order to be considered in '
-                             'cluster extraction.')
-    parser.add_argument('-c', '--cluster', type=float, default=5,
-                        dest='cluster_extent', metavar='extent',
-                        help='Required number of contiguous voxels for a '
-                             'cluster to be retained for analysis.')
-    parser.add_argument('-p', '--probability', type=check_limit, default=5,
-                        dest='prob_thresh', metavar='threshold',
-                        help='Threshold to consider when using a '
-                             'probabilistic atlas for extracting anatomical '
-                             'cluster locations. Value will apply to all '
-                             'request probabilistic atlases, and should range '
-                             'between 0 and 100.')
-    parser.add_argument('-o', '--outdir', type=str, default=None,
-                        dest='outdir', metavar='outdir',
-                        help='Output directory for created files. If it is '
-                             'not specified, then output files are created in '
-                             'the same directory as the statistical map that '
-                             'is provided.')
-
-    return parser.parse_args()
-
-
-def main():
+def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
+                  prob_thresh=5, outdir=None):
     """
-    The primary entrypoint for calling atlas reader via the command line
+    Performs full cluster / peak analysis on `filename`
 
-    All parameters are read via argparse, so this should only be called from
-    the command line!
+    Generates output table containing information on each cluster in `filename`
+    including: (1) number of voxels in cluster, (2) average activation across
+    voxels, (3) MNI coordinates of peak voxel, and (4) neuroanatomical location
+    of peak voxel based on specified `atlas`.
+
+    In addition, screenshots of statistical maps are separately created for
+    each cluster in which cross hairs are focused on the cluster peak voxel.
+
+    Parameters
+    ----------
+    filename : str
+        Path to input statistical map
+    atlas : str or list, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    voxel_thresh : int, optional
+        Threshold to apply to `stat_img`. If a negative number is provided a
+        percentile threshold is used instead, where the percentile is
+        determined by the equation `100 - voxel_thresh`. Default: 1.96
+    cluster_extent : int, optional
+        Minimum number of contiguous voxels required to consider a cluster in
+        `filename`. Default: 20
+    prob_thresh : int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+    outdir : str or None, optional
+        Path to desired output directory. If None, generated files will be
+        saved to the same folder as `filename`. Default: None
     """
 
-    opts = _get_parser()
-    create_output(opts.filename,
-                  atlas=check_atlases(opts.atlas),
-                  voxel_thresh=opts.voxel_thresh,
-                  cluster_extent=opts.cluster_extent,
-                  prob_thresh=opts.prob_thresh,
-                  outdir=opts.outdir)
+    # confirm input data is niimg_like to raise error as early as possible
+    stat_img = check_niimg(filename)
 
+    # get info for saving outputs
+    if isinstance(filename, str):
+        filename = op.abspath(filename)
+        out_fname = op.basename(filename).split('.')[0]
+        if outdir is None:
+            outdir = op.dirname(filename)
+    else:
+        out_fname = 'mniatlasreader'
+        if outdir is None:
+            outdir = os.getcwd()
 
-if __name__ == '__main__':
-    raise RuntimeError('`mni_atlas_reader/atlas_reader.py` should not be run '
-                       'directly. Please `pip install` mni_atlas_reader and '
-                       'use the `mni_atlas_reader` command, instead.')
+    # create output directory
+    os.makedirs(outdir, exist_ok=True)
+
+    # get cluster + peak information from image
+    clust_frame, peaks_frame = get_statmap_info(stat_img, atlas=atlas,
+                                                voxel_thresh=voxel_thresh,
+                                                cluster_extent=cluster_extent,
+                                                prob_thresh=prob_thresh)
+
+    # write output .csv files
+    clust_frame.to_csv(op.join(outdir, '{}_clusters.csv'.format(out_fname)))
+    peaks_frame.to_csv(op.join(outdir, '{}_peaks.csv'.format(out_fname)))
+
+    # generate stat map for plotting by collapsing all clusters into one image
+    clust_img = process_img(stat_img,
+                            voxel_thresh=voxel_thresh,
+                            cluster_extent=cluster_extent)
+    thresh_img = image.math_img('np.sum(img, axis=-1)', img=clust_img)
+
+    # plot glass brain
+    color_max = np.abs(thresh_img.get_data()).max()
+    glass_fname = op.join(outdir, '{}.png'.format(out_fname))
+    with warnings.catch_warnings():  # get rid of pesky warnings
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        plotting.plot_glass_brain(thresh_img, vmax=color_max,
+                                  threshold='auto', display_mode='lyrz',
+                                  plot_abs=False, colorbar=True,
+                                  black_bg=True,
+                                  cmap=plotting.cm.cold_hot,
+                                  output_file=glass_fname)
+
+    # get template image for plotting cluster maps
+    bgimg = nb.load(
+        resource_filename(
+            'mni_atlas_reader',
+            'data/templates/MNI152_T1_1mm_brain.nii.gz'
+        )
+    )
+    # plot clusters
+    coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
+    for idx, coord in enumerate(coords):
+        clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
+        try:
+            plotting.plot_stat_map(thresh_img, vmax=color_max,
+                                   colorbar=True, title=clust_fname[:-4],
+                                   threshold=voxel_thresh, draw_cross=True,
+                                   black_bg=True, symmetric_cbar=True,
+                                   output_file=op.join(outdir, clust_fname),
+                                   bg_img=bgimg, cut_coords=coord,
+                                   display_mode='ortho')
+        except ValueError:
+            plotting.plot_stat_map(thresh_img, vmax=color_max,
+                                   colorbar=True, title=clust_fname[:-4],
+                                   threshold=voxel_thresh, draw_cross=True,
+                                   black_bg=True, symmetric_cbar=True,
+                                   output_file=op.join(outdir, clust_fname))
