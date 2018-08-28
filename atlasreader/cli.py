@@ -3,8 +3,8 @@ Functions for command line interface to generate cluster / peak summary
 """
 import argparse
 import os.path as op
-from mni_atlas_reader.atlas_reader import (_ATLASES, check_atlases,
-                                           create_output)
+from atlasreader.atlasreader import (_ATLASES, check_atlases,
+                                     create_output)
 
 _ACCEPTED_ATLASES = _ATLASES + [a.lower() for a in _ATLASES]
 
@@ -87,6 +87,6 @@ def main():
 
 
 if __name__ == '__main__':
-    raise RuntimeError('`mni_atlas_reader/cli.py` should not be run '
-                       'directly. Please `pip install` mni_atlas_reader and '
-                       'use the `mni_atlas_reader` command, instead.')
+    raise RuntimeError('`atlasreader/cli.py` should not be run '
+                       'directly. Please `pip install` atlasreader and '
+                       'use the `atlasreader` command, instead.')

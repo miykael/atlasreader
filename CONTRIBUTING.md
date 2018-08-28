@@ -1,6 +1,6 @@
-# Contributing to `mni_atlas_reader`
+# Contributing to `atlasreader`
 
-Welcome to the `mni_atlas_reader` repository! We're excited you're here and want to contribute.
+Welcome to the `atlasreader` repository! We're excited you're here and want to contribute.
 
 These guidelines are designed to make it as easy as possible to get involved.
 If you have any questions that aren't discussed below, please let us know by opening an [issue][link_issues]!
@@ -31,17 +31,17 @@ The current list of labels are [here][link_labels] and include:
 
 ## Making a change
 
-We appreciate all contributions to `mni_atlas_reader`, but those accepted fastest will follow a workflow similar to the following:
+We appreciate all contributions to `atlasreader`, but those accepted fastest will follow a workflow similar to the following:
 
 **1. Comment on an existing issue or open a new issue referencing your addition.**
 
-This allows other members of the `mni_atlas_reader` development team to confirm that you aren't overlapping with work that's currently underway and that everyone is on the same page with the goal of the work you're going to carry out.
+This allows other members of the `atlasreader` development team to confirm that you aren't overlapping with work that's currently underway and that everyone is on the same page with the goal of the work you're going to carry out.
 
 [This blog][link_pushpullblog] is a nice explanation of why putting this work in up front is so useful to everyone involved.
 
-**2. [Fork][link_fork] the [`mni_atlas_reader` repository][link_mni_atlas_reader] to your profile.**
+**2. [Fork][link_fork] the [`atlasreader` repository][link_atlasreader] to your profile.**
 
-This is now your own unique copy of `mni_atlas_reader`.
+This is now your own unique copy of `atlasreader`.
 Changes here won't effect anyone else's work, so it's a safe space to explore edits to the code!
 
 Make sure to [keep your fork up to date][link_updateupstreamwiki] with the original repository.
@@ -69,21 +69,21 @@ You're awesome. :wave::smiley:
 *&mdash; Based on contributing guidelines from the [STEMMRoleModels][link_stemmrolemodels] project.*
 
 [link_github]: https://github.com/
-[link_mni_atlas_reader]: https://github.com/rmarkello/mni_atlas_reader
+[link_atlasreader]: https://github.com/rmarkello/atlasreader
 [link_signupinstructions]: https://help.github.com/articles/signing-up-for-a-new-github-account
 [link_react]: https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments
-[link_issues]: https://github.com/rmarkello/mni_atlas_reader/issues
-[link_labels]: https://github.com/rmarkello/mni_atlas_reader/labels
+[link_issues]: https://github.com/rmarkello/atlasreader/issues
+[link_labels]: https://github.com/rmarkello/atlasreader/labels
 [link_discussingissues]: https://help.github.com/articles/discussing-projects-in-issues-and-pull-requests
 
-[link_bugs]: https://github.com/rmarkello/mni_atlas_reader/labels/bug
-[link_helpwanted]: https://github.com/rmarkello/mni_atlas_reader/labels/help%20wanted
-[link_feature]: https://github.com/rmarkello/mni_atlas_reader/labels/enhancement
+[link_bugs]: https://github.com/rmarkello/atlasreader/labels/bug
+[link_helpwanted]: https://github.com/rmarkello/atlasreader/labels/help%20wanted
+[link_feature]: https://github.com/rmarkello/atlasreader/labels/enhancement
 
 [link_pullrequest]: https://help.github.com/articles/creating-a-pull-request/
 [link_fork]: https://help.github.com/articles/fork-a-repo/
 [link_pushpullblog]: https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/
 [link_branches]: https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/
 [link_updateupstreamwiki]: https://help.github.com/articles/syncing-a-fork/
-[link_contributors]: https://github.com/rmarkello/mni_atlas_reader/graphs/contributors
+[link_contributors]: https://github.com/rmarkello/atlasreader/graphs/contributors
 [link_stemmrolemodels]: https://github.com/KirstieJane/STEMMRoleModels

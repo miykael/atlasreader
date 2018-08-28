@@ -1,5 +1,5 @@
 """
-Utility functions for testing mni_atlas_reader.
+Utility functions for testing atlasreader.
 """
 
 from os.path import join as pjoin
@@ -22,5 +22,5 @@ def get_test_data_path(fname=None):
     path : str
         Path to test data
     """
-    path = resource_filename('mni_atlas_reader', 'tests/data')
+    path = resource_filename('atlasreader', 'tests/data')
     return pjoin(path, fname) if fname is not None else path
