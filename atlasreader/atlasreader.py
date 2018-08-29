@@ -11,7 +11,9 @@ from nilearn.regions import connected_regions
 from nilearn._utils import check_niimg
 import numpy as np
 import pandas as pd
-from scipy import ndimage
+from scipy.ndimage import label, center_of_mass
+from scipy.spatial.distance import cdist
+from skimage.feature import peak_local_max
 from sklearn.utils import Bunch
 
 
@@ -163,11 +165,20 @@ def clusterize_img(stat_img, cluster_extent=20):
 
     stat_img = check_niimg(stat_img)
     min_region_size = cluster_extent * np.prod(stat_img.header.get_zooms())
-    cluster_img = connected_regions(stat_img,
-                                    min_region_size=min_region_size,
-                                    extract_type='connected_components')[0]
 
-    return cluster_img
+    # separately cluster + and - in case these are adjacent
+    clusters = []
+    for sign in ['pos', 'neg']:
+        data = stat_img.get_data().copy()
+        if sign == 'pos':
+            data[data < 0] = 0  # keep only positives
+        else:
+            data[data > 0] = 0  # keep only negatives
+        clusters += [connected_regions(image.new_img_like(stat_img, data),
+                                       min_region_size=min_region_size,
+                                       extract_type='connected_components')[0]]
+
+    return image.concat_imgs(clusters)
 
 
 def get_peak_coords(cluster_img):
@@ -196,7 +207,7 @@ def get_peak_coords(cluster_img):
     for n, cluster in enumerate(image.iter_img(cluster_img)):
         cluster = np.abs(cluster.get_data())
         clust_size[n] = np.sum(cluster != 0)
-        maxcoords[n] = ndimage.center_of_mass(cluster == cluster.max())
+        maxcoords[n] = center_of_mass(cluster == cluster.max())
 
     # sort peak coordinates by cluster size
     maxcoords = np.floor(maxcoords)[np.argsort(clust_size)[::-1]]
@@ -456,14 +467,188 @@ def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
     return cluster_img
 
 
+def fix_peak_distance(clust_img, peaks, min_distance=20):
+    """
+    Remove coordinates in `peaks` that are < `min_distance` from stronger peaks
+
+    Parameters
+    ----------
+    clust_img : niimg_like
+        Cluster image that `peaks` were derived from
+    peaks : (N, 3) array_like
+        Tenative peak coordinates in image space
+    min_distance : float, optional
+        Minimum distance required between peaks in `affine` (i.e., mm) space.
+        Default: 20
+
+    Returns
+    -------
+    peaks : (N, 3) numpy.ndarray
+        Retained peak coordinates in image space
+    """
+    data = check_niimg(clust_img).get_data()
+
+    # sort coordinates based on peak value
+    peaks = peaks[data[peaks[:, 0], peaks[:, 1], peaks[:, 2]].argsort()[::-1]]
+
+    # convert to MNI space and get distance (in millimeters, not voxels)
+    xyz = np.asarray(coord_ijk_to_xyz(clust_img.affine, peaks))
+    dist = cdist(xyz, xyz)
+
+    # remove "weaker" peak if it is too close to "stronger" peak
+    remove = []
+    for row in range(len(xyz)):
+        if row in remove:
+            continue
+        # check if other peaks are < specified distance from current peak
+        ind, = np.where(dist[row] < min_distance)
+        # remove diagonal index so the peak doesn't remove itself
+        remove.extend(np.setdiff1d(ind, row).tolist())
+
+    # delete peaks that were too close, if any
+    if len(remove) > 0:
+        peaks = np.delete(peaks, np.unique(remove), axis=0)
+
+    return peaks
+
+
+def find_subpeaks(clust_img, min_distance=20):
+    """
+    Finds subpeaks in `clust_img` that are at least `min_distance` apart
+
+    Parameters
+    ----------
+    clust_img : niimg_like
+        Cluster image that `peaks` were derived from
+    min_distance : float, optional
+        Minimum distance required between peaks in `affine` (i.e., mm) space.
+        Default: 20
+
+    Returns
+    -------
+    peaks : (N, 3) numpy.ndarray
+        Peak coordinates in image space
+    """
+    data = check_niimg(clust_img).get_data()
+
+    # find local maxima, excluding peaks that are on the border of the cluster
+    local_max = peak_local_max(data, exclude_border=1, indices=False)
+
+    # make new clusters to check for "flat" peaks + find CoM of those clusters
+    labels, nl = label(local_max)
+    ijk = np.floor([center_of_mass(labels == l) for l in range(1, nl + 1)])
+    ijk = ijk.astype(int)
+
+    if len(ijk) > 1:
+        ijk = fix_peak_distance(clust_img, ijk, min_distance=min_distance)
+
+    return ijk
+
+
+def get_peak_data(clust_img, atlas='all', prob_thresh=5, min_distance=None):
+    """
+    Parameters
+    ----------
+    clust_img : Niimg_like
+        3D image of a single, valued cluster
+    atlas : str or list, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+    min_distance : float, optional
+        Specifies the minimum distance required between sub-peaks in a cluster.
+        If None, sub-peaks will not be examined and only the primary cluster
+        peak will be reported. Default: None
+
+    Returns
+    -------
+    peak_summary : numpy.ndarray
+        Info on peaks found in `clust_img`, including peak coordinates, peak
+        values, volume of cluster that peaks belong to, and neuroanatomical
+        locations defined in `atlas`
+    """
+    data = check_niimg(clust_img).get_data()
+
+    # get voxel volume information
+    voxel_volume = np.prod(clust_img.header.get_zooms())
+
+    if min_distance is None:
+        peaks = get_peak_coords(clust_img)
+        peaks = np.atleast_2d(coord_xyz_to_ijk(clust_img.affine, peaks))
+    else:
+        peaks = find_subpeaks(image.math_img('np.abs(img)', img=clust_img),
+                              min_distance=min_distance)
+
+    # get info on peak in cluster (all peaks belong to same cluster ID!)
+    cluster_volume = np.repeat(np.sum(data != 0) * voxel_volume, len(peaks))
+    peak_values = data[peaks[:, 0], peaks[:, 1], peaks[:, 2]]
+    coords = coord_ijk_to_xyz(clust_img.affine, peaks)
+    coords = np.atleast_2d(coords)
+
+    peak_summary = []
+    for coord in coords:
+        # atlas info on peak
+        peak_info = get_peak_info(coord,
+                                  atlastype=atlas,
+                                  prob_thresh=prob_thresh)
+        peak_summary.append([
+            peak if type(peak) != list else
+            '; '.join(['{}% {}'.format(*e) for e in peak])
+            for (_, peak) in peak_info
+        ])
+
+    return np.column_stack([coords, peak_values, cluster_volume, peak_summary])
+
+
+def get_cluster_data(clust_img, atlas='all', prob_thresh=5):
+    """
+    Parameters
+    ----------
+    clust_img : Niimg_like
+        3D image of a single, valued cluster
+    atlas : str or list, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+
+    Returns
+    -------
+    clust_frame : list
+        Info on cluster in `clust_img`, including coordinates of peak,
+        average cluster value, volume of cluster, and percent overlap with
+        neuroanatomical regions defined in `atlas`
+    """
+    data = check_niimg(clust_img).get_data()
+    clust_mask = data != 0
+    # get voxel volume information
+    voxel_volume = np.prod(clust_img.header.get_zooms())
+
+    coord = get_peak_coords(clust_img)
+    clust_mean = data[clust_mask].mean()
+    cluster_volume = np.sum(clust_mask) * voxel_volume
+
+    # atlas info on cluster
+    cluster_info = get_cluster_info(clust_mask, clust_img.affine,
+                                    atlastype=atlas,
+                                    prob_thresh=prob_thresh)
+    clust_summary = [
+        '; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
+        for (_, cluster) in cluster_info
+    ]
+
+    return coord + [clust_mean, cluster_volume] + clust_summary
+
+
 def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
-                     cluster_extent=20, prob_thresh=5):
+                     cluster_extent=20, prob_thresh=5, min_distance=None):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
 
     Parameters
     ----------
-    cluster_img : Niimg_like
+    stat_img : Niimg_like
         4D image of brain regions, where each volume is a distinct cluster
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'all'
@@ -477,6 +662,10 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
+    min_distance : float, optional
+        Specifies the minimum distance required between sub-peaks in a cluster.
+        If None, sub-peaks will not be examined and only the primary cluster
+        peak will be reported. Default: None
 
     Returns
     -------
@@ -491,65 +680,43 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
     """
     stat_img = check_niimg(stat_img)
     atlas = check_atlases(atlas)
-    voxel_volume = stat_img.header.get('pixdim')[1:4].prod()
 
     # threshold + clusterize image
     clust_img = process_img(stat_img,
                             voxel_thresh=voxel_thresh,
                             cluster_extent=cluster_extent)
 
-    # get peak and cluster information
     clust_info, peaks_info = [], []
-    for n, coord in enumerate(get_peak_coords(clust_img)):
-        clust_data = image.index_img(clust_img, n).get_data()
-        clust_mask = clust_data != 0
-        peak_index = tuple(coord_xyz_to_ijk(clust_img.affine, coord))
+    for n, cluster in enumerate(image.iter_img(clust_img)):
+        peak_data = get_peak_data(cluster,
+                                  atlas=atlas,
+                                  prob_thresh=prob_thresh,
+                                  min_distance=min_distance)
+        clust_data = get_cluster_data(cluster,
+                                      atlas=atlas,
+                                      prob_thresh=prob_thresh)
 
-        # basic info on cluster / peak
-        peak_value = clust_data[peak_index]
-        clust_mean = clust_data[clust_mask].mean()
-        clust_volume = np.sum(clust_mask) * voxel_volume
+        cluster_id = np.repeat(n + 1, len(peak_data))
+        peaks_info += [np.column_stack([cluster_id, peak_data])]
+        clust_info += [[n + 1] + clust_data]
 
-        # atlas info on peak
-        peak_info = get_peak_info(coord,
-                                  atlastype=atlas,
-                                  prob_thresh=prob_thresh)
-        peak_summary = [
-            peak if type(peak) != list else
-            '; '.join(['{}% {}'.format(*e) for e in peak])
-            for (_, peak) in peak_info
-        ]
-
-        # atlas info on cluster
-        cluster_info = get_cluster_info(clust_mask,
-                                        clust_img.affine,
-                                        atlastype=atlas,
-                                        prob_thresh=prob_thresh)
-        clust_summary = [
-            '; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
-            for (_, cluster) in cluster_info
-        ]
-
-        # append to output list
-        clust_info += [coord + [clust_mean, clust_volume] + clust_summary]
-        peaks_info += [coord + [peak_value, clust_volume] + peak_summary]
-
-    clust_frame = pd.DataFrame(clust_info,
-                               index=pd.Series(range(len(clust_info)),
-                                               name='cluster_id'),
-                               columns=['peak_x', 'peak_y', 'peak_z',
+    # construct dataframes and reset floats
+    clust_frame = pd.DataFrame(np.row_stack(clust_info),
+                               columns=['cluster_id',
+                                        'peak_x', 'peak_y', 'peak_z',
                                         'cluster_mean', 'volume'] + atlas)
-    peaks_frame = pd.DataFrame(peaks_info,
-                               index=pd.Series(range(len(peaks_info)),
-                                               name='peak_id'),
-                               columns=['peak_x', 'peak_y', 'peak_z',
+    peaks_frame = pd.DataFrame(np.row_stack(peaks_info),
+                               columns=['cluster_id',
+                                        'peak_x', 'peak_y', 'peak_z',
                                         'peak_value', 'volume'] + atlas)
+    clust_frame.iloc[:, :6] = clust_frame.iloc[:, :6].astype(float)
+    peaks_frame.iloc[:, :6] = peaks_frame.iloc[:, :6].astype(float)
 
     return clust_frame, peaks_frame
 
 
 def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
-                  prob_thresh=5, outdir=None):
+                  prob_thresh=5, min_distance=None, outdir=None):
     """
     Performs full cluster / peak analysis on `filename`
 
@@ -577,6 +744,10 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     prob_thresh : int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
+    min_distance : float, optional
+        Specifies the minimum distance required between sub-peaks in a cluster.
+        If None, sub-peaks will not be examined and only the primary cluster
+        peak will be reported. Default: None
     outdir : str or None, optional
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
@@ -603,7 +774,8 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     clust_frame, peaks_frame = get_statmap_info(stat_img, atlas=atlas,
                                                 voxel_thresh=voxel_thresh,
                                                 cluster_extent=cluster_extent,
-                                                prob_thresh=prob_thresh)
+                                                prob_thresh=prob_thresh,
+                                                min_distance=min_distance)
 
     # write output .csv files
     clust_frame.to_csv(op.join(outdir, '{}_clusters.csv'.format(out_fname)))

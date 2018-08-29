@@ -4,6 +4,7 @@ from atlasreader import atlasreader
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 
+STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
     affine=np.array([[1, 0, 0, -90],
                      [0, 1, 0, -150],
@@ -38,15 +39,24 @@ def test_coords_transform():
         atlasreader.coord_ijk_to_xyz(aff, [[10, 10], [20, 30]])
 
 
+def test_get_statmap_info():
+    # general integration test to check that min_distance works
+    # this will take a little while since it's running it twice
+    for min_distance in [None, 20]:
+        cdf, pdf = atlasreader.get_statmap_info(STAT_IMG,
+                                                atlas=['Harvard_Oxford',
+                                                       'AAL'],
+                                                min_distance=min_distance)
+
+
 def test_create_output(tmpdir):
     # create mock data
-    motor_images = fetch_neurovault_motor_task()
-    stat_img = motor_images.images[0]
-    stat_img_name = os.path.basename(stat_img)[:-7]
+    stat_img_name = os.path.basename(STAT_IMG)[:-7]
 
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(stat_img, atlas=['Harvard_Oxford'],
+    atlasreader.create_output(STAT_IMG,
+                              atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
     # test if output exists and if the key .csv and .png files were created
