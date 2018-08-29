@@ -4,4 +4,5 @@ nilearn
 numpy
 pandas
 scipy
+scikit-image
 scikit-learn
