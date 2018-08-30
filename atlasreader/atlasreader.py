@@ -684,17 +684,10 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
     for idx, coord in enumerate(coords):
         clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
-        try:
-            plotting.plot_stat_map(thresh_img, vmax=color_max,
-                                   colorbar=True, title=clust_fname[:-4],
-                                   threshold=voxel_thresh, draw_cross=True,
-                                   black_bg=True, symmetric_cbar=True,
-                                   output_file=op.join(outdir, clust_fname),
-                                   bg_img=bgimg, cut_coords=coord,
-                                   display_mode='ortho')
-        except ValueError:
-            plotting.plot_stat_map(thresh_img, vmax=color_max,
-                                   colorbar=True, title=clust_fname[:-4],
-                                   threshold=voxel_thresh, draw_cross=True,
-                                   black_bg=True, symmetric_cbar=True,
-                                   output_file=op.join(outdir, clust_fname))
+        plotting.plot_stat_map(thresh_img, vmax=color_max,
+                               colorbar=True, title=clust_fname[:-4],
+                               threshold=voxel_thresh, draw_cross=True,
+                               black_bg=True, symmetric_cbar=True,
+                               output_file=op.join(outdir, clust_fname),
+                               bg_img=bgimg, cut_coords=coord,
+                               display_mode='ortho')

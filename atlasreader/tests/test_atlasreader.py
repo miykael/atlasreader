@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from atlasreader import atlasreader
+import nibabel as nb
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 
@@ -27,6 +28,22 @@ EXAMPLE_COORDS = dict(
 )
 
 
+def test_get_atlases():
+    for atlas in atlasreader._ATLASES:
+        a = atlasreader.get_atlas(atlas, cache=False)
+        assert all(hasattr(a, k) for k in ['atlas', 'image', 'labels'])
+    with pytest.raises(ValueError):
+        atlasreader.get_atlas('not_an_atlas')
+
+
+def test_check_atlases():
+    atlases = atlasreader.check_atlases('all')
+    assert len(atlases) == len(atlasreader._ATLASES)
+    atlases = atlasreader.check_atlases(['aal', 'destrieux'])
+    assert atlasreader.check_atlases(atlases) == atlases
+    assert atlasreader.check_atlases(atlases[0]) == atlases[0]
+
+
 def test_coords_transform():
     aff = EXAMPLE_COORDS['affine']
     for coords in EXAMPLE_COORDS['coords']:
@@ -43,10 +60,19 @@ def test_get_statmap_info():
     # general integration test to check that min_distance works
     # this will take a little while since it's running it twice
     for min_distance in [None, 20]:
-        cdf, pdf = atlasreader.get_statmap_info(STAT_IMG,
+        cdf, pdf = atlasreader.get_statmap_info(nb.load(STAT_IMG),
                                                 atlas=['Harvard_Oxford',
                                                        'AAL'],
                                                 min_distance=min_distance)
+
+
+def test_process_image():
+    # check that defaults for processing image work
+    img = atlasreader.process_img(STAT_IMG)
+    assert isinstance(img, nb.Nifti1Image)
+    # check that negative voxel threshold works
+    img = atlasreader.process_img(STAT_IMG, voxel_thresh=-10)
+    assert isinstance(img, nb.Nifti1Image)
 
 
 def test_create_output(tmpdir):
@@ -60,14 +86,8 @@ def test_create_output(tmpdir):
                               outdir=output_dir)
 
     # test if output exists and if the key .csv and .png files were created
-    assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
-    assert os.path.isfile(
-        os.path.join(output_dir, '{}_clusters.csv'.format(stat_img_name))
-    )
-    assert os.path.isfile(
-        os.path.join(output_dir, '{}_peaks.csv'.format(stat_img_name))
-    )
-    assert os.path.isfile(
-        os.path.join(output_dir, '{}.png'.format(stat_img_name))
-    )
+    assert output_dir.exists()
+    assert len(output_dir.listdir()) > 0
+    assert output_dir.join('{}_clusters.csv'.format(stat_img_name)).isfile()
+    assert output_dir.join('{}_peaks.csv'.format(stat_img_name)).isfile()
+    assert output_dir.join('{}.png'.format(stat_img_name)).isfile()
