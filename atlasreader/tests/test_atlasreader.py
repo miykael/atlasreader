@@ -1,9 +1,11 @@
 import os
 import numpy as np
 from atlasreader import atlasreader
+import nibabel as nb
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 
+STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
     affine=np.array([[1, 0, 0, -90],
                      [0, 1, 0, -150],
@@ -12,52 +14,80 @@ EXAMPLE_COORDS = dict(
     coords=[
         dict(
             ijk=[0, 0, 0],
-            xyz=[-90, -150, -80]
+            xyz=np.array([[-90, -150, -80]])
         ),
         dict(
             ijk=[[10, 10, 10], [100, 50, 100]],
-            xyz=[[-80, -140, -70], [10, -100, 20]]
+            xyz=np.array([[-80, -140, -70], [10, -100, 20]])
         ),
         dict(
             ijk=[[54, 32, 20], [82, 205, 38], [32, 51, 82]],
-            xyz=[[-36, -118, -60], [-8, 55, -42], [-58, -99, 2]]
+            xyz=np.array([[-36, -118, -60], [-8, 55, -42], [-58, -99, 2]])
         )
     ]
 )
+
+
+def test_get_atlases():
+    for atlas in atlasreader._ATLASES:
+        a = atlasreader.get_atlas(atlas, cache=False)
+        assert all(hasattr(a, k) for k in ['atlas', 'image', 'labels'])
+    with pytest.raises(ValueError):
+        atlasreader.get_atlas('not_an_atlas')
+
+
+def test_check_atlases():
+    atlases = atlasreader.check_atlases('all')
+    assert len(atlases) == len(atlasreader._ATLASES)
+    atlases = atlasreader.check_atlases(['aal', 'destrieux'])
+    assert atlasreader.check_atlases(atlases) == atlases
+    assert atlasreader.check_atlases(atlases[0]) == atlases[0]
 
 
 def test_coords_transform():
     aff = EXAMPLE_COORDS['affine']
     for coords in EXAMPLE_COORDS['coords']:
         ijk, xyz = coords['ijk'], coords['xyz']
-        assert atlasreader.coord_xyz_to_ijk(aff, xyz) == ijk
-        assert atlasreader.coord_ijk_to_xyz(aff, ijk) == xyz
+        assert np.all(atlasreader.coord_xyz_to_ijk(aff, xyz) == ijk)
+        assert np.all(atlasreader.coord_ijk_to_xyz(aff, ijk) == xyz)
     with pytest.raises(ValueError):
         atlasreader.coord_xyz_to_ijk(aff, [[10, 10], [20, 30]])
     with pytest.raises(ValueError):
         atlasreader.coord_ijk_to_xyz(aff, [[10, 10], [20, 30]])
 
 
+def test_get_statmap_info():
+    # general integration test to check that min_distance works
+    # this will take a little while since it's running it twice
+    for min_distance in [None, 20]:
+        cdf, pdf = atlasreader.get_statmap_info(nb.load(STAT_IMG),
+                                                atlas=['Harvard_Oxford',
+                                                       'AAL'],
+                                                min_distance=min_distance)
+
+
+def test_process_image():
+    # check that defaults for processing image work
+    img = atlasreader.process_img(STAT_IMG)
+    assert isinstance(img, nb.Nifti1Image)
+    # check that negative voxel threshold works
+    img = atlasreader.process_img(STAT_IMG, voxel_thresh=-10)
+    assert isinstance(img, nb.Nifti1Image)
+
+
 def test_create_output(tmpdir):
     # create mock data
-    motor_images = fetch_neurovault_motor_task()
-    stat_img = motor_images.images[0]
-    stat_img_name = os.path.basename(stat_img)[:-7]
+    stat_img_name = os.path.basename(STAT_IMG)[:-7]
 
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(stat_img, atlas=['Harvard_Oxford'],
+    atlasreader.create_output(STAT_IMG,
+                              atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
     # test if output exists and if the key .csv and .png files were created
-    assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
-    assert os.path.isfile(
-        os.path.join(output_dir, '{}_clusters.csv'.format(stat_img_name))
-    )
-    assert os.path.isfile(
-        os.path.join(output_dir, '{}_peaks.csv'.format(stat_img_name))
-    )
-    assert os.path.isfile(
-        os.path.join(output_dir, '{}.png'.format(stat_img_name))
-    )
+    assert output_dir.exists()
+    assert len(output_dir.listdir()) > 0
+    assert output_dir.join('{}_clusters.csv'.format(stat_img_name)).isfile()
+    assert output_dir.join('{}_peaks.csv'.format(stat_img_name)).isfile()
+    assert output_dir.join('{}.png'.format(stat_img_name)).isfile()

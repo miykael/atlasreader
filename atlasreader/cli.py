@@ -65,7 +65,13 @@ def _get_parser():
                              'not specified, then output files are created in '
                              'the same directory as the statistical map that '
                              'is provided.')
-
+    parser.add_argument('-d', '--mindist', type=float, default=None,
+                        dest='min_distance', metavar='distance',
+                        help='If specified, the program will attempt to find '
+                             'subpeaks within detected clusters, rather than '
+                             'a single peak per cluster. The specified value '
+                             'will determine the minimum distance required '
+                             'between subpeaks.')
     return parser.parse_args()
 
 
@@ -83,7 +89,8 @@ def main():
                   voxel_thresh=opts.voxel_thresh,
                   cluster_extent=opts.cluster_extent,
                   prob_thresh=opts.prob_thresh,
-                  outdir=opts.outdir)
+                  outdir=opts.outdir,
+                  min_distance=opts.min_distance)
 
 
 if __name__ == '__main__':
