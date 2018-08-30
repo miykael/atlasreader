@@ -652,13 +652,6 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     # create output directory
     os.makedirs(outdir, exist_ok=True)
 
-    # get cluster + peak information from image
-    clust_frame, peaks_frame = get_statmap_info(stat_img, atlas=atlas,
-                                                voxel_thresh=voxel_thresh,
-                                                cluster_extent=cluster_extent,
-                                                prob_thresh=prob_thresh,
-                                                min_distance=min_distance)
-
     # generate stat map for plotting by collapsing all clusters into one image
     clust_img = process_img(stat_img,
                             voxel_thresh=voxel_thresh,
@@ -679,6 +672,12 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
 
     # Check if thresholded image contains only zeros
     if thresh_img.get_data().sum():
+
+        # get cluster + peak information from image
+        clust_frame, peaks_frame = get_statmap_info(
+            stat_img, atlas=atlas, voxel_thresh=voxel_thresh,
+            cluster_extent=cluster_extent, prob_thresh=prob_thresh,
+            min_distance=min_distance)
 
         # write output .csv files
         clust_frame.to_csv(op.join(outdir, '{}_clusters.csv'.format(out_fname)))
