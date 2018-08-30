@@ -13,15 +13,15 @@ EXAMPLE_COORDS = dict(
     coords=[
         dict(
             ijk=[0, 0, 0],
-            xyz=[-90, -150, -80]
+            xyz=np.array([[-90, -150, -80]])
         ),
         dict(
             ijk=[[10, 10, 10], [100, 50, 100]],
-            xyz=[[-80, -140, -70], [10, -100, 20]]
+            xyz=np.array([[-80, -140, -70], [10, -100, 20]])
         ),
         dict(
             ijk=[[54, 32, 20], [82, 205, 38], [32, 51, 82]],
-            xyz=[[-36, -118, -60], [-8, 55, -42], [-58, -99, 2]]
+            xyz=np.array([[-36, -118, -60], [-8, 55, -42], [-58, -99, 2]])
         )
     ]
 )
@@ -31,8 +31,8 @@ def test_coords_transform():
     aff = EXAMPLE_COORDS['affine']
     for coords in EXAMPLE_COORDS['coords']:
         ijk, xyz = coords['ijk'], coords['xyz']
-        assert atlasreader.coord_xyz_to_ijk(aff, xyz) == ijk
-        assert atlasreader.coord_ijk_to_xyz(aff, ijk) == xyz
+        assert np.all(atlasreader.coord_xyz_to_ijk(aff, xyz) == ijk)
+        assert np.all(atlasreader.coord_ijk_to_xyz(aff, ijk) == xyz)
     with pytest.raises(ValueError):
         atlasreader.coord_xyz_to_ijk(aff, [[10, 10], [20, 30]])
     with pytest.raises(ValueError):
