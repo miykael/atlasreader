@@ -680,8 +680,10 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
             min_distance=min_distance)
 
         # write output .csv files
-        clust_frame.to_csv(op.join(outdir, '{}_clusters.csv'.format(out_fname)))
-        peaks_frame.to_csv(op.join(outdir, '{}_peaks.csv'.format(out_fname)))
+        clust_frame.to_csv(op.join(
+            outdir, '{}_clusters.csv'.format(out_fname)))
+        peaks_frame.to_csv(op.join(
+            outdir, '{}_peaks.csv'.format(out_fname)))
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
@@ -694,10 +696,9 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
         coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
         for idx, coord in enumerate(coords):
             clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
-            plotting.plot_stat_map(thresh_img, vmax=color_max,
-                                colorbar=True, title=clust_fname[:-4],
-                                threshold=voxel_thresh, draw_cross=True,
-                                black_bg=True, symmetric_cbar=True,
-                                output_file=op.join(outdir, clust_fname),
-                                bg_img=bgimg, cut_coords=coord,
-                                display_mode='ortho')
+            plotting.plot_stat_map(
+                thresh_img, vmax=color_max, colorbar=True,
+                title=clust_fname[:-4], threshold=voxel_thresh,
+                draw_cross=True, black_bg=True, symmetric_cbar=True,
+                output_file=op.join(outdir, clust_fname), bg_img=bgimg,
+                cut_coords=coord, display_mode='ortho')
