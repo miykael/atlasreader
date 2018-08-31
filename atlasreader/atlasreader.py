@@ -11,7 +11,9 @@ from nilearn.regions import connected_regions
 from nilearn._utils import check_niimg
 import numpy as np
 import pandas as pd
-from scipy import ndimage
+from scipy.ndimage import label, center_of_mass
+from scipy.spatial.distance import cdist
+from skimage.feature import peak_local_max
 from sklearn.utils import Bunch
 
 
@@ -21,7 +23,7 @@ _ATLASES = [
 ]
 
 
-def get_atlas(atlastype):
+def get_atlas(atlastype, cache=True):
     """
     Gets `atlastype` image and corresponding label file from package resources
 
@@ -29,6 +31,8 @@ def get_atlas(atlastype):
     ----------
     atlastype : str
         Name of atlas to query
+    cache : bool, optional
+        Whether to pre-load atlas image data. Default: True
 
     Returns
     -------
@@ -48,8 +52,64 @@ def get_atlas(atlastype):
     atlas_path = op.join(data_dir, 'atlas_{0}.nii.gz'.format(atlastype))
     label_path = op.join(data_dir, 'labels_{0}.csv'.format(atlastype))
 
-    # return loaded filenames (we should only have to call this once!)
-    return Bunch(image=nb.load(atlas_path), labels=pd.read_csv(label_path))
+    if not all(op.exists(p) for p in [atlas_path, label_path]):
+        raise ValueError('{} is not a valid atlas. Please check inputs and '
+                         'try again.'.format(atlastype))
+
+    atlas = Bunch(atlas=atlastype,
+                  image=nb.load(atlas_path),
+                  labels=pd.read_csv(label_path))
+    if cache:
+        atlas.image.get_data()
+
+    return atlas
+
+
+def check_atlases(atlases):
+    """
+    Checks atlases
+
+    Parameters
+    ----------
+    atlases : str or list
+        Name of atlas(es) to use
+
+    Returns
+    -------
+    atlases : list
+        Names of atlas(es) to use
+    """
+    if isinstance(atlases, str):
+        atlases = [atlases]
+    elif isinstance(atlases, dict):
+        if all(hasattr(atlases, i) for i in ['image', 'atlas', 'labels']):
+            return atlases
+    draw = atlases if 'all' not in atlases else _ATLASES
+
+    return [get_atlas(a) if isinstance(a, str) else a for a in draw]
+
+
+def get_label(atlastype, label_id):
+    """
+    Gets anatomical name of `label_id` in `atlastype`
+
+    Parameters
+    ----------
+    atlastype : str
+        Name of atlas to use
+    label_id : int
+        Numerical ID representing label
+
+    Returns
+    ------
+    label : str
+        Neuroanatomical region of `label_id` in `atlastype`
+    """
+    labels = check_atlases(atlastype).labels
+    try:
+        return labels.query('index == {}'.format(label_id)).name.iloc[0]
+    except IndexError:
+        return 'no_label'
 
 
 def _check_coord_inputs(coords):
@@ -89,13 +149,12 @@ def coord_ijk_to_xyz(affine, coords):
 
     Returns
     ------
-    xyz : (N,) list of list
-        Provided `coords` in `affine` space, where each entry is a length three
-        list of float denoting xyz coordinates
+    xyz : (N, 3) numpy.ndarray
+        Provided `coords` in `affine` space
     """
     coords = _check_coord_inputs(coords)
     mni_coords = np.dot(affine, coords)[:3].T
-    return mni_coords.squeeze().tolist()
+    return mni_coords
 
 
 def coord_xyz_to_ijk(affine, coords):
@@ -112,119 +171,97 @@ def coord_xyz_to_ijk(affine, coords):
 
     Returns
     ------
-    ijk : (N,) list of list
-        Provided `coords` in cartesian space, where each entry is a length
-        three list of float denoting ijk coordinates
+    ijk : (N, 3) numpy.ndarray
+        Provided `coords` in cartesian space
     """
     coords = _check_coord_inputs(coords)
     vox_coords = np.linalg.solve(affine, coords)[:3].T.astype(int)
-    return vox_coords.squeeze().tolist()
+    return vox_coords
 
 
-def get_label(atlastype, label_id):
+def get_peak_coords(clust_img):
     """
-    Gets anatomical name of `label_id` in `atlastype`
+    Gets MNI coordinates of peak voxels within each cluster of `clust_img`
 
     Parameters
     ----------
-    atlastype : str
-        Name of atlas to use
-    label_id : int
-        Numerical ID representing label
-
-    Returns
-    ------
-    label : str
-        Neuroanatomical region of `label_id` in `atlastype`
-    """
-    labels = get_atlas(atlastype).labels
-    try:
-        return labels.query('index == {}'.format(label_id)).name.iloc[0]
-    except IndexError:
-        return 'no_label'
-
-
-def clusterize_img(stat_img, cluster_extent=20):
-    """
-    Extracts clusters from statistical map `stat_img`
-
-    Parameters
-    ----------
-    stat_img : Niimg_like object
-        Thresholded statistical map image
-    cluster_extent : int, optional
-        Minimum number of voxels required to consider a cluster. Default: 20
-
-    Returns
-    ------
-    cluster_img : Nifti1Image
-        4D image of brain regions, where each volume is a distinct cluster
-    """
-
-    stat_img = check_niimg(stat_img)
-    min_region_size = cluster_extent * np.prod(stat_img.header.get_zooms())
-    cluster_img = connected_regions(stat_img,
-                                    min_region_size=min_region_size,
-                                    extract_type='connected_components')[0]
-
-    return cluster_img
-
-
-def get_peak_coords(cluster_img):
-    """
-    Gets MNI coordinates of peak voxels within each cluster of `cluster_img`
-
-    Parameters
-    ----------
-    cluster_img : 4D-niimg_like
+    clust_img : 4D-niimg_like
         4D image of brain regions, where each volume is a separated cluster
 
     Returns
     ------
-    coordinates : list of lists
-        Coordinates of peak voxels in `cluster_img`
+    coords : (N, 3) numpy.ndarray
+        Coordinates of peak voxels in `clust_img`
     """
 
     # check cluster image and make it 4D, if not already
-    cluster_img = check_niimg(cluster_img, atleast_4d=True)
+    clust_img = check_niimg(clust_img, atleast_4d=True)
 
     # create empty arrays to hold cluster size + peak coordinates
-    clust_size = np.zeros(cluster_img.shape[-1])
-    maxcoords = np.zeros((cluster_img.shape[-1], 3))
+    clust_size = np.zeros(clust_img.shape[-1])
+    maxcoords = np.zeros((clust_img.shape[-1], 3))
 
     # iterate through clusters and get info
-    for n, cluster in enumerate(image.iter_img(cluster_img)):
+    for n, cluster in enumerate(image.iter_img(clust_img)):
         cluster = np.abs(cluster.get_data())
         clust_size[n] = np.sum(cluster != 0)
-        maxcoords[n] = ndimage.center_of_mass(cluster == cluster.max())
+        maxcoords[n] = center_of_mass(cluster == cluster.max())
 
     # sort peak coordinates by cluster size
     maxcoords = np.floor(maxcoords)[np.argsort(clust_size)[::-1]]
 
     # convert coordinates to MNI space
-    coords = coord_ijk_to_xyz(cluster_img.affine, maxcoords)
+    coords = coord_ijk_to_xyz(clust_img.affine, maxcoords)
 
     return coords
 
 
-def get_cluster_coords(cluster, affine):
+def get_subpeak_coords(clust_img, min_distance=20):
     """
-    Get `affine` coordinates of voxels in `cluster`
+    Finds subpeaks in `clust_img` that are at least `min_distance` apart
 
     Parameters
     ----------
-    cluster : (X, Y, Z) array-like
-        Boolean mask of a single cluster
-    affine : (4, 4) array-like
-        Affine matrix
+    clust_img : niimg_like
+        Cluster image that `peaks` were derived from
+    min_distance : float, optional
+        Minimum distance required between peaks in `affine` (i.e., mm) space.
+        Default: 20
 
     Returns
-    ------
-    coordinates : list of numpy.ndarray
-        List of coordinates for voxels in cluster
+    -------
+    peaks : (N, 3) numpy.ndarray
+        Coordiantes of (sub)peak voxels in `clust_img`
     """
-    coords_vox = np.rollaxis(np.array(np.where(cluster)), 1)
-    coords = coord_ijk_to_xyz(affine, coords_vox)
+    data = check_niimg(clust_img).get_data()
+
+    # find local maxima, excluding peaks that are on the border of the cluster
+    local_max = peak_local_max(data, exclude_border=1, indices=False)
+
+    # make new clusters to check for "flat" peaks + find CoM of those clusters
+    labels, nl = label(local_max)
+    ijk = center_of_mass(data, labels=labels, index=range(1, nl + 1))
+    ijk = np.asarray(ijk, dtype=int)
+
+    if len(ijk) > 1:
+        # sort coordinates based on peak value
+        ijk = ijk[data[tuple(map(tuple, ijk.T))].argsort()[::-1]]
+
+        # convert to MNI space and get distance (in millimeters, not voxels)
+        xyz = coord_ijk_to_xyz(clust_img.affine, ijk)
+        distances = cdist(xyz, xyz)
+
+        # remove "weaker" peak if it is too close to "stronger" peak
+        keep = np.ones(len(xyz), dtype=bool)
+        for r_idx, dist in enumerate(distances):
+            if keep[r_idx] == 1:
+                ind, = np.where(dist < min_distance)
+                keep[np.setdiff1d(ind, r_idx)] = 0
+
+        ijk = ijk[keep]
+
+    coords = coord_ijk_to_xyz(clust_img.affine, ijk)
+
     return coords
 
 
@@ -253,21 +290,20 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
         lists where each entry denotes the probability and corresponding label
         of `coordinate`.
     """
-    atlas = get_atlas(atlastype).image
 
-    # get atlas data and affine matrix
-    data = atlas.get_data()
-    affine = atlas.affine
+    # get atlas data
+    atlastype = check_atlases(atlastype)
+    data = atlastype.image.get_data()
 
     # get voxel index
-    voxID = coord_xyz_to_ijk(affine, coordinate)
+    voxID = coord_xyz_to_ijk(atlastype.image.affine, coordinate).squeeze()
 
     # get label information
     # probabilistic atlas is requested
-    if atlastype.lower() in ['juelich', 'harvard_oxford']:
+    if atlastype.atlas.lower() in ['juelich', 'harvard_oxford']:
         probs = data[voxID[0], voxID[1], voxID[2]]
         probs[probs < prob_thresh] = 0
-        idx = np.where(probs)[0]
+        idx, = np.where(probs)
 
         # if no labels found
         if len(idx) == 0:
@@ -312,24 +348,25 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
         Where each entry is of the form [probability, label] denoting the
         extent to which `cluster` overlaps with region `label` in `atlastype`
     """
-    atlas = get_atlas(atlastype).image
 
-    # get atlas data and affine matrix
-    atlas_data = atlas.get_data()
-    atlas_affine = atlas.affine
+    # get atlas data
+    atlastype = check_atlases(atlastype)
+    data = atlastype.image.get_data()
 
     # get coordinates of each voxel in cluster
-    coords = get_cluster_coords(cluster, affine)
+    coords_vox = np.rollaxis(np.array(np.where(cluster)), 1)
+    coords = coord_ijk_to_xyz(affine, coords_vox)
 
     # get voxel indexes
-    voxIDs = coord_xyz_to_ijk(atlas_affine, coords)
+    voxIDs = coord_xyz_to_ijk(atlastype.image.affine, coords)
+    voxIDs = tuple(map(tuple, voxIDs.T))
 
     # get label information
-    if atlastype.lower() in ['juelich', 'harvard_oxford']:
-        labelIDs = [np.argmax(atlas_data[v[0], v[1], v[2]]) if np.sum(
-            atlas_data[v[0], v[1], v[2]]) != 0 else -1 for v in voxIDs]
+    if atlastype.atlas.lower() in ['juelich', 'harvard_oxford']:
+        labelIDs = np.argmax(data[voxIDs], axis=1)
+        labelIDs[labelIDs == 0] = -1
     else:
-        labelIDs = [int(atlas_data[v[0], v[1], v[2]]) for v in voxIDs]
+        labelIDs = data[voxIDs]
 
     unique_labels = np.unique(labelIDs)
     labels = np.array([get_label(atlastype, u) for u in unique_labels])
@@ -341,87 +378,6 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
 
     return [[percentage[s], labels[s]] for s in sortID if
             percentage[s] >= prob_thresh]
-
-
-def get_peak_info(coord, atlastype='all', prob_thresh=5):
-    """
-    Gets region and probability information for `coord` in `atlastype`
-
-    Parameters
-    ----------
-    coordinate : list of float
-        x, y, z MNI coordinates of voxel
-    atlastype : str or list, optional
-        Name of atlas(es) to use. Default: 'all'
-    prob_thresh : [0, 100] int, optional
-        Probability (percentage) threshold to apply to `atlastype` if it is
-        probabilistic
-
-    Returns
-    -------
-    peakinfo : list of lists
-        Where each entry contains the atlas name and probability information
-        of region labels associated with `coordinate` in the atlas
-    """
-    peakinfo = []
-    for atypes in check_atlases(atlastype):
-        segment = read_atlas_peak(atypes, coord, prob_thresh)
-        peakinfo.append([atypes, segment])
-
-    return peakinfo
-
-
-def get_cluster_info(cluster, affine, atlastype='all', prob_thresh=5):
-    """
-    Gets region and probability information for `cluster` in `atlastype`
-
-    Parameters
-    ----------
-    cluster : (X, Y, Z) array-like
-        Boolean mask of cluster
-    affine : (4, 4) array-like
-        Affine matrix mapping `cluster` to MNI space
-    atlastype : str or list, optional
-        Name of atlas(es) to use. Default: 'all'
-    prob_thresh : [0, 100] int, optional
-        Probability (percentage) threshold to apply to `atlastype`, if it is
-        probabilistic
-
-    Returns
-    ------
-    clusterinfo : list of lists
-        Where each entry contains the atlas name and probability information of
-        region labels associated with `cluster` in the atlas
-    """
-    clusterinfo = []
-    for atypes in check_atlases(atlastype):
-        segment = read_atlas_cluster(atypes, cluster, affine, prob_thresh)
-        clusterinfo.append([atypes, segment])
-
-    return clusterinfo
-
-
-def check_atlases(atlastype):
-    """
-    Converts `atlastype` to list and expands 'all', if present
-
-    Parameters
-    ----------
-    atlastype : str or list
-        Name of atlas(es) to use
-
-    Returns
-    -------
-    atlases : list
-        Names of atlas(es) to use
-    """
-    if isinstance(atlastype, str):
-        atlastype = [atlastype]
-
-    if 'all' not in atlastype:
-        return atlastype
-    else:
-        return _ATLASES.copy()
 
 
 def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
@@ -451,19 +407,131 @@ def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
     thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
 
     # extract clusters
-    cluster_img = clusterize_img(thresh_img, cluster_extent=cluster_extent)
+    min_region_size = cluster_extent * np.prod(thresh_img.header.get_zooms())
+    clusters = []
+    for sign in ['pos', 'neg']:
+        data = thresh_img.get_data().copy()
+        if sign == 'pos':
+            data[data < 0] = 0  # keep only positives
+        else:
+            data[data > 0] = 0  # keep only negatives
 
-    return cluster_img
+        # Do nothing if data array contains only zeros
+        if np.any(data):
+            clusters += [connected_regions(
+                image.new_img_like(thresh_img, data),
+                min_region_size=min_region_size,
+                extract_type='connected_components')[0]]
+
+    # Return empty image if no clusters were found
+    if len(clusters) == 0:
+        clusters = [image.new_img_like(thresh_img, data)]
+
+    return image.concat_imgs(clusters)
+
+
+def get_peak_data(clust_img, atlas='all', prob_thresh=5, min_distance=None):
+    """
+    Parameters
+    ----------
+    clust_img : Niimg_like
+        3D image of a single, valued cluster
+    atlas : str or list, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+    min_distance : float, optional
+        Specifies the minimum distance required between sub-peaks in a cluster.
+        If None, sub-peaks will not be examined and only the primary cluster
+        peak will be reported. Default: None
+
+    Returns
+    -------
+    peak_summary : numpy.ndarray
+        Info on peaks found in `clust_img`, including peak coordinates, peak
+        values, volume of cluster that peaks belong to, and neuroanatomical
+        locations defined in `atlas`
+    """
+    data = check_niimg(clust_img).get_data()
+
+    # get voxel volume information
+    voxel_volume = np.prod(clust_img.header.get_zooms())
+
+    # find peaks -- or subpeaks, if `min_distance` is set
+    if min_distance is None:
+        peaks = get_peak_coords(clust_img)
+    else:
+        peak_img = image.math_img('np.abs(img)', img=clust_img)
+        peaks = get_subpeak_coords(peak_img, min_distance=min_distance)
+    peaks = coord_xyz_to_ijk(clust_img.affine, peaks)
+
+    # get info on peak in cluster (all peaks belong to same cluster ID!)
+    cluster_volume = np.repeat(np.sum(data != 0) * voxel_volume, len(peaks))
+    peak_values = data[tuple(map(tuple, peaks.T))]
+    coords = coord_ijk_to_xyz(clust_img.affine, peaks)
+    peak_info = []
+    for coord in coords:
+        coord_info = []
+        for atype in check_atlases(atlas):
+            segment = read_atlas_peak(atype, coord, prob_thresh)
+            coord_info.append([atype.atlas, segment])
+
+        peak_info += [[peak if type(peak) != list else
+                       '; '.join(['{}% {}'.format(*e) for e in peak])
+                       for (_, peak) in coord_info]]
+
+    return np.column_stack([coords, peak_values, cluster_volume, peak_info])
+
+
+def get_cluster_data(clust_img, atlas='all', prob_thresh=5):
+    """
+    Parameters
+    ----------
+    clust_img : Niimg_like
+        3D image of a single, valued cluster
+    atlas : str or list, optional
+        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+    prob_thresh : [0, 100] int, optional
+        Probability (percentage) threshold to apply to `atlas`, if it is
+        probabilistic. Default: 5
+
+    Returns
+    -------
+    clust_frame : list
+        Info on cluster in `clust_img`, including coordinates of peak,
+        average cluster value, volume of cluster, and percent overlap with
+        neuroanatomical regions defined in `atlas`
+    """
+    data = check_niimg(clust_img).get_data()
+    voxel_volume = np.prod(clust_img.header.get_zooms())
+
+    coord = get_peak_coords(clust_img).squeeze().tolist()
+    clust_mask = data != 0
+    clust_mean = data[clust_mask].mean()
+    cluster_volume = np.sum(clust_mask) * voxel_volume
+
+    # atlas info on cluster
+    cluster_info = []
+    for atype in check_atlases(atlas):
+        segment = read_atlas_cluster(atype, clust_mask,
+                                     clust_img.affine, prob_thresh)
+        cluster_info.append([atype, segment])
+
+    cluster_info = ['; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
+                    for (_, cluster) in cluster_info]
+
+    return coord + [clust_mean, cluster_volume] + cluster_info
 
 
 def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
-                     cluster_extent=20, prob_thresh=5):
+                     cluster_extent=20, prob_thresh=5, min_distance=None):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
 
     Parameters
     ----------
-    cluster_img : Niimg_like
+    stat_img : Niimg_like
         4D image of brain regions, where each volume is a distinct cluster
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'all'
@@ -477,6 +545,10 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
+    min_distance : float, optional
+        Specifies the minimum distance required between sub-peaks in a cluster.
+        If None, sub-peaks will not be examined and only the primary cluster
+        peak will be reported. Default: None
 
     Returns
     -------
@@ -490,66 +562,43 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
         `atlas`
     """
     stat_img = check_niimg(stat_img)
-    atlas = check_atlases(atlas)
-    voxel_volume = stat_img.header.get('pixdim')[1:4].prod()
+    atlas = check_atlases(atlas)  # loading in the atlases takes the longest
 
     # threshold + clusterize image
     clust_img = process_img(stat_img,
                             voxel_thresh=voxel_thresh,
                             cluster_extent=cluster_extent)
 
-    # get peak and cluster information
     clust_info, peaks_info = [], []
-    for n, coord in enumerate(get_peak_coords(clust_img)):
-        clust_data = image.index_img(clust_img, n).get_data()
-        clust_mask = clust_data != 0
-        peak_index = tuple(coord_xyz_to_ijk(clust_img.affine, coord))
+    for n, cluster in enumerate(image.iter_img(clust_img)):
+        peak_data = get_peak_data(cluster, atlas=atlas,
+                                  prob_thresh=prob_thresh,
+                                  min_distance=min_distance)
+        clust_data = get_cluster_data(cluster, atlas=atlas,
+                                      prob_thresh=prob_thresh)
 
-        # basic info on cluster / peak
-        peak_value = clust_data[peak_index]
-        clust_mean = clust_data[clust_mask].mean()
-        clust_volume = np.sum(clust_mask) * voxel_volume
+        cluster_id = np.repeat(n + 1, len(peak_data))
+        peaks_info += [np.column_stack([cluster_id, peak_data])]
+        clust_info += [[n + 1] + clust_data]
 
-        # atlas info on peak
-        peak_info = get_peak_info(coord,
-                                  atlastype=atlas,
-                                  prob_thresh=prob_thresh)
-        peak_summary = [
-            peak if type(peak) != list else
-            '; '.join(['{}% {}'.format(*e) for e in peak])
-            for (_, peak) in peak_info
-        ]
-
-        # atlas info on cluster
-        cluster_info = get_cluster_info(clust_mask,
-                                        clust_img.affine,
-                                        atlastype=atlas,
-                                        prob_thresh=prob_thresh)
-        clust_summary = [
-            '; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
-            for (_, cluster) in cluster_info
-        ]
-
-        # append to output list
-        clust_info += [coord + [clust_mean, clust_volume] + clust_summary]
-        peaks_info += [coord + [peak_value, clust_volume] + peak_summary]
-
-    clust_frame = pd.DataFrame(clust_info,
-                               index=pd.Series(range(len(clust_info)),
-                                               name='cluster_id'),
-                               columns=['peak_x', 'peak_y', 'peak_z',
-                                        'cluster_mean', 'volume'] + atlas)
-    peaks_frame = pd.DataFrame(peaks_info,
-                               index=pd.Series(range(len(peaks_info)),
-                                               name='peak_id'),
-                               columns=['peak_x', 'peak_y', 'peak_z',
-                                        'peak_value', 'volume'] + atlas)
+    # construct dataframes and reset floats
+    atlasnames = [a.atlas for a in atlas]
+    clust_frame = pd.DataFrame(np.row_stack(clust_info),
+                               columns=['cluster_id',
+                                        'peak_x', 'peak_y', 'peak_z',
+                                        'cluster_mean', 'volume'] + atlasnames)
+    peaks_frame = pd.DataFrame(np.row_stack(peaks_info),
+                               columns=['cluster_id',
+                                        'peak_x', 'peak_y', 'peak_z',
+                                        'peak_value', 'volume'] + atlasnames)
+    clust_frame.iloc[:, :6] = clust_frame.iloc[:, :6].astype(float)
+    peaks_frame.iloc[:, :6] = peaks_frame.iloc[:, :6].astype(float)
 
     return clust_frame, peaks_frame
 
 
 def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
-                  prob_thresh=5, outdir=None):
+                  prob_thresh=5, min_distance=None, outdir=None):
     """
     Performs full cluster / peak analysis on `filename`
 
@@ -577,6 +626,10 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     prob_thresh : int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
+    min_distance : float, optional
+        Specifies the minimum distance required between sub-peaks in a cluster.
+        If None, sub-peaks will not be examined and only the primary cluster
+        peak will be reported. Default: None
     outdir : str or None, optional
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
@@ -599,16 +652,6 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     # create output directory
     os.makedirs(outdir, exist_ok=True)
 
-    # get cluster + peak information from image
-    clust_frame, peaks_frame = get_statmap_info(stat_img, atlas=atlas,
-                                                voxel_thresh=voxel_thresh,
-                                                cluster_extent=cluster_extent,
-                                                prob_thresh=prob_thresh)
-
-    # write output .csv files
-    clust_frame.to_csv(op.join(outdir, '{}_clusters.csv'.format(out_fname)))
-    peaks_frame.to_csv(op.join(outdir, '{}_peaks.csv'.format(out_fname)))
-
     # generate stat map for plotting by collapsing all clusters into one image
     clust_img = process_img(stat_img,
                             voxel_thresh=voxel_thresh,
@@ -627,28 +670,35 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
                                   cmap=plotting.cm.cold_hot,
                                   output_file=glass_fname)
 
-    # get template image for plotting cluster maps
-    bgimg = nb.load(
-        resource_filename(
-            'atlasreader',
-            'data/templates/MNI152_T1_1mm_brain.nii.gz'
+    # Check if thresholded image contains only zeros
+    if np.any(thresh_img.get_data()):
+
+        # get cluster + peak information from image
+        clust_frame, peaks_frame = get_statmap_info(
+            stat_img, atlas=atlas, voxel_thresh=voxel_thresh,
+            cluster_extent=cluster_extent, prob_thresh=prob_thresh,
+            min_distance=min_distance)
+
+        # write output .csv files
+        clust_frame.to_csv(op.join(
+            outdir, '{}_clusters.csv'.format(out_fname)))
+        peaks_frame.to_csv(op.join(
+            outdir, '{}_peaks.csv'.format(out_fname)))
+
+        # get template image for plotting cluster maps
+        bgimg = nb.load(
+            resource_filename(
+                'atlasreader',
+                'data/templates/MNI152_T1_1mm_brain.nii.gz'
+            )
         )
-    )
-    # plot clusters
-    coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
-    for idx, coord in enumerate(coords):
-        clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
-        try:
-            plotting.plot_stat_map(thresh_img, vmax=color_max,
-                                   colorbar=True, title=clust_fname[:-4],
-                                   threshold=voxel_thresh, draw_cross=True,
-                                   black_bg=True, symmetric_cbar=True,
-                                   output_file=op.join(outdir, clust_fname),
-                                   bg_img=bgimg, cut_coords=coord,
-                                   display_mode='ortho')
-        except ValueError:
-            plotting.plot_stat_map(thresh_img, vmax=color_max,
-                                   colorbar=True, title=clust_fname[:-4],
-                                   threshold=voxel_thresh, draw_cross=True,
-                                   black_bg=True, symmetric_cbar=True,
-                                   output_file=op.join(outdir, clust_fname))
+        # plot clusters
+        coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
+        for idx, coord in enumerate(coords):
+            clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
+            plotting.plot_stat_map(
+                thresh_img, vmax=color_max, colorbar=True,
+                title=clust_fname[:-4], threshold=voxel_thresh,
+                draw_cross=True, black_bg=True, symmetric_cbar=True,
+                output_file=op.join(outdir, clust_fname), bg_img=bgimg,
+                cut_coords=coord, display_mode='ortho')
