@@ -671,7 +671,7 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
                                   output_file=glass_fname)
 
     # Check if thresholded image contains only zeros
-    if np.count_nonzero(thresh_img.get_data())
+    if np.count_nonzero(thresh_img.get_data()):
 
         # get cluster + peak information from image
         clust_frame, peaks_frame = get_statmap_info(
