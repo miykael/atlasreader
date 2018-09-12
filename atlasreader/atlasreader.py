@@ -597,43 +597,9 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
     return clust_frame, peaks_frame
 
 
-def _plot_clusters(img, vmax, title, threshold, output_file, bg_img, coords,
-                    **kwargs):
-    """
-    Wrapper for `nilearn.plotting.plot_stat_map` so users can customize their
-    plots if desired, otherwise default parameters are used.
-
-    See here for future reference: https://stackoverflow.com/a/51940623
-
-    Parameters
-    ----------
-    **kwargs : Arguments for nilearn.plotting.plot_stat_map or dict
-
-    """
-    kwargs.setdefault('black_bg', True)
-    kwargs.setdefault('symmetric_bar', True)
-    plotting.plot_stat_map(**plot_params)
-
-
-def _plot_glass_brain():
-    pass
-
-
-
-
-    plotting.plot_stat_map(
-                thresh_img, vmax=color_max, colorbar=True,
-                title=clust_fname[:-4], threshold=voxel_thresh,
-                output_file=op.join(outdir, clust_fname), bg_img=bgimg,
-                cut_coords=coord, )
-
-
-
-
-
 def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
                   prob_thresh=5, min_distance=None, outdir=None,
-                  glass_plot_kwargs, stat_plot_kwargs):
+                  glass_plot_kws, stat_plot_kws):
     """
     Performs full cluster / peak analysis on `filename`
 
