@@ -634,6 +634,12 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     outdir : str or None, optional
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
+    glass_plot_kws : dict or None, optional
+        Additional keyword arguments to pass to
+        `nilearn.plotting.plot_glass_brain`.
+    glass_plot_kws : dict or None, optional
+        Additional keyword arguments to pass to
+        `nilearn.plotting.plot_stat_map`.
     """
 
     # confirm input data is niimg_like to raise error as early as possible
