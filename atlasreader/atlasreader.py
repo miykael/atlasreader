@@ -599,7 +599,7 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
 
 def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
                   prob_thresh=5, min_distance=None, outdir=None,
-                  glass_plot_kws, stat_plot_kws):
+                  glass_plot_kws=None, stat_plot_kws=None):
     """
     Performs full cluster / peak analysis on `filename`
 
@@ -664,17 +664,21 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     glass_fname = op.join(outdir, '{}.png'.format(out_fname))
     with warnings.catch_warnings():  # get rid of pesky warnings
         warnings.filterwarnings('ignore', category=FutureWarning)
-        glass_plot_kwargs = {
+
+        glass_plot_params = {
             'stat_map_img': thresh_img,
             'output_file': glass_fname,
-            'display_mode': 'lyrz'
+            'display_mode': 'lyrz',
             'colorbar': True,
             'black_bg': True,
             'cmap': plotting.cm.cold_hot,
             'vmax': color_max,
             'plot_abs': False
         }
-        plotting.plot_glass_brain(**glass_plot_kwargs)
+        if glass_plot_kws is None:
+            glass_plot_kws = {}
+        glass_plot_params.update(glass_plot_kws)
+        plotting.plot_glass_brain(**glass_plot_params)
 
     # Check if thresholded image contains only zeros
     if np.any(thresh_img.get_data()):
@@ -702,10 +706,10 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
         coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
         for idx, coord in enumerate(coords):
             clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
-            stat_plot_kwargs = {
+            stat_plot_params = {
                 'stat_map_img': thresh_img,
                 'bg_img': bgimg,
-                'cut_coords': coords,
+                'cut_coords': coord,
                 'output_file': op.join(outdir, clust_fname),
                 'colorbar': True,
                 'title': clust_fname[:-4],
@@ -714,5 +718,7 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
                 'symmetric_cbar': True,
                 'vmax': color_max
             }
-            plot_params.update(stat_plot_kwargs)
-            plotting.plot_stat_map(**stat_plot_kwargs)
+            if stat_plot_kws is None:
+                stat_plot_kws = {}
+            stat_plot_params.update(stat_plot_kws)
+            plotting.plot_stat_map(**stat_plot_params)
