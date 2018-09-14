@@ -96,9 +96,6 @@ def test_create_output(tmpdir):
 def test_plotting(tmpdir):
     """Test functionality of kwarg implementation"""
 
-     # create mock data
-    stat_img_name = os.path.basename(STAT_IMG)[:-7]
-
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
 
