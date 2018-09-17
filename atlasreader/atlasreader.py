@@ -598,7 +598,8 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
 
 
 def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
-                  prob_thresh=5, min_distance=None, outdir=None):
+                  prob_thresh=5, min_distance=None, outdir=None,
+                  glass_plot_kws=None, stat_plot_kws=None):
     """
     Performs full cluster / peak analysis on `filename`
 
@@ -633,6 +634,12 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     outdir : str or None, optional
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
+    glass_plot_kws : dict or None, optional
+        Additional keyword arguments to pass to
+        `nilearn.plotting.plot_glass_brain`.
+    glass_plot_kws : dict or None, optional
+        Additional keyword arguments to pass to
+        `nilearn.plotting.plot_stat_map`.
     """
 
     # confirm input data is niimg_like to raise error as early as possible
@@ -663,12 +670,21 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     glass_fname = op.join(outdir, '{}.png'.format(out_fname))
     with warnings.catch_warnings():  # get rid of pesky warnings
         warnings.filterwarnings('ignore', category=FutureWarning)
-        plotting.plot_glass_brain(thresh_img, vmax=color_max,
-                                  threshold='auto', display_mode='lyrz',
-                                  plot_abs=False, colorbar=True,
-                                  black_bg=True,
-                                  cmap=plotting.cm.cold_hot,
-                                  output_file=glass_fname)
+
+        glass_plot_params = {
+            'stat_map_img': thresh_img,
+            'output_file': glass_fname,
+            'display_mode': 'lyrz',
+            'colorbar': True,
+            'black_bg': True,
+            'cmap': plotting.cm.cold_hot,
+            'vmax': color_max,
+            'plot_abs': False
+        }
+        if glass_plot_kws is None:
+            glass_plot_kws = {}
+        glass_plot_params.update(glass_plot_kws)
+        plotting.plot_glass_brain(**glass_plot_params)
 
     # Check if thresholded image contains only zeros
     if np.any(thresh_img.get_data()):
@@ -696,9 +712,19 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
         coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
         for idx, coord in enumerate(coords):
             clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
-            plotting.plot_stat_map(
-                thresh_img, vmax=color_max, colorbar=True,
-                title=clust_fname[:-4], threshold=voxel_thresh,
-                draw_cross=True, black_bg=True, symmetric_cbar=True,
-                output_file=op.join(outdir, clust_fname), bg_img=bgimg,
-                cut_coords=coord, display_mode='ortho')
+            stat_plot_params = {
+                'stat_map_img': thresh_img,
+                'bg_img': bgimg,
+                'cut_coords': coord,
+                'output_file': op.join(outdir, clust_fname),
+                'colorbar': True,
+                'title': clust_fname[:-4],
+                'threshold': voxel_thresh,
+                'black_bg': True,
+                'symmetric_cbar': True,
+                'vmax': color_max
+            }
+            if stat_plot_kws is None:
+                stat_plot_kws = {}
+            stat_plot_params.update(stat_plot_kws)
+            plotting.plot_stat_map(**stat_plot_params)

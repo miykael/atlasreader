@@ -91,3 +91,23 @@ def test_create_output(tmpdir):
     assert output_dir.join('{}_clusters.csv'.format(stat_img_name)).isfile()
     assert output_dir.join('{}_peaks.csv'.format(stat_img_name)).isfile()
     assert output_dir.join('{}.png'.format(stat_img_name)).isfile()
+
+
+def test_plotting(tmpdir):
+    """Test functionality of kwarg implementation"""
+
+    # temporary output
+    output_dir = tmpdir.mkdir('mni_test')
+
+    # overwrite some default params
+    atlasreader.create_output(STAT_IMG,
+                              atlas=['Harvard_Oxford'],
+                              outdir=output_dir,
+                              glass_plot_kws={'display_mode': 'ortho'},
+                              stat_plot_kws={'black_bg': False})
+
+    # add new parameter not already set by default
+    atlasreader.create_output(STAT_IMG,
+                              atlas=['Harvard_Oxford'],
+                              outdir=output_dir,
+                              glass_plot_kws={'alpha': .4})
