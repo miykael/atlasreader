@@ -681,9 +681,9 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
 
         # write output .csv files
         clust_frame.to_csv(op.join(
-            outdir, '{}_clusters.csv'.format(out_fname)))
+            outdir, '{}_clusters.csv'.format(out_fname)), index=False)
         peaks_frame.to_csv(op.join(
-            outdir, '{}_peaks.csv'.format(out_fname)))
+            outdir, '{}_peaks.csv'.format(out_fname)), index=False)
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
