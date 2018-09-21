@@ -47,31 +47,31 @@ def _get_parser():
                         dest='voxel_thresh', metavar='threshold',
                         help='Value threshold that voxels in provided file '
                              'must surpass in order to be considered in '
-                             'cluster extraction.')
+                             'cluster extraction. Default: 2')
     parser.add_argument('-c', '--cluster', type=float, default=5,
                         dest='cluster_extent', metavar='extent',
                         help='Required number of contiguous voxels for a '
-                             'cluster to be retained for analysis.')
+                             'cluster to be retained for analysis. Defualt: 5')
     parser.add_argument('-p', '--probability', type=_check_limit, default=5,
                         dest='prob_thresh', metavar='threshold',
                         help='Threshold to consider when using a '
                              'probabilistic atlas for extracting anatomical '
                              'cluster locations. Value will apply to all '
                              'request probabilistic atlases, and should range '
-                             'between 0 and 100.')
+                             'between 0 and 100. Default: 5')
     parser.add_argument('-o', '--outdir', type=str, default=None,
                         dest='outdir', metavar='outdir',
                         help='Output directory for created files. If it is '
                              'not specified, then output files are created in '
                              'the same directory as the statistical map that '
-                             'is provided.')
+                             'is provided. Default: None')
     parser.add_argument('-d', '--mindist', type=float, default=None,
                         dest='min_distance', metavar='distance',
                         help='If specified, the program will attempt to find '
                              'subpeaks within detected clusters, rather than '
                              'a single peak per cluster. The specified value '
                              'will determine the minimum distance required '
-                             'between subpeaks.')
+                             'between subpeaks. Default: None')
     return parser.parse_args()
 
 
