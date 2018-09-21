@@ -18,8 +18,8 @@ from sklearn.utils import Bunch
 
 
 _ATLASES = [
-    'AAL', 'Desikan_Killiany', 'Destrieux', 'Harvard_Oxford', 'Juelich',
-    'Neuromorphometrics',
+    'aal', 'desikan_killiany', 'destrieux', 'harvard_oxford', 'juelich',
+    'neuromorphometrics',
 ]
 
 
@@ -380,18 +380,18 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
             percentage[s] >= prob_thresh]
 
 
-def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
+def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
     """
     Parameters
     ----------
     stat_img : Niimg_like object
         Thresholded statistical map image
+    cluster_extent : int
+        Minimum number of voxels required to consider a cluster
     voxel_thresh : int, optional
         Threshold to apply to `stat_img`. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
-    cluster_extent : int, optional
-        Minimum number of voxels required to consider a cluster. Default: 20
 
     Returns
     -------
@@ -530,8 +530,8 @@ def get_cluster_data(clust_img, atlas='all', prob_thresh=5):
     return coord + [clust_mean, cluster_volume] + cluster_info
 
 
-def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
-                     cluster_extent=20, prob_thresh=5, min_distance=None):
+def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
+                     prob_thresh=5, min_distance=None):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
 
@@ -539,15 +539,15 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
     ----------
     stat_img : Niimg_like
         4D image of brain regions, where each volume is a distinct cluster
+    cluster_extent : int
+        Minimum number of contiguous voxels required to consider a cluster in
+        `stat_img`
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'all'
     voxel_thresh : int, optional
         Threshold to apply to `stat_img`. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
-    cluster_extent : int, optional
-        Minimum number of contiguous voxels required to consider a cluster in
-        `filename`. Default: 20
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
@@ -603,7 +603,7 @@ def get_statmap_info(stat_img, atlas='all', voxel_thresh=1.96,
     return clust_frame, peaks_frame
 
 
-def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
+def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
                   prob_thresh=5, min_distance=None, outdir=None,
                   glass_plot_kws=None, stat_plot_kws=None):
     """
@@ -621,15 +621,15 @@ def create_output(filename, atlas='all', voxel_thresh=1.96, cluster_extent=20,
     ----------
     filename : str
         Path to input statistical map
+    cluster_extent : int
+        Minimum number of contiguous voxels required to consider a cluster in
+        `filename`
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'all'
     voxel_thresh : int, optional
         Threshold to apply to `stat_img`. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
-    cluster_extent : int, optional
-        Minimum number of contiguous voxels required to consider a cluster in
-        `filename`. Default: 20
     prob_thresh : int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
