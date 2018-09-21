@@ -429,7 +429,7 @@ def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
 
     # Reorder clusters by their size
     clust_img = image.concat_imgs(clusters)
-    cluster_size = (clust_img.get_data() != 0).sum(0).sum(0).sum(0)
+    cluster_size = (clust_img.get_data() != 0).sum(axis=(0, 1, 2))
     new_order = np.argsort(cluster_size)[::-1]
     clust_img_ordered = image.index_img(clust_img, new_order)
 
