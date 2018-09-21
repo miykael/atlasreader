@@ -19,7 +19,7 @@ from sklearn.utils import Bunch
 
 _ATLASES = [
     'AAL', 'Desikan_Killiany', 'Destrieux', 'Harvard_Oxford', 'Juelich',
-    'Neuromorphometrics',
+    'Neuromorphometrics', 'Talairach',
 ]
 
 
