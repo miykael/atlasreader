@@ -427,7 +427,13 @@ def process_img(stat_img, voxel_thresh=1.96, cluster_extent=20):
     if len(clusters) == 0:
         clusters = [image.new_img_like(thresh_img, data)]
 
-    return image.concat_imgs(clusters)
+    # Reorder clusters by their size
+    clust_img = image.concat_imgs(clusters)
+    cluster_size = (clust_img.get_data() != 0).sum(0).sum(0).sum(0)
+    new_order = np.argsort(cluster_size)[::-1]
+    clust_img_ordered = image.index_img(clust_img, new_order)
+
+    return clust_img_ordered
 
 
 def get_peak_data(clust_img, atlas='all', prob_thresh=5, min_distance=None):
