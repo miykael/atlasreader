@@ -597,8 +597,9 @@ def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
                                columns=['cluster_id',
                                         'peak_x', 'peak_y', 'peak_z',
                                         'peak_value', 'volume'] + atlasnames)
-    clust_frame.iloc[:, :6] = clust_frame.iloc[:, :6].astype(float)
-    peaks_frame.iloc[:, :6] = peaks_frame.iloc[:, :6].astype(float)
+    for col in range(6):
+        clust_frame.iloc[:, col] = clust_frame.iloc[:, col].astype(float)
+        peaks_frame.iloc[:, col] = peaks_frame.iloc[:, col].astype(float)
 
     return clust_frame, peaks_frame
 
@@ -703,9 +704,11 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
 
         # write output .csv files
         clust_frame.to_csv(op.join(
-            outdir, '{}_clusters.csv'.format(out_fname)), index=False)
+            outdir, '{}_clusters.csv'.format(out_fname)),
+            index=False, float_format='%5g')
         peaks_frame.to_csv(op.join(
-            outdir, '{}_peaks.csv'.format(out_fname)), index=False)
+            outdir, '{}_peaks.csv'.format(out_fname)),
+            index=False, float_format='%5g')
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
