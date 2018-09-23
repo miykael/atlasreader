@@ -685,7 +685,8 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
             'black_bg': True,
             'cmap': plotting.cm.cold_hot,
             'vmax': color_max,
-            'plot_abs': False
+            'plot_abs': False,
+            'symmetric_cbar': False
         }
         if glass_plot_kws is None:
             glass_plot_kws = {}
@@ -727,7 +728,7 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
                 'title': clust_fname[:-4],
                 'threshold': voxel_thresh,
                 'black_bg': True,
-                'symmetric_cbar': True,
+                'symmetric_cbar': False,
                 'vmax': color_max
             }
             if stat_plot_kws is None:
