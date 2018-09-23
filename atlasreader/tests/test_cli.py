@@ -13,11 +13,10 @@ def test_cli(tmpdir):
     ret = subprocess.run(['atlasreader',
                           '--atlas', 'harvard_oxford', 'aal',
                           '--threshold', '1.96',
-                          '--cluster', '20',
                           '--probability', '5',
                           '--mindist', '20',
                           '--outdir', output_dir,
-                          STAT_IMG])
+                          STAT_IMG, '20'])
     assert ret.returncode == 0
 
     # test if output exists and if the key .csv and .png files were created
