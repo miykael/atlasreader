@@ -51,7 +51,7 @@ def _get_parser():
     parser.add_argument('-c', '--cluster', type=float, default=5,
                         dest='cluster_extent', metavar='extent',
                         help='Required number of contiguous voxels for a '
-                             'cluster to be retained for analysis. Defualt: 5')
+                             'cluster to be retained for analysis. Default: 5')
     parser.add_argument('-p', '--probability', type=_check_limit, default=5,
                         dest='prob_thresh', metavar='threshold',
                         help='Threshold to consider when using a '
