@@ -364,7 +364,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     # get label information
     if atlastype.atlas.lower() in ['juelich', 'harvard_oxford']:
         labelIDs = np.argmax(data[voxIDs], axis=1)
-        labelIDs[labelIDs == 0] = -1
+        labelIDs[data[voxIDs].sum(-1) == 0] = -1
     else:
         labelIDs = data[voxIDs]
 
