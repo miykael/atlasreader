@@ -404,28 +404,34 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
     # threshold image
     if voxel_thresh < 0:
         voxel_thresh = '{}%'.format(100 + voxel_thresh)
+    else:
+        # ensure that threshold is not greater than most extreme value in image
+        max_val = np.abs(stat_img.get_data()).max()
+        if voxel_thresh > max_val:
+            voxel_thresh = max_val
     thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
 
     # extract clusters
     min_region_size = cluster_extent * np.prod(thresh_img.header.get_zooms())
     clusters = []
     for sign in ['pos', 'neg']:
+        # keep only data of given sign
         data = thresh_img.get_data().copy()
-        if sign == 'pos':
-            data[data < 0] = 0  # keep only positives
-        else:
-            data[data > 0] = 0  # keep only negatives
+        data[(data < 0) if sign == 'pos' else (data > 0)] = 0
 
         # Do nothing if data array contains only zeros
         if np.any(data):
-            clusters += [connected_regions(
-                image.new_img_like(thresh_img, data),
-                min_region_size=min_region_size,
-                extract_type='connected_components')[0]]
+            try:
+                clusters += [connected_regions(
+                    image.new_img_like(thresh_img, data),
+                    min_region_size=min_region_size,
+                    extract_type='connected_components')[0]]
+            except TypeError:  # for no clusters
+                pass
 
     # Return empty image if no clusters were found
     if len(clusters) == 0:
-        clusters = [image.new_img_like(thresh_img, data)]
+        return image.new_img_like(thresh_img, np.zeros(data.shape + (1,)))
 
     # Reorder clusters by their size
     clust_img = image.concat_imgs(clusters)
@@ -576,24 +582,27 @@ def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
                             cluster_extent=cluster_extent)
 
     clust_info, peaks_info = [], []
-    for n, cluster in enumerate(image.iter_img(clust_img)):
-        peak_data = get_peak_data(cluster, atlas=atlas,
-                                  prob_thresh=prob_thresh,
-                                  min_distance=min_distance)
-        clust_data = get_cluster_data(cluster, atlas=atlas,
-                                      prob_thresh=prob_thresh)
+    if clust_img.get_data().any():
+        for n, cluster in enumerate(image.iter_img(clust_img)):
+            peak_data = get_peak_data(cluster, atlas=atlas,
+                                      prob_thresh=prob_thresh,
+                                      min_distance=min_distance)
+            clust_data = get_cluster_data(cluster, atlas=atlas,
+                                          prob_thresh=prob_thresh)
 
-        cluster_id = np.repeat(n + 1, len(peak_data))
-        peaks_info += [np.column_stack([cluster_id, peak_data])]
-        clust_info += [[n + 1] + clust_data]
+            cluster_id = np.repeat(n + 1, len(peak_data))
+            peaks_info += [np.column_stack([cluster_id, peak_data])]
+            clust_info += [[n + 1] + clust_data]
+        clust_info = np.row_stack(clust_info)
+        peaks_info = np.row_stack(peaks_info)
 
     # construct dataframes and reset floats
     atlasnames = [a.atlas for a in atlas]
-    clust_frame = pd.DataFrame(np.row_stack(clust_info),
+    clust_frame = pd.DataFrame(clust_info,
                                columns=['cluster_id',
                                         'peak_x', 'peak_y', 'peak_z',
                                         'cluster_mean', 'volume'] + atlasnames)
-    peaks_frame = pd.DataFrame(np.row_stack(peaks_info),
+    peaks_frame = pd.DataFrame(peaks_info,
                                columns=['cluster_id',
                                         'peak_x', 'peak_y', 'peak_z',
                                         'peak_value', 'volume'] + atlasnames)
