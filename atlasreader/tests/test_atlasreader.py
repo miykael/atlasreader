@@ -61,6 +61,7 @@ def test_get_statmap_info():
     # this will take a little while since it's running it twice
     for min_distance in [None, 20]:
         cdf, pdf = atlasreader.get_statmap_info(nb.load(STAT_IMG),
+                                                cluster_extent=20,
                                                 atlas=['Harvard_Oxford',
                                                        'AAL'],
                                                 min_distance=min_distance)
@@ -68,10 +69,11 @@ def test_get_statmap_info():
 
 def test_process_image():
     # check that defaults for processing image work
-    img = atlasreader.process_img(STAT_IMG)
+    img = atlasreader.process_img(STAT_IMG, cluster_extent=20)
     assert isinstance(img, nb.Nifti1Image)
     # check that negative voxel threshold works
-    img = atlasreader.process_img(STAT_IMG, voxel_thresh=-10)
+    img = atlasreader.process_img(STAT_IMG, cluster_extent=20,
+                                  voxel_thresh=-10)
     assert isinstance(img, nb.Nifti1Image)
 
 
@@ -81,7 +83,7 @@ def test_create_output(tmpdir):
 
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(STAT_IMG,
+    atlasreader.create_output(STAT_IMG, cluster_extent=20,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
@@ -100,14 +102,14 @@ def test_plotting(tmpdir):
     output_dir = tmpdir.mkdir('mni_test')
 
     # overwrite some default params
-    atlasreader.create_output(STAT_IMG,
+    atlasreader.create_output(STAT_IMG, cluster_extent=20,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'display_mode': 'ortho'},
                               stat_plot_kws={'black_bg': False})
 
     # add new parameter not already set by default
-    atlasreader.create_output(STAT_IMG,
+    atlasreader.create_output(STAT_IMG, cluster_extent=20,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'alpha': .4})

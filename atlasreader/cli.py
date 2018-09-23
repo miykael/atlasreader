@@ -3,10 +3,7 @@ Functions for command line interface to generate cluster / peak summary
 """
 import argparse
 import os.path as op
-from atlasreader.atlasreader import (_ATLASES, check_atlases,
-                                     create_output)
-
-_ACCEPTED_ATLASES = _ATLASES + [a.lower() for a in _ATLASES]
+from atlasreader.atlasreader import (_ATLASES, check_atlases, create_output)
 
 
 def _check_limit(num, limits=[0, 100]):
@@ -35,11 +32,14 @@ def _get_parser():
     """ Reads command line arguments and returns input specifications """
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', type=op.abspath, metavar='file',
-                        help='The full or relative path to the statistical map'
-                             'from which cluster information should be '
+                        help='The full or relative path to the statistical '
+                             'map from which cluster information should be '
                              'extracted.')
-    parser.add_argument('-a', '--atlas', type=str, default='all', nargs='+',
-                        choices=_ACCEPTED_ATLASES + ['all'], metavar='atlas',
+    parser.add_argument('cluster_extent', type=int, metavar='min_cluster_size',
+                        help='Number of contiguous voxels required for a '
+                             'cluster to be considered for analysis.')
+    parser.add_argument('-a', '--atlas', type=str.lower, default='all',
+                        nargs='+', choices=_ATLASES + ['all'], metavar='atlas',
                         help='Atlas(es) to use for examining anatomical '
                              'delineation of clusters in provided statistical '
                              'map. Default: all available atlases.')
@@ -47,31 +47,27 @@ def _get_parser():
                         dest='voxel_thresh', metavar='threshold',
                         help='Value threshold that voxels in provided file '
                              'must surpass in order to be considered in '
-                             'cluster extraction.')
-    parser.add_argument('-c', '--cluster', type=float, default=5,
-                        dest='cluster_extent', metavar='extent',
-                        help='Required number of contiguous voxels for a '
-                             'cluster to be retained for analysis.')
+                             'cluster extraction. Default: 2')
     parser.add_argument('-p', '--probability', type=_check_limit, default=5,
                         dest='prob_thresh', metavar='threshold',
                         help='Threshold to consider when using a '
                              'probabilistic atlas for extracting anatomical '
                              'cluster locations. Value will apply to all '
                              'request probabilistic atlases, and should range '
-                             'between 0 and 100.')
+                             'between 0 and 100. Default: 5')
     parser.add_argument('-o', '--outdir', type=str, default=None,
                         dest='outdir', metavar='outdir',
                         help='Output directory for created files. If it is '
                              'not specified, then output files are created in '
                              'the same directory as the statistical map that '
-                             'is provided.')
+                             'is provided. Default: None')
     parser.add_argument('-d', '--mindist', type=float, default=None,
                         dest='min_distance', metavar='distance',
                         help='If specified, the program will attempt to find '
                              'subpeaks within detected clusters, rather than '
                              'a single peak per cluster. The specified value '
                              'will determine the minimum distance required '
-                             'between subpeaks.')
+                             'between subpeaks. Default: None')
     return parser.parse_args()
 
 
