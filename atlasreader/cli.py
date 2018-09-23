@@ -32,8 +32,8 @@ def _get_parser():
     """ Reads command line arguments and returns input specifications """
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', type=op.abspath, metavar='file',
-                        help='The full or relative path to the statistical map'
-                             'from which cluster information should be '
+                        help='The full or relative path to the statistical '
+                             'map from which cluster information should be '
                              'extracted.')
     parser.add_argument('cluster_extent', type=int, metavar='min_cluster_size',
                         help='Number of contiguous voxels required for a '
