@@ -406,9 +406,9 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
         voxel_thresh = '{}%'.format(100 + voxel_thresh)
     else:
         # ensure that threshold is not greater than most extreme value in image
-        max_val = np.abs(stat_img.get_data()).max()
-        if voxel_thresh > max_val:
-            voxel_thresh = max_val
+        if voxel_thresh > np.abs(stat_img.get_data()).max():
+            empty = np.zeros(stat_img.shape + (1,))
+            return image.new_img_like(stat_img, empty)
     thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
 
     # extract clusters
