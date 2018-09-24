@@ -27,7 +27,8 @@ def main():
         license=ldict['LICENSE'],
         entry_points={
             'console_scripts': [
-                'atlasreader=atlasreader.cli:main'
+                'atlasreader=atlasreader.cli:atlasreader_main',
+                'queryatlas=atlasreader.cli:queryatlas_main'
             ]
         }
     )

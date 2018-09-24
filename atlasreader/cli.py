@@ -3,7 +3,8 @@ Functions for command line interface to generate cluster / peak summary
 """
 import argparse
 import os.path as op
-from atlasreader.atlasreader import (_ATLASES, check_atlases, create_output)
+from atlasreader.atlasreader import (_ATLASES, check_atlases, create_output,
+                                     read_atlas_peak)
 
 
 def _check_limit(num, limits=[0, 100]):
@@ -28,7 +29,7 @@ def _check_limit(num, limits=[0, 100]):
     return num
 
 
-def _get_parser():
+def _atlasreader_parser():
     """ Reads command line arguments and returns input specifications """
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', type=op.abspath, metavar='file',
@@ -71,7 +72,7 @@ def _get_parser():
     return parser.parse_args()
 
 
-def main():
+def atlasreader_main():
     """
     The primary entrypoint for calling atlas reader via the command line
 
@@ -79,7 +80,7 @@ def main():
     the command line!
     """
 
-    opts = _get_parser()
+    opts = _atlasreader_parser()
     create_output(opts.filename,
                   atlas=check_atlases(opts.atlas),
                   voxel_thresh=opts.voxel_thresh,
@@ -87,6 +88,49 @@ def main():
                   prob_thresh=opts.prob_thresh,
                   outdir=opts.outdir,
                   min_distance=opts.min_distance)
+
+
+def _queryatlas_parser():
+    """ Reads command line arguments and returns input specifications """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('coordinate', nargs=3, type=float,
+                        help='The coordinate (in MNI space) for which to '
+                             'query atlases. Should be provided as space-'
+                             'delimited x y z coordinates, e.g., -10.5 -30.0 '
+                             '15.3.')
+    parser.add_argument('-a', '--atlas', type=str.lower, default='all',
+                        nargs='+', choices=_ATLASES + ['all'], metavar='atlas',
+                        help='Atlas(es) to use for examining anatomical '
+                             'delineation of clusters in provided statistical '
+                             'map. Default: all available atlases.')
+    parser.add_argument('-p', '--probability', type=_check_limit, default=5,
+                        dest='prob_thresh', metavar='threshold',
+                        help='Threshold to consider when using a '
+                             'probabilistic atlas for extracting anatomical '
+                             'cluster locations. Value will apply to all '
+                             'request probabilistic atlases, and should range '
+                             'between 0 and 100. Default: 5')
+    return parser.parse_args()
+
+
+def queryatlas_main():
+    """
+    The primary entrypoint for querying atlases via the command line
+
+    All parameters are read via argparse, so this should only be called from
+    the command line!
+    """
+
+    opts = _queryatlas_parser()
+    print('{0:<25} {1:<25}\n{2:<25} {2:<25}'.format('Atlas', 'Label', '='*10))
+    for atlas in check_atlases(opts.atlas):
+        label = read_atlas_peak(atlas, opts.coordinate, opts.prob_thresh)
+        if isinstance(label, list):
+            label = '\n{}'.format(' '*26).join(
+                ['{:>2}% {}'.format(*e) for e in label]
+            )
+        print('{:<25} {}'.format(atlas.atlas, label))
 
 
 if __name__ == '__main__':
