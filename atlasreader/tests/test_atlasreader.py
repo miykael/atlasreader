@@ -59,22 +59,41 @@ def test_coords_transform():
 def test_get_statmap_info():
     # general integration test to check that min_distance works
     # this will take a little while since it's running it twice
+    stat_img = nb.load(STAT_IMG)
     for min_distance in [None, 20]:
-        cdf, pdf = atlasreader.get_statmap_info(nb.load(STAT_IMG),
+        cdf, pdf = atlasreader.get_statmap_info(stat_img,
                                                 cluster_extent=20,
                                                 atlas=['Harvard_Oxford',
                                                        'AAL'],
                                                 min_distance=min_distance)
 
+    # test that empty image return empty dataframes
+    zero_img = nb.Nifti1Image(np.zeros(stat_img.shape), stat_img.affine,
+                              header=stat_img.header)
+    cdf, pdf = atlasreader.get_statmap_info(zero_img,
+                                            cluster_extent=20)
+    assert len(cdf) == 0
+    assert len(pdf) == 0
+
 
 def test_process_image():
+    stat_img = nb.load(STAT_IMG)
     # check that defaults for processing image work
-    img = atlasreader.process_img(STAT_IMG, cluster_extent=20)
+    img = atlasreader.process_img(stat_img, cluster_extent=20)
     assert isinstance(img, nb.Nifti1Image)
     # check that negative voxel threshold works
-    img = atlasreader.process_img(STAT_IMG, cluster_extent=20,
+    img = atlasreader.process_img(stat_img, cluster_extent=20,
                                   voxel_thresh=-10)
     assert isinstance(img, nb.Nifti1Image)
+    # check that setting cluster extent too high still returns an image
+    img = atlasreader.process_img(stat_img, cluster_extent=5000)
+    assert np.allclose(img.get_data(), 0)
+    # ensure empty image --> empty image
+    zero_img = nb.Nifti1Image(np.zeros(stat_img.shape), stat_img.affine,
+                              header=stat_img.header)
+    img = atlasreader.process_img(zero_img, cluster_extent=20)
+    assert img.shape == zero_img.shape + (1,)
+    assert np.allclose(img.get_data(), 0)
 
 
 def test_create_output(tmpdir):
