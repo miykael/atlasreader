@@ -335,14 +335,3 @@ from `float32` to `int16`.
 This atlas is protected by copyright; you can freely use it for none profit
 research purposes, providing the above reference is cited. For other use please
 contact us through aicha.gin.brainatlas@gmail.com
-
-
-
-
----------------------------------
-
-NEUROMORPHICS = I don't have hte license..., but it ships with SPM12
-AAL was upgraded to AAL2
-FreeSurfer's files changed only because of file size (i.e. compression) otherwise the same
-I "link/mention" FreeSurfer's license and registration here, so we could link to this file.
-Also added AICHA
