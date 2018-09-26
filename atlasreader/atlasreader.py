@@ -274,8 +274,8 @@ def get_subpeak_coords(clust_img, min_distance=20):
 
 def check_atlas_bounding_box(voxIDs, box_shape):
     """
-    Returns the provided voxel ID if the voxel is inside the bounding box of the
-    atlas image, otherwise the voxel ID will be replaced with the origin.
+    Returns the provided voxel ID if the voxel is inside the bounding box of
+    the atlas image, otherwise the voxel ID will be replaced with the origin.
 
     Parameters
     ----------
