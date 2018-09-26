@@ -152,6 +152,27 @@ This atlas is a direct copy of the two files
 Harvard Oxford atlas packaged with FSL 5.0. The files were merged using FSL's
 `fslmerge command`.
 
+This probability atlas now also contains the probability values for the labels
+`Cerebral_White_Matter` and `Cerebral_Cortex`, spanning the whole brain. Because
+the probability for those labels will often be higher than for other labels, we
+had to manually remove those labels from the atlas and label file. This can be
+done with the following command:
+
+```python
+import numpy as np
+import nibabel as nb
+
+# Load the image and the data
+img = nb.load('atlas_harvard_oxford.nii.gz')
+data = img.get_data()
+
+# Remove labels 96, 97, 107 and 108
+new_data = np.delete(data, [96, 97, 107, 108], axis=-1)
+
+# Overwrite atlas file
+nb.Nifti1Image(new_data, img.affine, img.header).to_filename('atlas_harvard_oxford.nii.gz')
+```
+
 ### License
 
 The FSL templates and atlases are under the License that can be found
