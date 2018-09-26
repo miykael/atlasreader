@@ -73,7 +73,7 @@ license and related to specific publications. This README file acknoledges those
 licenses, describes the origin of the atlases and how they were acquired and
 explains how the atlases were adapted to fit into the `atlasreader` framework.
 Many of those atlases were downloaded with `nilearn.datasets`'s `fetch_`
-functions.
+functions. For more about this, go to [`nilearn`'s official homepage](http://nilearn.github.io/modules/reference.html#module-nilearn.datasets).
 
 ## Anatomical Automatic Labeling 2 (AAL2)
 
