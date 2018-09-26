@@ -5,7 +5,6 @@ all to reduce the disk size and control the load time (driven by the level of
 compression).
 """
 
-import numpy as np
 import nibabel as nb
 from glob import glob
 from nilearn.image import crop_img
