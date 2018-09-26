@@ -71,7 +71,6 @@ def test_coords_transform():
 
 
 def test_bounding_box_check():
-    aff = EXAMPLE_COORDS['affine']
     for coords in EXAMPLE_COORDS['bad_coords']:
         ijk_out = atlasreader.check_atlas_bounding_box(
             coords['ijk_in'], EXAMPLE_COORDS['bounding_shape'])
