@@ -12,24 +12,12 @@ system. It corresponds to the "[152 nonlinear 6th generation](http://www.bic.mni
 This atlas is a direct copy of the file `MNI152_T1_1mm_brain.nii.gz` packaged
 with FSL 5.0.
 
-### References
-
-The references are related to FSL 5.0:
-
-- Rahul S. Desikan, Florent Ségonne, Bruce Fischl, Brian T. Quinn, Bradford C. Dickerson, Deborah Blacker, Randy L. Buckner, Anders M. Dale, R. Paul Maguire, Bradley T. Hyman, Marilyn S. Albert, Ronald J. Killiany (2006). An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. Neuroimage, 31, 968–980.
-- Simon B Eickhoff, Klaas E Stephan, Hartmut Mohlberg, Christian Grefkes, Gereon R Fink, Katrin Amunts, Karl Zilles (2005). A new SPM toolbox for combining probabilistic cytoarchitectonic maps and functional imaging data. Neuroimage, 25, 1325–1335.
-- Kegang Hua, Jiangyang Zhang, Setsu Wakana, Hangyi Jiang, Xin Li, Daniel S Reich, Peter A Calabresi, James J Pekar, Peter C M van Zijl, Susumu Mori (2008). Tract probability maps in stereotaxic spaces: analyses of white matter anatomy and tract-specific quantification. Neuroimage, 39, 336–347.
-- J Mazziotta, A Toga, A Evans, P Fox, J Lancaster, K Zilles, R Woods, T Paus, G Simpson, B Pike, C Holmes, L Collins, P Thompson, D MacDonald, M Iacoboni, T Schormann, K Amunts, N Palomero-Gallagher, S Geyer, L Parsons, K Narr, N Kabani, G Le Goualher, D Boomsma, T Cannon, R Kawashima, and B Mazoyer (2001). A probabilistic atlas and reference system for the human brain: International Consortium for Brain Mapping (ICBM). The Royal Society Philosophical Transactions B, 356, 1293–1322.
-- Jack L. Lancaster, Marty G. Woldorff, Lawrence M. Parsons, Mario Liotti, Catarina S. Freitas, Lacy Rainey, Peter V. Kochunov, Dan Nickerson, Shawn A. Mikiten, Peter T. Fox (2000). Automated Talairach atlas labels for functional brain mapping. Human Brain Mapping, 10, 120–131.
-- TEJ Behrens, H. Johansen-Berg, MW Woolrich, SM Smith, CAM Wheeler-Kingshott, PA Boulby, GJ Barker, EL Sillery, K. Sheehan, O. Ciccarelli , AJ Thompson, JM Brady, PM Matthews (2003). Non-invasive mapping of connections between human thalamus and cortex using diffusion imaging. Nature Neuroscience, 6, 750–757.
-- Jörn Diedrichsen, Joshua H Balsters, Jonathan Flavell, Emma Cussans, Narender Ramnani (2009). A probabilistic MR atlas of the human cerebellum. Neuroimage, 46, 39-46.
-
 ### License
 
 The FSL templates and atlases are under the License that can be found
 [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence).
 
-## ICBM 2009c Nonlinear Asymmetric
+## ICBM 2009c Nonlinear Asymmetric Template
 
 A number of unbiased non-linear averages of the MNI152 database have been
 generated that combines the attractions of both high-spatial resolution and
@@ -95,14 +83,6 @@ http://www.gin.cnrs.fr/wp-content/uploads/aal2_for_SPM12.tar.gz on 25.
 Sept. 2018. We used the `AAL2.nii` file contained in the `atlas` folder. The
 labels are coming from `AAL2.xml` also contain in the `atlas` folder.
 
-### References
-
-- Automated Anatomical Labeling of Activations in SPM Using a Macroscopic Anatomical Parcellation of the MNI MRI Single-Subject Brain. N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello, O. Étard, N. Delcroix, B. Mazoyer, and M. Joliot. NeuroImage 2002. 15 :273-289
-http://dx.doi.org/10.1006/nimg.2001.0978
-- Implementation of a new parcellation of the orbitofrontal cortex in the automated anatomical labeling atlas. Rolls ET, Joliot M & Tzourio-Mazoyer N (2015) . NeuroImage
-http://dx.doi.org/10.1016/j.neuroimage.2015.07.075
-- Collins, D. L., Zijdenbos, A. P., Kollokian, V., Sled, J. G., Kabani, N. J., Holmes, C. J., & Evans, A. C. (1998). Design and construction of a realistic digital brain phantom. IEEE transactions on medical imaging, 17(3), 463-468.
-
 ### License
 
 Unknown.
@@ -122,11 +102,6 @@ The atlas is a direct copy of the file `aparc.a2009s+aseg.mgz` from the folder
 `subjects/cvs_avg35_inMNI152/mri` in FreeSurfer version 6.0. The `mgz` file was
 converted into NIfTI standard with FreeSurfer's `mri_convert` and the labels
 table was created from `FreeSurferColorLUT.txt`.
-
-### References
-
-- Fischl, Bruce, et al. "Automatically parcellating the human cerebral cortex." Cerebral cortex 14.1 (2004): 11-22.
-- Destrieux, C., et al. "A sulcal depth-based anatomical parcellation of the cerebral cortex." NeuroImage 47 (2009): S151.
 
 ### License
 
@@ -148,10 +123,6 @@ The atlas is a direct copy of the file `aparc+aseg.mgz` from the folder
 `subjects/cvs_avg35_inMNI152/mri` in FreeSurfer version 6.0. The `mgz` file was
 converted into NIfTI standard with FreeSurfer's `mri_convert` and the labels
 table was created from `FreeSurferColorLUT.txt`.
-
-### References
-- Fischl, Bruce, et al. "Automatically parcellating the human cerebral cortex." Cerebral cortex 14.1 (2004): 11-22.
-- An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest, Desikan et al., (2006). NeuroImage, 31(3):968-80.
 
 ### License
 
@@ -181,13 +152,6 @@ This atlas is a direct copy of the two files
 Harvard Oxford atlas packaged with FSL 5.0. The files were merged using FSL's
 `fslmerge command`.
 
-### References
-
-- Makris N, Goldstein JM, Kennedy D, Hodge SM, Caviness VS, Faraone SV, Tsuang MT, Seidman LJ. Decreased volume of left and total anterior insular lobule in schizophrenia. Schizophr Res. 2006 Apr;83(2-3):155-71
-- Frazier JA, Chiu S, Breeze JL, Makris N, Lange N, Kennedy DN, Herbert MR, Bent EK, Koneru VK, Dieterich ME, Hodge SM, Rauch SL, Grant PE, Cohen BM, Seidman LJ, Caviness VS, Biederman J. Structural brain magnetic resonance imaging of limbic and thalamic volumes in pediatric bipolar disorder. Am J Psychiatry. 2005 Jul;162(7):1256-65
-- Desikan RS, Ségonne F, Fischl B, Quinn BT, Dickerson BC, Blacker D, Buckner RL, Dale AM, Maguire RP, Hyman BT, Albert MS, Killiany RJ. An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. Neuroimage. 2006 Jul 1;31(3):968-80.
-- Goldstein JM, Seidman LJ, Makris N, Ahern T, O'Brien LM, Caviness VS Jr, Kennedy DN, Faraone SV, Tsuang MT. Hypothalamic abnormalities in schizophrenia: sex effects and genetic vulnerability. Biol Psychiatry. 2007 Apr 15;61(8):935-45
-
 ### License
 
 The FSL templates and atlases are under the License that can be found
@@ -214,12 +178,6 @@ MNI152 space.
 
 This atlas is a direct copy of the file `Juelich-prob-1mm.nii.gz` of the Juelich
 atlas packaged with FSL 5.0.
-
-### References
-
-- Eickhoff et al., A new SPM toolbox for combining probabilistic cytoarchitectonic maps and functional imaging data. Neuroimage 25(4):1325-35 (2005)
-- Eickhoff et al., Testing anatomically specified hypotheses in functional imaging using cytoarchitectonic maps. NeuroImage 32(2): 570-582 (2006)
-- Eickhoff et al., Assignment of functional activations to probabilistic cytoarchitectonic areas revisited. NeuroImage, 36(3): 511-521 (2007)
 
 ### License
 
@@ -248,13 +206,6 @@ datatype was converted from `int64` to `int16` with `fslmaths`.
 The talairach atlas is identical to the file `Talairach-labels-1mm.nii.gz` that
 is packaged with FSL 5.0.
 
-### References
-
-- Talairach et al. Co-planar stereotaxic atlas of the human brain. Thieme, New York. (1988)
-- Lancaster et al. Bias between MNI and Talairach coordinates analyzed using the ICBM-152 brain template. Human Brain Mapping (in press) (2007)
-- Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L, Kochunov PV, Nickerson D, Mikiten SA, Fox PT, “Automated Talairach Atlas labels for functional brain mapping”. Human Brain Mapping 10:120-131, 2000.
-- Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga AW, Mazziotta JC. Automated labeling of the human brain: A preliminary report on the development and evaluation of a forward-transform method. Hum Brain Mapp 5, 238-242, 1997.
-
 ### License
 
 The FSL templates and atlases are under the License that can be found [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence).
@@ -274,10 +225,6 @@ final publications.
 
 The Neuromorphometrics atlas is a direct copy of the file `labels_Neuromorphometrics.nii`
 in the folder `spm12/tpm`, available within SPM12.
-
-### References
-
-MISSING!
 
 ### Licesne
 
@@ -326,12 +273,78 @@ Sept. 2018 via the following link: http://www.gin.cnrs.fr/wp-content/uploads/aic
 We compressed the file `AICHA.nii` with `fslmaths` and transformed the data type
 from `float32` to `int16`.
 
-### References
-
-- Joliot M, Jobard G, Naveau M, Delcroix N, Petit L, Zago L, Crivello F, Mellet E, Mazoyer B, Tzourio-Mazoyer N (2015) AICHA: An atlas of intrinsic connectivity of homotopic areas. J Neurosci Methods 254:46-59.
-
 ### License
 
 This atlas is protected by copyright; you can freely use it for none profit
 research purposes, providing the above reference is cited. For other use please
 contact us through aicha.gin.brainatlas@gmail.com
+
+# References
+
+If you're using `atlasreader`, please make sure to cite the references that
+correspond to the atlases you are using:
+
+
+
+## MNI152 T1 1mm Template
+
+The references are related to FSL 5.0:
+
+- Rahul S. Desikan, Florent Ségonne, Bruce Fischl, Brian T. Quinn, Bradford C. Dickerson, Deborah Blacker, Randy L. Buckner, Anders M. Dale, R. Paul Maguire, Bradley T. Hyman, Marilyn S. Albert, Ronald J. Killiany (2006). An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. Neuroimage, 31, 968–980.
+- Simon B Eickhoff, Klaas E Stephan, Hartmut Mohlberg, Christian Grefkes, Gereon R Fink, Katrin Amunts, Karl Zilles (2005). A new SPM toolbox for combining probabilistic cytoarchitectonic maps and functional imaging data. Neuroimage, 25, 1325–1335.
+- Kegang Hua, Jiangyang Zhang, Setsu Wakana, Hangyi Jiang, Xin Li, Daniel S Reich, Peter A Calabresi, James J Pekar, Peter C M van Zijl, Susumu Mori (2008). Tract probability maps in stereotaxic spaces: analyses of white matter anatomy and tract-specific quantification. Neuroimage, 39, 336–347.
+- J Mazziotta, A Toga, A Evans, P Fox, J Lancaster, K Zilles, R Woods, T Paus, G Simpson, B Pike, C Holmes, L Collins, P Thompson, D MacDonald, M Iacoboni, T Schormann, K Amunts, N Palomero-Gallagher, S Geyer, L Parsons, K Narr, N Kabani, G Le Goualher, D Boomsma, T Cannon, R Kawashima, and B Mazoyer (2001). A probabilistic atlas and reference system for the human brain: International Consortium for Brain Mapping (ICBM). The Royal Society Philosophical Transactions B, 356, 1293–1322.
+- Jack L. Lancaster, Marty G. Woldorff, Lawrence M. Parsons, Mario Liotti, Catarina S. Freitas, Lacy Rainey, Peter V. Kochunov, Dan Nickerson, Shawn A. Mikiten, Peter T. Fox (2000). Automated Talairach atlas labels for functional brain mapping. Human Brain Mapping, 10, 120–131.
+- TEJ Behrens, H. Johansen-Berg, MW Woolrich, SM Smith, CAM Wheeler-Kingshott, PA Boulby, GJ Barker, EL Sillery, K. Sheehan, O. Ciccarelli , AJ Thompson, JM Brady, PM Matthews (2003). Non-invasive mapping of connections between human thalamus and cortex using diffusion imaging. Nature Neuroscience, 6, 750–757.
+- Jörn Diedrichsen, Joshua H Balsters, Jonathan Flavell, Emma Cussans, Narender Ramnani (2009). A probabilistic MR atlas of the human cerebellum. Neuroimage, 46, 39-46.
+
+## ICBM 2009c Nonlinear Asymmetric
+
+- VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins and BDCG, Unbiased average age-appropriate atlases for pediatric studies, NeuroImage,Volume 54, Issue 1, January 2011, ISSN 1053–8119, DOI: 10.1016/j.neuroimage.2010.07.033
+- VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins, Unbiased nonlinear average age-appropriate brain templates from birth to adulthood, NeuroImage, Volume 47, Supplement 1, July 2009, Page S102 Organization for Human Brain Mapping 2009 Annual Meeting, DOI: http://dx.doi.org/10.1016/S1053-8119(09)70884-5
+
+## Anatomical Automatic Labeling 2 (AAL2)
+
+- Automated Anatomical Labeling of Activations in SPM Using a Macroscopic Anatomical Parcellation of the MNI MRI Single-Subject Brain. N. Tzourio-Mazoyer, B. Landeau, D. Papathanassiou, F. Crivello, O. Étard, N. Delcroix, B. Mazoyer, and M. Joliot. NeuroImage 2002. 15 :273-289
+http://dx.doi.org/10.1006/nimg.2001.0978
+- Implementation of a new parcellation of the orbitofrontal cortex in the automated anatomical labeling atlas. Rolls ET, Joliot M & Tzourio-Mazoyer N (2015) . NeuroImage
+http://dx.doi.org/10.1016/j.neuroimage.2015.07.075
+- Collins, D. L., Zijdenbos, A. P., Kollokian, V., Sled, J. G., Kabani, N. J., Holmes, C. J., & Evans, A. C. (1998). Design and construction of a realistic digital brain phantom. IEEE transactions on medical imaging, 17(3), 463-468.
+
+## Destrieux 2009
+
+- Fischl, Bruce, et al. "Automatically parcellating the human cerebral cortex." Cerebral cortex 14.1 (2004): 11-22.
+- Destrieux, C., et al. "A sulcal depth-based anatomical parcellation of the cerebral cortex." NeuroImage 47 (2009): S151.
+
+## Desikan & Killiany
+
+- Fischl, Bruce, et al. "Automatically parcellating the human cerebral cortex." Cerebral cortex 14.1 (2004): 11-22.
+- An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest, Desikan et al., (2006). NeuroImage, 31(3):968-80.
+
+## Harvard Oxford Atlas
+
+- Makris N, Goldstein JM, Kennedy D, Hodge SM, Caviness VS, Faraone SV, Tsuang MT, Seidman LJ. Decreased volume of left and total anterior insular lobule in schizophrenia. Schizophr Res. 2006 Apr;83(2-3):155-71
+- Frazier JA, Chiu S, Breeze JL, Makris N, Lange N, Kennedy DN, Herbert MR, Bent EK, Koneru VK, Dieterich ME, Hodge SM, Rauch SL, Grant PE, Cohen BM, Seidman LJ, Caviness VS, Biederman J. Structural brain magnetic resonance imaging of limbic and thalamic volumes in pediatric bipolar disorder. Am J Psychiatry. 2005 Jul;162(7):1256-65
+- Desikan RS, Ségonne F, Fischl B, Quinn BT, Dickerson BC, Blacker D, Buckner RL, Dale AM, Maguire RP, Hyman BT, Albert MS, Killiany RJ. An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. Neuroimage. 2006 Jul 1;31(3):968-80.
+- Goldstein JM, Seidman LJ, Makris N, Ahern T, O'Brien LM, Caviness VS Jr, Kennedy DN, Faraone SV, Tsuang MT. Hypothalamic abnormalities in schizophrenia: sex effects and genetic vulnerability. Biol Psychiatry. 2007 Apr 15;61(8):935-45
+
+## Jülich histological (cyto- and myelo-architectonic) atlas
+
+- Eickhoff et al., A new SPM toolbox for combining probabilistic cytoarchitectonic maps and functional imaging data. Neuroimage 25(4):1325-35 (2005)
+- Eickhoff et al., Testing anatomically specified hypotheses in functional imaging using cytoarchitectonic maps. NeuroImage 32(2): 570-582 (2006)
+- Eickhoff et al., Assignment of functional activations to probabilistic cytoarchitectonic areas revisited. NeuroImage, 36(3): 511-521 (2007)
+
+## Talairach atlas
+
+- Talairach et al. Co-planar stereotaxic atlas of the human brain. Thieme, New York. (1988)
+- Lancaster et al. Bias between MNI and Talairach coordinates analyzed using the ICBM-152 brain template. Human Brain Mapping (in press) (2007)
+- Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L, Kochunov PV, Nickerson D, Mikiten SA, Fox PT, “Automated Talairach Atlas labels for functional brain mapping”. Human Brain Mapping 10:120-131, 2000.
+- Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga AW, Mazziotta JC. Automated labeling of the human brain: A preliminary report on the development and evaluation of a forward-transform method. Hum Brain Mapp 5, 238-242, 1997.
+
+## Neuromorphometrics
+
+Reference missing.
+
+## Atlas of Intrinsic Connectivity of Homotopic Areas (AICHA)
+
+- Joliot M, Jobard G, Naveau M, Delcroix N, Petit L, Zago L, Crivello F, Mellet E, Mazoyer B, Tzourio-Mazoyer N (2015) AICHA: An atlas of intrinsic connectivity of homotopic areas. J Neurosci Methods 254:46-59.
