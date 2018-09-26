@@ -18,8 +18,15 @@ from sklearn.utils import Bunch
 
 
 _ATLASES = [
-    'aal', 'desikan_killiany', 'destrieux', 'harvard_oxford', 'juelich',
+    'aal',
+    'aicha',
+    'desikan_killiany',
+    'destrieux',
+    'harvard_oxford',
+    'juelich',
     'neuromorphometrics',
+    'talairach_ba',
+    'talairach_gyrus',
 ]
 
 
