@@ -629,8 +629,8 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
 
     Parameters
     ----------
-    filename : str
-        Path to input statistical map
+    filename : Niimg_like
+        A 3D statistical image.
     cluster_extent : int
         Minimum number of contiguous voxels required to consider a cluster in
         `filename`
@@ -668,7 +668,7 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
         if outdir is None:
             outdir = op.dirname(filename)
     else:
-        out_fname = 'mniatlasreader'
+        out_fname = 'atlasreader'
         if outdir is None:
             outdir = os.getcwd()
 
