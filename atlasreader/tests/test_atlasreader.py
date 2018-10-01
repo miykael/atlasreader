@@ -23,8 +23,22 @@ EXAMPLE_COORDS = dict(
         dict(
             ijk=[[54, 32, 20], [82, 205, 38], [32, 51, 82]],
             xyz=np.array([[-36, -118, -60], [-8, 55, -42], [-58, -99, 2]])
+        )],
+    bad_coords=[
+        dict(
+            ijk_in=np.array([80, 80, 80]),
+            ijk_out=np.array([80, 80, 80])
+        ),
+        dict(
+            ijk_in=np.array([-1, 0, 0]),
+            ijk_out=np.array([0, 0, 0])
+        ),
+        dict(
+            ijk_in=np.array([80, 80, 100]),
+            ijk_out=np.array([0, 0, 0])
         )
-    ]
+    ],
+    bounding_shape=np.array([90, 90, 90])
 )
 
 
@@ -54,6 +68,13 @@ def test_coords_transform():
         atlasreader.coord_xyz_to_ijk(aff, [[10, 10], [20, 30]])
     with pytest.raises(ValueError):
         atlasreader.coord_ijk_to_xyz(aff, [[10, 10], [20, 30]])
+
+
+def test_bounding_box_check():
+    for coords in EXAMPLE_COORDS['bad_coords']:
+        ijk_out = atlasreader.check_atlas_bounding_box(
+            coords['ijk_in'], EXAMPLE_COORDS['bounding_shape'])
+        assert np.all(ijk_out == coords['ijk_out'])
 
 
 def test_get_statmap_info():

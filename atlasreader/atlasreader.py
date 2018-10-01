@@ -18,8 +18,15 @@ from sklearn.utils import Bunch
 
 
 _ATLASES = [
-    'aal', 'desikan_killiany', 'destrieux', 'harvard_oxford', 'juelich',
+    'aal',
+    'aicha',
+    'desikan_killiany',
+    'destrieux',
+    'harvard_oxford',
+    'juelich',
     'neuromorphometrics',
+    'talairach_ba',
+    'talairach_gyrus',
 ]
 
 
@@ -265,6 +272,34 @@ def get_subpeak_coords(clust_img, min_distance=20):
     return coords
 
 
+def check_atlas_bounding_box(voxIDs, box_shape):
+    """
+    Returns the provided voxel ID if the voxel is inside the bounding box of
+    the atlas image, otherwise the voxel ID will be replaced with the origin.
+
+    Parameters
+    ----------
+    voxIDs : (N, 3) numpy.ndarray
+        `coords` in cartesian space
+    box_shape : (3,) list of int
+        size of the atlas bounding box
+
+    Returns
+    ------
+    ijk : (N, 3) numpy.ndarray
+        `coords` in cartesian space that are inside the bounding box
+    """
+
+    # Detect voxels that are outside the atlas bounding box
+    vox_outside_box = np.sum(
+        (voxIDs < 0) + (voxIDs >= box_shape[:3]), axis=-1, dtype='bool')
+
+    # Set those voxels to the origin (i.e. a voxel outside the brain)
+    voxIDs[vox_outside_box] = np.zeros(3, dtype='int')
+
+    return voxIDs
+
+
 def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
     """
     Returns label of `coordinate` from corresponding `atlastype`
@@ -297,6 +332,7 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
 
     # get voxel index
     voxID = coord_xyz_to_ijk(atlastype.image.affine, coordinate).squeeze()
+    voxID = check_atlas_bounding_box(voxID, data.shape)
 
     # get label information
     # probabilistic atlas is requested
@@ -359,6 +395,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
 
     # get voxel indexes
     voxIDs = coord_xyz_to_ijk(atlastype.image.affine, coords)
+    voxIDs = check_atlas_bounding_box(voxIDs, data.shape)
     voxIDs = tuple(map(tuple, voxIDs.T))
 
     # get label information
