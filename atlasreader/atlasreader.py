@@ -283,9 +283,6 @@ def check_atlas_bounding_box(voxIDs, box_shape):
         `coords` in cartesian space
     box_shape : (3,) list of int
         size of the atlas bounding box
-    prob_thresh : [0, 100] int, optional
-        Probability (percentage) threshold to apply if `atlastype` is
-        probabilistic
 
     Returns
     ------
