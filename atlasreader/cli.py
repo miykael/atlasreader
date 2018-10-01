@@ -109,8 +109,8 @@ def _queryatlas_parser():
                         help='Threshold to consider when using a '
                              'probabilistic atlas for extracting anatomical '
                              'cluster locations. Value will apply to all '
-                             'request probabilistic atlases, and should range '
-                             'between 0 and 100. Default: 5')
+                             'requested probabilistic atlases, and should '
+                             'range between 0 and 100. Default: 5')
     return parser.parse_args()
 
 
@@ -136,4 +136,5 @@ def queryatlas_main():
 if __name__ == '__main__':
     raise RuntimeError('`atlasreader/cli.py` should not be run '
                        'directly. Please `pip install` atlasreader and '
-                       'use the `atlasreader` command, instead.')
+                       'use the `atlasreader` or `queryatlas` commands, '
+                       'instead.')
