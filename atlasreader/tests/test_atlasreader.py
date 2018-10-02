@@ -53,6 +53,8 @@ def test_get_atlases():
 def test_check_atlases():
     atlases = atlasreader.check_atlases('all')
     assert len(atlases) == len(atlasreader._ATLASES)
+    atlases = atlasreader.check_atlases('default')
+    assert len(atlases) == len(atlasreader._DEFAULT)
     atlases = atlasreader.check_atlases(['aal', 'destrieux'])
     assert atlasreader.check_atlases(atlases) == atlases
     assert atlasreader.check_atlases(atlases[0]) == atlases[0]
