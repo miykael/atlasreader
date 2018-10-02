@@ -29,6 +29,11 @@ _ATLASES = [
     'talairach_gyrus',
 ]
 
+_DEFAULT = [
+    'aal',
+    'desikan_killiany',
+    'harvard_oxford',
+]
 
 def get_atlas(atlastype, cache=True):
     """
@@ -91,7 +96,12 @@ def check_atlases(atlases):
     elif isinstance(atlases, dict):
         if all(hasattr(atlases, i) for i in ['image', 'atlas', 'labels']):
             return atlases
-    draw = atlases if 'all' not in atlases else _ATLASES
+    if 'all' in atlases:
+        draw = _ATLASES
+    elif 'default' in atlases:
+        draw = _DEFAULT
+    else:
+        draw = atlases
 
     return [get_atlas(a) if isinstance(a, str) else a for a in draw]
 
@@ -479,14 +489,14 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
     return clust_img_ordered
 
 
-def get_peak_data(clust_img, atlas='all', prob_thresh=5, min_distance=None):
+def get_peak_data(clust_img, atlas='default', prob_thresh=5, min_distance=None):
     """
     Parameters
     ----------
     clust_img : Niimg_like
         3D image of a single, valued cluster
     atlas : str or list, optional
-        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+        Name of atlas(es) to consider for cluster analysis. Default: 'default'
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
@@ -533,14 +543,14 @@ def get_peak_data(clust_img, atlas='all', prob_thresh=5, min_distance=None):
     return np.column_stack([coords, peak_values, cluster_volume, peak_info])
 
 
-def get_cluster_data(clust_img, atlas='all', prob_thresh=5):
+def get_cluster_data(clust_img, atlas='default', prob_thresh=5):
     """
     Parameters
     ----------
     clust_img : Niimg_like
         3D image of a single, valued cluster
     atlas : str or list, optional
-        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+        Name of atlas(es) to consider for cluster analysis. Default: 'default'
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
@@ -573,7 +583,7 @@ def get_cluster_data(clust_img, atlas='all', prob_thresh=5):
     return coord + [clust_mean, cluster_volume] + cluster_info
 
 
-def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
+def get_statmap_info(stat_img, cluster_extent, atlas='default', voxel_thresh=1.96,
                      prob_thresh=5, min_distance=None):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
@@ -586,7 +596,7 @@ def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
         Minimum number of contiguous voxels required to consider a cluster in
         `stat_img`
     atlas : str or list, optional
-        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+        Name of atlas(es) to consider for cluster analysis. Default: 'default'
     voxel_thresh : int, optional
         Threshold to apply to `stat_img`. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
@@ -650,7 +660,7 @@ def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
     return clust_frame, peaks_frame
 
 
-def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
+def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
                   prob_thresh=5, min_distance=None, outdir=None,
                   glass_plot_kws=None, stat_plot_kws=None):
     """
@@ -672,7 +682,7 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
         Minimum number of contiguous voxels required to consider a cluster in
         `filename`
     atlas : str or list, optional
-        Name of atlas(es) to consider for cluster analysis. Default: 'all'
+        Name of atlas(es) to consider for cluster analysis. Default: 'default'
     voxel_thresh : int, optional
         Threshold to apply to `stat_img`. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
