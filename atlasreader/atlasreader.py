@@ -35,6 +35,7 @@ _DEFAULT = [
     'harvard_oxford',
 ]
 
+
 def get_atlas(atlastype, cache=True):
     """
     Gets `atlastype` image and corresponding label file from package resources
@@ -489,7 +490,8 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
     return clust_img_ordered
 
 
-def get_peak_data(clust_img, atlas='default', prob_thresh=5, min_distance=None):
+def get_peak_data(clust_img, atlas='default', prob_thresh=5,
+                  min_distance=None):
     """
     Parameters
     ----------
@@ -583,8 +585,8 @@ def get_cluster_data(clust_img, atlas='default', prob_thresh=5):
     return coord + [clust_mean, cluster_volume] + cluster_info
 
 
-def get_statmap_info(stat_img, cluster_extent, atlas='default', voxel_thresh=1.96,
-                     prob_thresh=5, min_distance=None):
+def get_statmap_info(stat_img, cluster_extent, atlas='default',
+                     voxel_thresh=1.96, prob_thresh=5, min_distance=None):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
 

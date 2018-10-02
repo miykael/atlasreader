@@ -3,8 +3,7 @@ Functions for command line interface to generate cluster / peak summary
 """
 import argparse
 import os.path as op
-from atlasreader.atlasreader import (_ATLASES, _DEFAULT, check_atlases,
-                                     create_output)
+from atlasreader.atlasreader import (_ATLASES, check_atlases, create_output)
 
 
 def _check_limit(num, limits=[0, 100]):
