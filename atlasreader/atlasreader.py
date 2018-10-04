@@ -639,12 +639,12 @@ def get_statmap_info(stat_img, cluster_extent, atlas='all', voxel_thresh=1.96,
                                columns=['cluster_id',
                                         'peak_x', 'peak_y', 'peak_z',
                                         'cluster_mean', 'volume_mm']
-                                        + atlasnames)
+                               + atlasnames)
     peaks_frame = pd.DataFrame(peaks_info,
                                columns=['cluster_id',
                                         'peak_x', 'peak_y', 'peak_z',
                                         'peak_value', 'volume_mm']
-                                        + atlasnames)
+                               + atlasnames)
     for col in range(6):
         clust_frame.iloc[:, col] = clust_frame.iloc[:, col].astype(float)
         peaks_frame.iloc[:, col] = peaks_frame.iloc[:, col].astype(float)
