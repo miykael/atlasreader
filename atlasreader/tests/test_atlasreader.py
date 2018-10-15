@@ -4,6 +4,7 @@ from atlasreader import atlasreader
 import nibabel as nb
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
+import hashlib
 
 STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
@@ -153,3 +154,27 @@ def test_plotting(tmpdir):
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'alpha': .4})
+
+
+def test_table_output(tmpdir):
+    # create mock data
+    stat_img_name = os.path.basename(STAT_IMG)[:-7]
+
+    # temporary output
+    output_dir = tmpdir.mkdir('mni_test')
+    atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              atlas=['AAL', 'desikan_killiany',
+                                     'Harvard_Oxford'],
+                              outdir=output_dir)
+
+    # test if output tables contain expected output
+    cluster_checksum = hashlib.md5(
+        open(output_dir.join('{}_clusters.csv'.format(stat_img_name)),
+        'rb').read()).hexdigest()
+
+    peak_checksum = hashlib.md5(
+        open(output_dir.join('{}_peaks.csv'.format(stat_img_name)),
+        'rb').read()).hexdigest()
+
+    assert cluster_checksum == '5d85805d58f8fbe22ef4e34ec75d8f42'
+    assert peak_checksum == 'f7cd664571413fe964eef0c45cd6f033'
