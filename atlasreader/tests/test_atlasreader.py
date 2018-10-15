@@ -174,5 +174,5 @@ def test_table_output(tmpdir):
     peak_checksum = hashlib.md5(open(output_dir.join(
         '{}_peaks.csv'.format(stat_img_name)), 'rb').read()).hexdigest()
 
-    assert cluster_checksum == '5d85805d58f8fbe22ef4e34ec75d8f42'
+    assert cluster_checksum == 'b03705caeaad17b3cbc9f9b6042bdd72'
     assert peak_checksum == 'f7cd664571413fe964eef0c45cd6f033'
