@@ -1,4 +1,5 @@
 import os
+import atlasreader
 from nilearn.datasets import fetch_neurovault_motor_task
 import subprocess
 
@@ -17,7 +18,8 @@ def test_cli(tmpdir):
                           '--mindist', '20',
                           '--outdir', output_dir,
                           STAT_IMG, '20'])
-    assert ret.returncode == 0
+    print(ret.returncode)
+    assert ret.returncode == atlasreader._LICENSE_MESSAGE
 
     # test if output exists and if the key .csv and .png files were created
     assert output_dir.exists()
