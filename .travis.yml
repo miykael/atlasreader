@@ -40,7 +40,9 @@ script:
               TEST_ARGS="--cov-report term-missing --cov=atlasreader";
               py.test ${TEST_ARGS} atlasreader;
       elif [ "${NOTEBOOKS}" == "1" ]; then
-          for n in `ls atlasreader/notebooks/*ipynb`
+          pwd
+          ls
+          for n in `ls notebooks/*ipynb`
           do
               pytest --nbval-lax -v -s ${n};
           done
