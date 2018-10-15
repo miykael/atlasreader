@@ -39,7 +39,7 @@ script:
       elif [ "${COVERAGE}" == "1" ]; then
               TEST_ARGS="--cov-report term-missing --cov=atlasreader";
               py.test ${TEST_ARGS} atlasreader;
-      elfi [ "${NOTEBOOKS}" == "1" ]; then
+      elif [ "${NOTEBOOKS}" == "1" ]; then
           for n in `ls atlasreader/notebooks/*ipynb`
           do
               pytest --nbval-lax -v -s ${n};
