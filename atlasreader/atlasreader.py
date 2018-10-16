@@ -744,15 +744,7 @@ def create_output(filename, cluster_extent, atlas='all', voxel_thresh=1.96,
         if glass_plot_kws is None:
             glass_plot_kws = {}
         glass_plot_params.update(glass_plot_kws)
-        try:
-            # catch UserWarning: empty mask
-            warnings.filterwarnings('error')
-            plotting.plot_glass_brain(**glass_plot_params)
-        except Warning:
-            if thresh_img.get_data().sum() == 0:
-                warning_msg = "UserWarning: The thresholded image is empty! "
-                warning_msg += "No clusters detected."
-                print(warning_msg)
+        plotting.plot_glass_brain(**glass_plot_params)
 
     # Check if thresholded image contains only zeros
     if np.any(thresh_img.get_data()):
