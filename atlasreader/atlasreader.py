@@ -473,7 +473,7 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
             try:
                 clusters += [connected_regions(
                     image.new_img_like(thresh_img, data),
-                    min_region_size=min_region_size,
+                    min_region_size=min_region_size - 1e-8,
                     extract_type='connected_components')[0]]
             except TypeError:  # for no clusters
                 pass
