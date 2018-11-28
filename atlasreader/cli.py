@@ -38,11 +38,13 @@ def _get_parser():
     parser.add_argument('cluster_extent', type=int, metavar='min_cluster_size',
                         help='Number of contiguous voxels required for a '
                              'cluster to be considered for analysis.')
-    parser.add_argument('-a', '--atlas', type=str.lower, default='all',
-                        nargs='+', choices=_ATLASES + ['all'], metavar='atlas',
+    parser.add_argument('-a', '--atlas', type=str.lower, default='default',
+                        nargs='+', choices=_ATLASES + ['all', 'default'],
+                        metavar='atlas',
                         help='Atlas(es) to use for examining anatomical '
                              'delineation of clusters in provided statistical '
-                             'map. Default: all available atlases.')
+                             'map. Default: AAL, Desikan-Killiany & '
+                             'Harvard-Oxford.')
     parser.add_argument('-t', '--threshold', type=float, default=2,
                         dest='voxel_thresh', metavar='threshold',
                         help='Value threshold that voxels in provided file '
