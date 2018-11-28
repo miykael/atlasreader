@@ -24,6 +24,7 @@ _ATLASES = [
     'destrieux',
     'harvard_oxford',
     'juelich',
+    'marsatlas',
     'neuromorphometrics',
     'talairach_ba',
     'talairach_gyrus',

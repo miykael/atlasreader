@@ -231,6 +231,27 @@ is packaged with FSL 5.0.
 
 The FSL templates and atlases are under the License that can be found [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence).
 
+## MarsAtlas (aka MarsAtlas-Colin27-MNI)
+
+The MarsAtlas used in `atlasreader` is the "The MarsAtlas cortical parcellation
+of Colin27 in the MNI space". For more information about this atlas see https://meca-brain.org/software/marsatlas-colin27/.
+
+### Creation of atlas
+
+The atlas was downloaded from https://meca-brain.org/software/marsatlas-colin27/ on the 15.
+Oct. 2018 via the following link: https://www.dropbox.com/s/ndz8qtqblkciole/MarsAtlas-MNI-Colin27.zip?dl=1
+
+The labels file was manually created according to the table of cortical(http://meca-brain.org/software/marsatlas/)
+and sub-cortical (http://meca-brain.org/software/marsatlas-subcortical/) regions.
+For cortical regions, the label name is a combination of the "Full Name" and the
+"Brodman Area" label.
+
+### Licesne
+
+For more information about the license and copyright of the `MarsAtlas-Colin27-MNI`
+atlas, go to https://meca-brain.org/software/marsatlas-colin27/.
+
+
 ## Neuromorphometrics
 
 Maximum probability tissue labels derived from the "MICCAI 2012 Grand Challenge
@@ -361,6 +382,10 @@ http://dx.doi.org/10.1016/j.neuroimage.2015.07.075
 - Lancaster et al. Bias between MNI and Talairach coordinates analyzed using the ICBM-152 brain template. Human Brain Mapping (in press) (2007)
 - Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L, Kochunov PV, Nickerson D, Mikiten SA, Fox PT, “Automated Talairach Atlas labels for functional brain mapping”. Human Brain Mapping 10:120-131, 2000.
 - Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga AW, Mazziotta JC. Automated labeling of the human brain: A preliminary report on the development and evaluation of a forward-transform method. Hum Brain Mapp 5, 238-242, 1997.
+
+## MarsAtlas
+
+For information about references, see https://meca-brain.org/software/marsatlas-colin27/.
 
 ## Neuromorphometrics
 
