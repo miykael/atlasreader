@@ -448,14 +448,18 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
         4D image of brain regions, where each volume is a distinct cluster
     """
     # get input data image
-    stat_img = image.index_img(check_niimg(stat_img, atleast_4d=True), 0)
+    img_4d = check_niimg(stat_img, atleast_4d=True)
+    if img_4d.shape[-1] == 1:
+        stat_img = img_4d.slicer[..., 0]
+    else:
+        stat_img = image.index_img(img_4d, 0)
 
     # threshold image
     if voxel_thresh < 0:
         voxel_thresh = '{}%'.format(100 + voxel_thresh)
     else:
         # ensure that threshold is not greater than most extreme value in image
-        if voxel_thresh > np.abs(stat_img.get_data()).max():
+        if voxel_thresh > np.nan_to_num(np.abs(stat_img.get_data())).max():
             empty = np.zeros(stat_img.shape + (1,))
             return image.new_img_like(stat_img, empty)
     thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
