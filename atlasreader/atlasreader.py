@@ -720,7 +720,12 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     # get info for saving outputs
     if isinstance(filename, str):
         filename = op.abspath(filename)
-        out_fname = op.basename(filename).split('.')[0]
+        if filename.endswith('.nii.gz'):
+            out_fname = op.basename(filename)[:-7]
+        elif filename.endswith('.nii'):
+            out_fname = op.basename(filename)[:-4]
+        elif filename.endswith('.img'):
+            out_fname = op.basename(filename)[:-4]
         if outdir is None:
             outdir = op.dirname(filename)
     else:
