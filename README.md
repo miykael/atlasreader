@@ -2,6 +2,7 @@
 
 This package provides a Python interface for generating coordinate tables and region labels from statistical images
 
+[![codecov](https://codecov.io/gh/miykael/atlasreader/branch/master/graph/badge.svg)](https://codecov.io/gh/miykael/atlasreader)
 [![Build Status](https://travis-ci.org/miykael/atlasreader.svg?branch=master)](https://travis-ci.org/miykael/atlasreader)
 [![GitHub issues](https://img.shields.io/github/issues/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/issues/)
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/pulls/)
