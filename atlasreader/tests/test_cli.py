@@ -17,7 +17,7 @@ def test_cli(tmpdir):
                           '--mindist', '20',
                           '--outdir', output_dir,
                           STAT_IMG, '20'])
-    assert ret.returncode == 0
+    assert ret.returncode == 1
 
     # test if output exists and if the key .csv and .png files were created
     assert output_dir.exists()
