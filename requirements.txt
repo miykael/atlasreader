@@ -1,6 +1,6 @@
 matplotlib
 nibabel
-nilearn>=0.5.0a
+nilearn==0.5.0a
 numpy
 pandas
 scipy
