@@ -23,7 +23,7 @@ before_install:
         pip install flake8;
       fi
     - if [ "${COVERAGE}" == "1" ]; then
-        pip install coverage coveralls codecov pytest pytest-cov;
+        pip install coverage coveralls codecov pytest==3.6 pytest-cov;
       fi
     - if [ "${NOTEBOOKS}" == "1" ]; then
         pip install pytest jupyter nbval;
