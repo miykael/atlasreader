@@ -711,7 +711,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     glass_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
         `nilearn.plotting.plot_glass_brain`.
-    glass_plot_kws : dict or None, optional
+    stat_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
         `nilearn.plotting.plot_stat_map`.
     """
