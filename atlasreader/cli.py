@@ -69,8 +69,8 @@ def _atlasreader_parser():
                         help='If specified, the program will attempt to find '
                              'subpeaks within detected clusters, rather than '
                              'a single peak per cluster. The specified value '
-                             'will determine the minimum distance required '
-                             'between subpeaks. Default: None')
+                             'will determine the minimum distance (in mm) '
+                             'required between subpeaks. Default: None')
     return parser.parse_args()
 
 

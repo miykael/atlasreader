@@ -700,9 +700,9 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
     min_distance : float, optional
-        Specifies the minimum distance required between sub-peaks in a cluster.
-        If None, sub-peaks will not be examined and only the primary cluster
-        peak will be reported. Default: None
+        Specifies the minimum distance (in mm) required between sub-peaks in a
+        cluster. If None, sub-peaks will not be examined and only the primary
+        cluster peak will be reported. Default: None
     outdir : str or None, optional
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
