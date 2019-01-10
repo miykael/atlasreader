@@ -475,9 +475,11 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
         # Do nothing if data array contains only zeros
         if np.any(data):
             try:
+                if min_region_size != 0.0:
+                    min_region_size -= 1e-8
                 clusters += [connected_regions(
                     image.new_img_like(thresh_img, data),
-                    min_region_size=min_region_size - 1e-8,
+                    min_region_size=min_region_size,
                     extract_type='connected_components')[0]]
             except TypeError:  # for no clusters
                 pass
@@ -700,16 +702,16 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
     min_distance : float, optional
-        Specifies the minimum distance required between sub-peaks in a cluster.
-        If None, sub-peaks will not be examined and only the primary cluster
-        peak will be reported. Default: None
+        Specifies the minimum distance (in mm) required between sub-peaks in a
+        cluster. If None, sub-peaks will not be examined and only the primary
+        cluster peak will be reported. Default: None
     outdir : str or None, optional
         Path to desired output directory. If None, generated files will be
         saved to the same folder as `filename`. Default: None
     glass_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
         `nilearn.plotting.plot_glass_brain`.
-    glass_plot_kws : dict or None, optional
+    stat_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
         `nilearn.plotting.plot_stat_map`.
     """
