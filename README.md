@@ -13,13 +13,13 @@ This package provides a Python interface for generating coordinate tables and re
 
 If you are using `atlasreader` in your publication, please cite the following paper:
 
-    Markello R., Gale D., Herholz P., Whitaker K., & Notter M. P. (2019). AtlasReader: Quick generation of coordinate tables and region labels for statistical MRI images. The Journal of Open Source Software, ZZZ, YYY.
+Markello R., Gale D., Herholz P., Whitaker K., & Notter M. P. (2019). AtlasReader: Quick generation of coordinate tables and region labels for statistical MRI images. *The Journal of Open Source Software*, ZZZ, YYY.
 
 ***TODO: This reference needs to be updated after paper is published. Don't forget to add the DOI and link to the paper.***
 
 ## Usage
 
-`atlasreader` can either be run through the command line interface, or directly within Python. The commands to do so are rather straight forward:
+`atlasreader` can either be run through the command line interface or directly within Python. The commands to do so are rather straight forward. Let's say you want to apply `atlasreader` to a statistical image called `file_name = 'stat_img.nii'`, and only want to keep clusters if they have more than 5 voxels:
 
 #### Python
 ```python
@@ -37,11 +37,11 @@ atlasreader file_name 5
 
 After executing `atlasreader` on a given image, four kinds of outputs are generated:
 
-1. An **overview figure** that shows the results within the whole brain at once
+1. An **overview figure** that shows the results within the whole brain at once  
    ![Overview Figure](static/fig01_overview.png)
-2. **For each cluster**, an **informative figure** showing the sagittal, coronal and trasnveral plane centered at this center of the cluster
+2. **For each cluster**, an **informative figure** showing the sagittal, coronal and transversal plane centered at this center of the cluster  
    ![Cluster Figure](static/fig02_cluster.png)
-3. A **csv file** containing relevant information about the **peak** of each cluster. This table contains the location of each cluster's peak, it's signal value at this location, the cluster extend (in mm, not in number of voxels) and the atlas correspondence of the peak.
+3. A **csv file** containing relevant information about the **peak** of each cluster. This table contains the location of each cluster's peak, it's signal value at this location, the cluster extent (in mm, not in number of voxels) and the atlas correspondence of the peak.  
    | cluster_id | peak_x | peak_y | peak_z | peak_value | volume_mm | aal             | desikan_killiany            | harvard_oxford                                    |
    |------------|--------|--------|--------|------------|-----------|-----------------|-----------------------------|---------------------------------------------------|
    | 1          | 42     | -25    | 55     | 7.94135    | 60399     | Postcentral_R   | Right-Cerebral-White-Matter | 48% Right_Postcentral_Gyrus; 12% Right_Precent... |
@@ -54,7 +54,7 @@ After executing `atlasreader` on a given image, four kinds of outputs are genera
    | 8          | -15    | -55    | 16     | -3.57240   | 351       | Precuneus_L     | Left-Cerebral-White-Matter  | 35% Left_Precuneous_Cortex                        |
    | 9          | -66    | -25    | 31     | 3.33892    | 351       | SupraMarginal_L | ctx-lh-supramarginal        | 42% Left_Supramarginal_Gyrus_anterior_division... |
    | 10         | -21    | 41     | 46     | -3.41921   | 162       | Frontal_Sup_2_L | Unknown                     | 51% Left_Frontal_Pole; 19% Left_Superior_Front... |
-4. A **csv** file containing relevant information about each **cluster**. This table contains the location of each cluster's peak, the mean value within the cluster, the cluster extend (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas
+4. A **csv** file containing relevant information about each **cluster**. This table contains the location of each cluster's peak, the mean value within the cluster, the cluster extend (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas  
    | cluster_id | peak_x | peak_y | peak_z | cluster_mean | volume_mm | aal                                               | desikan_killiany                                  | harvard_oxford                                    |
    |------------|--------|--------|--------|--------------|-----------|---------------------------------------------------|---------------------------------------------------|---------------------------------------------------|
    | 1          | 42     | -25    | 55     | 5.71861      | 60399     | 28.39% Postcentral_R; 14.75% Precentral_R; 9.1... | 31.47% Unknown; 27.09% Right-Cerebral-White-Ma... | 28.07% Right_Postcentral_Gyrus; 19.18% Right_P... |
@@ -110,7 +110,7 @@ installing `atlasreader` is as simple as this:
 pip install atlasreader
 ```
 
-If you want to install `atlasreader` directly from the source code, use the 
+If you want to build `atlasreader` directly from source code, use the 
 following code:
 
 ```bash
@@ -124,7 +124,7 @@ python setup.py install
 
 We're thrilled to welcome new contributors!
 
-If you're interesting in getting involved, you should start by reading our [contributing guidelines](CONTRIBUTING.md).
+If you're interested in getting involved, you should start by reading our [contributing guidelines](CONTRIBUTING.md).
 
 Once you're done with that, you can take a look at our list of active [issues](https://github.com/rmarkello/pyls/issues) and let us know if there's something you'd like to begin working on.
 
