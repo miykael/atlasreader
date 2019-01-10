@@ -12,6 +12,9 @@ matrix:
     - python: 3.6
       env:
         - COVERAGE=1
+    - python: 3.6
+      env:
+        - NOTEBOOKS=1
 
 before_install:
     - python -m pip install --upgrade pip
@@ -20,7 +23,10 @@ before_install:
         pip install flake8;
       fi
     - if [ "${COVERAGE}" == "1" ]; then
-        pip install coverage coveralls codecov pytest pytest-cov;
+        pip install coverage coveralls codecov pytest==4.1 pytest-cov;
+      fi
+    - if [ "${NOTEBOOKS}" == "1" ]; then
+        pip install pytest jupyter nbval;
       fi
 
 install:
@@ -30,11 +36,14 @@ script:
     - |
       if [ "${STYLE}" == "1" ]; then
           flake8 atlasreader
-      else
-          if [ "${COVERAGE}" == "1" ]; then
+      elif [ "${COVERAGE}" == "1" ]; then
               TEST_ARGS="--cov-report term-missing --cov=atlasreader";
-          fi
-          py.test ${TEST_ARGS} atlasreader;
+              py.test ${TEST_ARGS} atlasreader;
+      elif [ "${NOTEBOOKS}" == "1" ]; then
+          for n in `ls notebooks/*ipynb`
+          do
+              pytest --nbval-lax -v -s ${n};
+          done
       fi
 
 after_success:

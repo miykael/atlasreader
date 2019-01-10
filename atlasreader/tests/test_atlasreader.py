@@ -4,6 +4,7 @@ from atlasreader import atlasreader
 import nibabel as nb
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
+import hashlib
 
 STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
@@ -23,8 +24,22 @@ EXAMPLE_COORDS = dict(
         dict(
             ijk=[[54, 32, 20], [82, 205, 38], [32, 51, 82]],
             xyz=np.array([[-36, -118, -60], [-8, 55, -42], [-58, -99, 2]])
+        )],
+    bad_coords=[
+        dict(
+            ijk_in=np.array([80, 80, 80]),
+            ijk_out=np.array([80, 80, 80])
+        ),
+        dict(
+            ijk_in=np.array([-1, 0, 0]),
+            ijk_out=np.array([0, 0, 0])
+        ),
+        dict(
+            ijk_in=np.array([80, 80, 100]),
+            ijk_out=np.array([0, 0, 0])
         )
-    ]
+    ],
+    bounding_shape=np.array([90, 90, 90])
 )
 
 
@@ -39,6 +54,8 @@ def test_get_atlases():
 def test_check_atlases():
     atlases = atlasreader.check_atlases('all')
     assert len(atlases) == len(atlasreader._ATLASES)
+    atlases = atlasreader.check_atlases('default')
+    assert len(atlases) == len(atlasreader._DEFAULT)
     atlases = atlasreader.check_atlases(['aal', 'destrieux'])
     assert atlasreader.check_atlases(atlases) == atlases
     assert atlasreader.check_atlases(atlases[0]) == atlases[0]
@@ -56,25 +73,51 @@ def test_coords_transform():
         atlasreader.coord_ijk_to_xyz(aff, [[10, 10], [20, 30]])
 
 
+def test_bounding_box_check():
+    for coords in EXAMPLE_COORDS['bad_coords']:
+        ijk_out = atlasreader.check_atlas_bounding_box(
+            coords['ijk_in'], EXAMPLE_COORDS['bounding_shape'])
+        assert np.all(ijk_out == coords['ijk_out'])
+
+
 def test_get_statmap_info():
     # general integration test to check that min_distance works
     # this will take a little while since it's running it twice
+    stat_img = nb.load(STAT_IMG)
     for min_distance in [None, 20]:
-        cdf, pdf = atlasreader.get_statmap_info(nb.load(STAT_IMG),
+        cdf, pdf = atlasreader.get_statmap_info(stat_img,
                                                 cluster_extent=20,
                                                 atlas=['Harvard_Oxford',
                                                        'AAL'],
                                                 min_distance=min_distance)
 
+    # test that empty image return empty dataframes
+    zero_img = nb.Nifti1Image(np.zeros(stat_img.shape), stat_img.affine,
+                              header=stat_img.header)
+    cdf, pdf = atlasreader.get_statmap_info(zero_img,
+                                            cluster_extent=20)
+    assert len(cdf) == 0
+    assert len(pdf) == 0
+
 
 def test_process_image():
+    stat_img = nb.load(STAT_IMG)
     # check that defaults for processing image work
-    img = atlasreader.process_img(STAT_IMG, cluster_extent=20)
+    img = atlasreader.process_img(stat_img, cluster_extent=20)
     assert isinstance(img, nb.Nifti1Image)
     # check that negative voxel threshold works
-    img = atlasreader.process_img(STAT_IMG, cluster_extent=20,
+    img = atlasreader.process_img(stat_img, cluster_extent=20,
                                   voxel_thresh=-10)
     assert isinstance(img, nb.Nifti1Image)
+    # check that setting cluster extent too high still returns an image
+    img = atlasreader.process_img(stat_img, cluster_extent=5000)
+    assert np.allclose(img.get_data(), 0)
+    # ensure empty image --> empty image
+    zero_img = nb.Nifti1Image(np.zeros(stat_img.shape), stat_img.affine,
+                              header=stat_img.header)
+    img = atlasreader.process_img(zero_img, cluster_extent=20)
+    assert img.shape == zero_img.shape + (1,)
+    assert np.allclose(img.get_data(), 0)
 
 
 def test_create_output(tmpdir):
@@ -113,3 +156,25 @@ def test_plotting(tmpdir):
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'alpha': .4})
+
+
+def test_table_output(tmpdir):
+    # create mock data
+    stat_img_name = os.path.basename(STAT_IMG)[:-7]
+
+    # temporary output
+    output_dir = tmpdir.mkdir('mni_test')
+    atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              atlas=['AAL', 'desikan_killiany',
+                                     'Harvard_Oxford'],
+                              outdir=output_dir)
+
+    # test if output tables contain expected output
+    cluster_checksum = hashlib.md5(open(output_dir.join(
+        '{}_clusters.csv'.format(stat_img_name)), 'rb').read()).hexdigest()
+
+    peak_checksum = hashlib.md5(open(output_dir.join(
+        '{}_peaks.csv'.format(stat_img_name)), 'rb').read()).hexdigest()
+
+    assert cluster_checksum == 'b03705caeaad17b3cbc9f9b6042bdd72'
+    assert peak_checksum == '061b505b6a505053e4e8e4e25d051b1a'
