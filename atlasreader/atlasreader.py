@@ -475,9 +475,11 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
         # Do nothing if data array contains only zeros
         if np.any(data):
             try:
+                if min_region_size != 0.0:
+                    min_region_size -= 1e-8
                 clusters += [connected_regions(
                     image.new_img_like(thresh_img, data),
-                    min_region_size=min_region_size - 1e-8,
+                    min_region_size=min_region_size,
                     extract_type='connected_components')[0]]
             except TypeError:  # for no clusters
                 pass
