@@ -757,6 +757,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
             'colorbar': True,
             'black_bg': True,
             'cmap': plotting.cm.cold_hot,
+            'threshold': voxel_thresh,
             'vmax': color_max,
             'plot_abs': False,
             'symmetric_cbar': False
