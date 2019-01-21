@@ -12,7 +12,7 @@ authors:
    orcid: 0000-0003-1057-1336
    affiliation: 1
  - name: Dan Gale
-   orcid: 0000-MISSING
+   orcid: 0000-0002-9082-1659
    affiliation: 2
  - name: Peer Herholz
    orcid: 0000-0002-9840-6257
@@ -29,7 +29,7 @@ authors:
 affiliations:
  - name: McGill University
    index: 1
- - name: DAN'S AFFILIATION(s)
+ - name: Centre for Neuroscience Studies, Queen's University, Kingston, Canada
    index: 2
  - name: Laboratory for Multimodal Neuroimaging, Philipps-University Marburg, Hesse, Germany
    index: 3
