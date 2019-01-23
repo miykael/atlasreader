@@ -86,7 +86,7 @@ four kinds of outputs:
 
 Users have many parameters available to guide the creation of these outputs. For
 example, with `cluster_extent` a user can specify the minimum number of
-contiguous voxels required for a ROI to be shown in the output, `min_dstinace`
+contiguous voxels required for a ROI to be shown in the output, `min_distance`
 can be used to extract information from multiple peaks within a
 given ROI, and `atlas` can be used to specify which atlases should be used for
 the output creation. By default, AtlasReader uses the AAL, the Desikan-Killiany,
