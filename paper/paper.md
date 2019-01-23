@@ -68,7 +68,7 @@ AtlasReader, users can use any of the freely and publicly available neuroimaging
 atlases, without any restriction to their preferred software package, to create
 publication-ready output figures and tables that contain relevant information
 about the peaks and clusters extent of each ROI. To our knowledge, providing
-atlas information about the full extent of a cluster (i.e. the extent of overlap
+atlas information about the full extent of a cluster (i.e. the amount of overlap
 between the ROI and atlas regions) is a new feature that, so far, is not
 available in any other comparable neuroimaging software package.
 
