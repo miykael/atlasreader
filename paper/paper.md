@@ -27,7 +27,7 @@ authors:
    orcid: 0000-0002-5866-047X
    affiliation: 7
 affiliations:
- - name: McGill University
+ - name: McConnell Brain Imaging Centre, Montréal Neurological Institute, McGill University, Montréal, Canada
    index: 1
  - name: Centre for Neuroscience Studies, Queen's University, Kingston, Canada
    index: 2
