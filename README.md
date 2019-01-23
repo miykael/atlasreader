@@ -9,7 +9,8 @@
 
 # AtlasReader
 
-This package provides a Python interface for generating coordinate tables and region labels from statistical MRI images.
+This package provides a Python interface for generating coordinate tables and
+region labels from statistical MRI images.
 
 If you are using `atlasreader` in your publication, please cite the following paper:
 
@@ -19,7 +20,11 @@ Markello R., Gale D., Herholz P., Whitaker K., Notter-Bielser M.-L., & Notter M.
 
 ## Usage
 
-`atlasreader` can either be run through the command line interface or directly within Python. The commands to do so are rather straight forward. Let's say you want to apply `atlasreader` to a statistical image called `file_name = 'stat_img.nii'`, and only want to keep clusters if they have more than 5 voxels:
+`atlasreader` can either be run through the command line interface or directly
+within Python. The commands to do so are rather straight forward. Let's say you
+want to apply `atlasreader` to a statistical image called
+`file_name = 'stat_img.nii'`, and only want to keep clusters if they have more
+than 5 voxels:
 
 #### Python
 ```python
@@ -40,19 +45,29 @@ After executing `atlasreader` on a given image, four kinds of outputs are genera
 1. An **overview figure** that shows the results within the whole brain at once  
    ![Overview Figure](paper/fig_overview_figure.png)
 
-2. **For each cluster**, an **informative figure** showing the sagittal, coronal and transversal plane centered on the main peak of the cluster  
+2. **For each cluster**, an **informative figure** showing the sagittal, coronal
+   and transversal plane centered on the main peak of the cluster  
    ![Cluster Figure](paper/fig_cluster_figure.png)
 
-3. A **csv file** containing relevant information about the **peak** of each cluster. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.  
+3. A **csv file** containing relevant information about the **peak** of each
+   cluster. This table contains the cluster association and location of each
+   peak, its signal value at this location, the cluster extent (in mm, not in
+   number of voxels), as well as the membership of each peak, given a
+   particular atlas.  
    ![Table Peak](paper/table_peak.png)
 
-4. A **csv** file containing relevant information about each **cluster**. Table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.  
+4. A **csv** file containing relevant information about each **cluster**. Table
+   showing relevant information for the cluster extent of each ROI. This table
+   contains the cluster association and location of each peak, the mean value
+   within the cluster, the cluster extent (in mm, not in number of voxels), as
+   well as the membership of each cluster, given a particular atlas.  
    ![Table Cluster](paper/table_cluster.png)
 
 
 ### Additional parameters
 
-`atlasreader` has many additional parameters that allow you to change the way the clusters are generated and what kind of outputs are generated:
+`atlasreader` has many additional parameters that allow you to change the way
+the clusters are generated and what kind of outputs are generated:
 
 - **filename**: Niimg_like  
     A 3D statistical image.
@@ -79,12 +94,13 @@ After executing `atlasreader` on a given image, four kinds of outputs are genera
 - **stat_plot_kws**: dict or None, optional  
     Additional keyword arguments to pass to `nilearn.plotting.plot_stat_map`.
 
-For a more detailed explanation about the toolbox and the effect of the parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
+For a more detailed explanation about the toolbox and the effect of the
+parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
 
 
 ## Installation
 
-This package requires Python >= 3.6. Provided you have `pip` at your disposal, 
+This package requires Python >= 3.6. Provided you have `pip` at your disposal,
 installing `atlasreader` is as simple as this:
 
 ```bash
@@ -105,11 +121,16 @@ python setup.py install
 
 We're thrilled to welcome new contributors!
 
-If you're interested in getting involved, you should start by reading our [contributing guidelines](CONTRIBUTING.md).
+If you're interested in getting involved, you should start by reading our
+[contributing guidelines](CONTRIBUTING.md).
 
-Once you're done with that, you can take a look at our list of active [issues](https://github.com/miykael/atlasreader/issues) and let us know if there's something you'd like to begin working on.
+Once you're done with that, you can take a look at our list of active
+[issues](https://github.com/miykael/atlasreader/issues) and let us know if
+there's something you'd like to begin working on.
 
-If you've found a bug, are experiencing a problem, or have a question, create a new [issue](https://github.com/miykael/atlasreader/issues) with some information about it!
+If you've found a bug, are experiencing a problem, or have a question, create a
+new [issue](https://github.com/miykael/atlasreader/issues) with some information
+about it!
 
 
 ## Licence
