@@ -57,7 +57,7 @@ we cannot assign it a neuroanatomical label. For this reason, MRI images
 are usually normalized into a common template space [@fonov2011unbiased], where
 well-established atlases can be used to associate a given coordinate with the
 label of a brain region. Most major neuroimaging software packages provide some
-functionality to locate the main peaks of an ROI but are most often restricted
+functionality to locate the main peaks of an ROI but this functionality is often restricted
 to a few atlases, frequently requires manual intervention, does not give the user much
 flexibility in the output creation process, and never considers the full extent
 of the ROI.
