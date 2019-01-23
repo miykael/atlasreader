@@ -8,8 +8,8 @@ tags:
   - results investigation
   - Python
 authors:
- - name: Ross Markello
-   orcid: 0000-0003-1057-1336
+ - name: Michael Philipp Notter
+   orcid: 0000-0002-5866-047X
    affiliation: 1
  - name: Dan Gale
    orcid: 0000-0002-9082-1659
@@ -17,17 +17,17 @@ authors:
  - name: Peer Herholz
    orcid: 0000-0002-9840-6257
    affiliation: "3, 4"
- - name: Kirstie Whitaker
-   orcid: 0000-0001-8498-4059
+ - name: Ross Markello
+   orcid: 0000-0003-1057-1336
    affiliation: 5
  - name: Marie-Laure Notter-Bielser
    orcid: 0000-0001-5507-4304
    affiliation: 6
- - name: Michael Philipp Notter
-   orcid: 0000-0002-5866-047X
+ - name: Kirstie Whitaker
+   orcid: 0000-0001-8498-4059
    affiliation: 7
 affiliations:
- - name: McConnell Brain Imaging Centre, Montréal Neurological Institute, McGill University, Montréal, Canada
+ - name: The Laboratory for Investigative Neurophysiology (The LINE), Department of Radiology and Department of Clinical Neurosciences, Lausanne, Switzerland; Center for Biomedical Imaging (CIBM), Lausanne, Switzerland
    index: 1
  - name: Centre for Neuroscience Studies, Queen's University, Kingston, Canada
    index: 2
@@ -35,11 +35,11 @@ affiliations:
    index: 3
  - name: International Laboratory for Brain, Music and Sound Research, Université de Montréal & McGill University, Montréal, Canada
    index: 4
- - name: Alan Turing Institute, University of Cambridge
+ - name: McConnell Brain Imaging Centre, Montréal Neurological Institute, McGill University, Montréal, Canada
    index: 5
  - name: Centre Leenaards de la Mémoire, Centre Hospitalier Universitaire Vaudois, Lausanne, Switzerland
-   index: 5
- - name: The Laboratory for Investigative Neurophysiology (The LINE), Department of Radiology and Department of Clinical Neurosciences, Lausanne, Switzerland; Center for Biomedical Imaging (CIBM), Lausanne, Switzerland
+   index: 6
+ - name: Alan Turing Institute, University of Cambridge
    index: 7
 date: 28 January 2019
 bibliography: paper.bib
