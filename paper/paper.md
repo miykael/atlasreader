@@ -1,5 +1,5 @@
 ---
-title: 'AtlasReader: A Python package to generate coordinate tables, region labels and informative figures from statistical MRI images'
+title: 'AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images'
 tags:
   - neuroimaging
   - neuroscience
