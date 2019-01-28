@@ -80,7 +80,7 @@ four outputs:
 2. For each ROI, an **informative figure** showing the sagittal, coronal and
    transversal plane centered on the main peak of the ROI (Figure 2).
 3. A **table** containing relevant information about the main **peaks** in each
-   ROI (see Figure 3).
+   ROI (Figure 3).
 4. A **table** containing relevant information about the **cluster extent** of
    each ROI (Figure 4).
 
