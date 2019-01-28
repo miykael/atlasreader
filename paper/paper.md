@@ -90,7 +90,7 @@ contiguous voxels required for a ROI to be shown in the output, `min_distance`
 can be used to extract information from multiple peaks within a
 given ROI, and `atlas` can be used to specify which atlases should be used for
 the output creation. By default, AtlasReader uses the AAL, the Desikan-Killiany,
-and the Harvard-Oxford atlases (see Figure 5). In the current version, users
+and the Harvard-Oxford atlases (Figure 5). In the current version, users
 also have access to the Aicha, the Destrieux, the Juelich, the Marsatlas, the
 Neuromorphometrics, and the Talairach atlas.
 
