@@ -76,7 +76,7 @@ Executing AtlasReader on an MRI image will lead to the creation of the following
 four outputs:
 
 1. An **overview figure** showing the ROIs throughout the whole brain at once
-   (see Figure 1).
+   (Figure 1).
 2. For each ROI, an **informative figure** showing the sagittal, coronal and
    transversal plane centered on the main peak of the ROI (see Figure 2).
 3. A **table** containing relevant information about the main **peaks** in each
