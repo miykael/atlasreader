@@ -82,7 +82,7 @@ four outputs:
 3. A **table** containing relevant information about the main **peaks** in each
    ROI (see Figure 3).
 4. A **table** containing relevant information about the **cluster extent** of
-   each ROI (see Figure 4).
+   each ROI (Figure 4).
 
 Users have many parameters available to guide the creation of these outputs. For
 example, with `cluster_extent` a user can specify the minimum number of
