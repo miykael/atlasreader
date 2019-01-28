@@ -91,7 +91,7 @@ can be used to extract information from multiple peaks within a
 given ROI, and `atlas` can be used to specify which atlases should be used for
 the output creation. By default, AtlasReader uses the AAL, the Desikan-Killiany,
 and the Harvard-Oxford atlases (see Figure 5). In the current version, users
-have also access to the Aicha, the Destrieux, the Juelich, the Marsatlas, the
+also have access to the Aicha, the Destrieux, the Juelich, the Marsatlas, the
 Neuromorphometrics, and the Talairach atlas.
 
 AtlasReader is licensed under the BSD-3 license and depends on the following
