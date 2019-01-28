@@ -92,7 +92,9 @@ given ROI, and `atlas` can be used to specify which atlases should be used for
 the output creation. By default, AtlasReader uses the AAL, the Desikan-Killiany,
 and the Harvard-Oxford atlases (Figure 5). In the current version, users
 also have access to the Aicha, the Destrieux, the Juelich, the Marsatlas, the
-Neuromorphometrics, and the Talairach atlas.
+Neuromorphometrics, and the Talairach atlas. Further details about the individual atlases,
+how to acknowledge them, and their license requirements are detailed in the
+[atlasreader/data](https://github.com/miykael/atlasreader/tree/master/atlasreader/data) directory.
 
 AtlasReader is licensed under the BSD-3 license and depends on the following
 python libraries: `matplotlib` [@matplotlib], `nibabel` [@nibabel],
