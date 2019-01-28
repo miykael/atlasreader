@@ -39,7 +39,7 @@ affiliations:
    index: 5
  - name: Centre Leenaards de la Mémoire, Centre Hospitalier Universitaire Vaudois, Lausanne, Switzerland
    index: 6
- - name: Alan Turing Institute, University of Cambridge
+ - name: Alan Turing Institute, London, UK; Department of Psychiatry, University of Cambridge, Cambridge, UK
    index: 7
 date: 28 January 2019
 bibliography: paper.bib
