@@ -121,7 +121,7 @@ Foundation grants, awarded to M. Murray (320030-149982, 320030-169206,
 and 51NF40-158776). Kirstie Whitaker is funded through an Alan Turing Institute 
 Research Fellowship under EPSRC Research grant (TU/A/000017). This project 
 was started at Neurohackademy 2018 which is funded by the National Institute 
-of Mental Health through a grant to Ariel Rokem and Tal Yarkoni (INSERT CODE).
+of Mental Health through a grant to Ariel Rokem and Tal Yarkoni (R25MH112480).
 
 
 # References
