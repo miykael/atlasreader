@@ -14,9 +14,7 @@ region labels from statistical MRI images.
 
 If you are using `atlasreader` in your publication, please cite the following paper:
 
-Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whitaker K. (2019). AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images. *The Journal of Open Source Software*, ZZZ, YYY.
-
-***TODO: This reference needs to be updated after paper is published. Don't forget to add the DOI and link to the paper.***
+Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whitaker K. (2019). AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images. *Zenodo*, [https://doi.org/10.5281/zenodo.2552310](https://zenodo.org/record/2552311).
 
 
 ## Installation
