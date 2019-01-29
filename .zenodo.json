@@ -1,14 +1,34 @@
 {
   "creators": [
     {
-      "affiliation": "Montreal Neurological Institute and Hospital",
+      "name": "Notter, Michael Philipp",
+      "affiliation": "The Laboratory for Investigative Neurophysiology (The LINE), Department of Radiology and Department of Clinical Neurosciences, Lausanne, Switzerland; Center for Biomedical Imaging (CIBM), Lausanne, Switzerland",
+      "orcid": "0000-0002-5866-047X"
+    },
+    {
+      "name": "Gale, Dan",
+      "affiliation": "Centre for Neuroscience Studies, Queen's University, Kingston, Canada",
+      "orcid": "0000-0002-9082-1659"
+    },
+    {
+      "name": "Herholz, Peer",
+      "affiliation": "Laboratory for Multimodal Neuroimaging, Philipps-University Marburg, Hesse, Germany; International Laboratory for Brain, Music and Sound Research, Université de Montréal & McGill University, Montréal, Canada",
+      "orcid": "0000-0002-9840-6257"
+    },
+    {
       "name": "Markello, Ross",
+      "affiliation": "McConnell Brain Imaging Centre, Montréal Neurological Institute, McGill University, Montréal, Canada",
       "orcid": "0000-0003-1057-1336"
     },
     {
-      "affiliation": "The Laboratory for Investigative Neurophysiology (The LINE), Department of Radiology and Department of Clinical Neurosciences, Lausanne, Switzerland; Center for Biomedical Imaging (CIBM), Lausanne, Switzerland",
-      "name": "Notter, Michael P.",
-      "orcid": "0000-0002-5866-047X"
+      "name": "Notter-Bielser, Marie-Laure",
+      "affiliation": "Centre Leenaards de la Mémoire, Centre Hospitalier Universitaire Vaudois, Lausanne, Switzerland",
+      "orcid": "0000-0001-5507-4304"
+    },
+    {
+      "name": "Whitaker, Kirstie",
+      "affiliation": "Alan Turing Institute, London, UK; Department of Psychiatry, University of Cambridge, Cambridge, UK",
+      "orcid": "0000-0001-8498-4059"
     }
   ],
   "keywords": [
