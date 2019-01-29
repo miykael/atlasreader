@@ -1,5 +1,7 @@
 {
-  "creators": [
+    "title": "AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images",
+    "publication_date": "2017-02-15",
+    "creators": [
     {
       "name": "Notter, Michael Philipp",
       "affiliation": "The Laboratory for Investigative Neurophysiology (The LINE), Department of Radiology and Department of Clinical Neurosciences, Lausanne, Switzerland; Center for Biomedical Imaging (CIBM), Lausanne, Switzerland",
@@ -35,6 +37,7 @@
     "neuroimaging",
     "visualization"
   ],
+  "access_right": "open",
   "license": "BSD-3-Clause",
   "upload_type": "software"
 }
