@@ -18,6 +18,26 @@ Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whita
 
 ***TODO: This reference needs to be updated after paper is published. Don't forget to add the DOI and link to the paper.***
 
+
+## Installation
+
+This package requires Python >= 3.6. Provided you have `pip` at your disposal,
+installing `atlasreader` is as simple as this:
+
+```bash
+pip install atlasreader
+```
+
+If you want to build `atlasreader` directly from source code, use the 
+following code:
+
+```bash
+git clone https://github.com/miykael/atlasreader.git
+cd atlasreader
+python setup.py install
+```
+
+
 ## Usage
 
 `atlasreader` can either be run through the command line interface or directly
@@ -96,25 +116,6 @@ the clusters are generated and what kind of outputs are generated:
 
 For a more detailed explanation about the toolbox and the effect of the
 parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
-
-
-## Installation
-
-This package requires Python >= 3.6. Provided you have `pip` at your disposal,
-installing `atlasreader` is as simple as this:
-
-```bash
-pip install atlasreader
-```
-
-If you want to build `atlasreader` directly from source code, use the 
-following code:
-
-```bash
-git clone https://github.com/miykael/atlasreader.git
-cd atlasreader
-python setup.py install
-```
 
 
 ## How to get involved
