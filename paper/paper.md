@@ -107,20 +107,24 @@ how to install the software on your system, see https://github.com/miykael/atlas
 
 # Example Output
 
-![Overview Figure](fig_overview_figure.png)
-Figure 1. Overview figure showing the ROIs throughout the whole brain at once.
+![Overview Figure](fig_overview_figure.png){width=100%}
+**Figure 1**. Overview figure showing the ROIs throughout the whole brain at once.  
 
-![Cluster Fiugre](fig_cluster_figure.png)
-Figure 2. Eight cluster figures, each centered on the main peak of the ROI, showing the sagittal, coronal and transversal plane of the ROI.
 
-![Table Peak](table_peak.png)
-Table 1. Table showing relevant information for the main peaks of each ROI. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.
+![Cluster Fiugre](fig_cluster_figure.png){width=100%}
+**Figure 2**. Eight cluster figures, each centered on the main peak of the ROI, showing the sagittal, coronal and transversal plane of the ROI.  
 
-![Table Cluster](table_cluster.png)
-Table 2. Table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.
 
-![Default Atlases](fig_default_atlases.png)
-Figure 3. Individually colored label of the three default atlases, AAL, Desikan-Killiany and Harvard-Oxford, overlaid on the ICBM 2009c nonlinear asymmetric atlas. The Harvard-Oxford atlas is visualized differently because it is a probability atlas and therefore has overlapping regions.
+![Table Peak](table_peak.png){width=100%}
+**Table 1**. Table showing relevant information for the main peaks of each ROI. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.  
+
+
+![Table Cluster](table_cluster.png){width=100%}
+**Table 2**. Table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.  
+
+
+![Default Atlases](fig_default_atlases.png){width=75%}
+**Figure 3**. Individually colored label of the three default atlases, AAL, Desikan-Killiany and Harvard-Oxford, overlaid on the ICBM 2009c nonlinear asymmetric atlas. The Harvard-Oxford atlas is visualized differently because it is a probability atlas and therefore has overlapping regions.
 
 
 # Acknowledgement
