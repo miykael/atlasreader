@@ -16,7 +16,7 @@ authors:
    affiliation: 2
  - name: Peer Herholz
    orcid: 0000-0002-9840-6257
-   affiliation: "3, 4"
+   affiliation: "3, 4, 5"
  - name: Ross Markello
    orcid: 0000-0003-1057-1336
    affiliation: 5
