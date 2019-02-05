@@ -80,9 +80,9 @@ four outputs:
 2. For each ROI, an **informative figure** showing the sagittal, coronal and
    transversal plane centered on the main peak of the ROI (Figure 2).
 3. A **table** containing relevant information about the main **peaks** in each
-   ROI (Figure 3).
+   ROI (Table 1).
 4. A **table** containing relevant information about the **cluster extent** of
-   each ROI (Figure 4).
+   each ROI (Table 2).
 
 Users have many parameters available to guide the creation of these outputs. For
 example, with `cluster_extent` a user can specify the minimum number of
@@ -90,7 +90,7 @@ contiguous voxels required for a ROI to be shown in the output, `min_distance`
 can be used to extract information from multiple peaks within a
 given ROI, and `atlas` can be used to specify which atlases should be used for
 the output creation. By default, AtlasReader uses the AAL, the Desikan-Killiany,
-and the Harvard-Oxford atlases (Figure 5). In the current version, users
+and the Harvard-Oxford atlases (Figure 3). In the current version, users
 also have access to the Aicha, the Destrieux, the Juelich, the Marsatlas, the
 Neuromorphometrics, and the Talairach atlas. Further details about the individual atlases,
 how to acknowledge them, and their license requirements are detailed in the
@@ -107,11 +107,20 @@ how to install the software on your system, see https://github.com/miykael/atlas
 
 # Example Output
 
-![Overview figure showing the ROIs throughout the whole brain at once.](fig_overview_figure.png){width=660}
-![Eight cluster figures, each centered on the main peak of the ROI, showing the sagittal, coronal and transversal plane of the ROI.](fig_cluster_figure.png){width=660}
-![Table showing relevant information for the main peaks of each ROI. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.](table_peak.png){width=100%}
-![Table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.](table_cluster.png){width=100%}
-![Individually colored label of the three default atlases, AAL, Desikan-Killiany and Harvard-Oxford, overlaid on the ICBM 2009c nonlinear asymmetric atlas. The Harvard-Oxford atlas is visualized differently because it is a probability atlas and therefore has overlapping regions.](fig_default_atlases.png){width=660}
+![Overview Figure](fig_overview_figure.png)
+Figure 1. Overview figure showing the ROIs throughout the whole brain at once.
+
+![Cluster Fiugre](fig_cluster_figure.png)
+Figure 2. Eight cluster figures, each centered on the main peak of the ROI, showing the sagittal, coronal and transversal plane of the ROI.
+
+![Table Peak](table_peak.png)
+Table 1. Table showing relevant information for the main peaks of each ROI. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.
+
+![Table Cluster](table_cluster.png)
+Table 2. Table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.
+
+![Default Atlases](fig_default_atlases.png)
+Figure 3. Individually colored label of the three default atlases, AAL, Desikan-Killiany and Harvard-Oxford, overlaid on the ICBM 2009c nonlinear asymmetric atlas. The Harvard-Oxford atlas is visualized differently because it is a probability atlas and therefore has overlapping regions.
 
 
 # Acknowledgement
