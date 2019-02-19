@@ -7,10 +7,22 @@ python:
 
 matrix:
   include:
+    - python: 3.6
       env:
         - STYLE=1
+    - python: 3.6
       env:
         - COVERAGE=1
+    - python: 3.6
+      env:
+        - NOTEBOOKS=1
+    - python: 3.7
+      env:
+        - STYLE=1
+    - python: 3.7
+      env:
+        - COVERAGE=1
+    - python: 3.7
       env:
         - NOTEBOOKS=1
 
