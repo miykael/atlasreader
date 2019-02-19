@@ -69,21 +69,21 @@ You're awesome. :wave::smiley:
 *&mdash; Based on contributing guidelines from the [STEMMRoleModels][link_stemmrolemodels] project.*
 
 [link_github]: https://github.com/
-[link_atlasreader]: https://github.com/rmarkello/atlasreader
+[link_atlasreader]: https://github.com/miykael/atlasreader
 [link_signupinstructions]: https://help.github.com/articles/signing-up-for-a-new-github-account
 [link_react]: https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments
-[link_issues]: https://github.com/rmarkello/atlasreader/issues
-[link_labels]: https://github.com/rmarkello/atlasreader/labels
+[link_issues]: https://github.com/miykael/atlasreader/issues
+[link_labels]: https://github.com/miykael/atlasreader/labels
 [link_discussingissues]: https://help.github.com/articles/discussing-projects-in-issues-and-pull-requests
 
-[link_bugs]: https://github.com/rmarkello/atlasreader/labels/bug
-[link_helpwanted]: https://github.com/rmarkello/atlasreader/labels/help%20wanted
-[link_feature]: https://github.com/rmarkello/atlasreader/labels/enhancement
+[link_bugs]: https://github.com/miykael/atlasreader/labels/bug
+[link_helpwanted]: https://github.com/miykael/atlasreader/labels/help%20wanted
+[link_feature]: https://github.com/miykael/atlasreader/labels/enhancement
 
 [link_pullrequest]: https://help.github.com/articles/creating-a-pull-request/
 [link_fork]: https://help.github.com/articles/fork-a-repo/
 [link_pushpullblog]: https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/
 [link_branches]: https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/
 [link_updateupstreamwiki]: https://help.github.com/articles/syncing-a-fork/
-[link_contributors]: https://github.com/rmarkello/atlasreader/graphs/contributors
+[link_contributors]: https://github.com/miykael/atlasreader/graphs/contributors
 [link_stemmrolemodels]: https://github.com/KirstieJane/STEMMRoleModels

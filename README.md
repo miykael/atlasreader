@@ -10,7 +10,13 @@
 # AtlasReader
 
 This package provides a Python interface for generating coordinate tables and
-region labels from statistical MRI images.
+region labels from statistical MRI images. It is intended for neuroscience
+researchers and neuroimaging enthusiasts who are looking for a quick and easy way
+to localize and extract relevant peak and cluster information and create
+informative and nice looking overview figures.
+
+Please check out our interactive notebook on mybinder.org to see `atlasreader`
+in action: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb)
 
 If you are using `atlasreader` in your publication, please cite the following paper:
 
@@ -114,6 +120,7 @@ the clusters are generated and what kind of outputs are generated:
 
 For a more detailed explanation about the toolbox and the effect of the
 parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
+You can checkout the notebook either interactively via [mybinder.org](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb) or explore a read-only version on [nbviewer.jupyter.org](https://nbviewer.jupyter.org/github/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
 
 
 ## How to get involved

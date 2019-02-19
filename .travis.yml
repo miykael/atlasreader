@@ -1,20 +1,15 @@
 language: python
 sudo: false
+dist: xenial
 
 python:
     - 3.6
+    - 3.7
 
-matrix:
-  include:
-    - python: 3.6
-      env:
-        - STYLE=1
-    - python: 3.6
-      env:
-        - COVERAGE=1
-    - python: 3.6
-      env:
-        - NOTEBOOKS=1
+env:
+    - STYLE=1
+    - COVERAGE=1
+    - NOTEBOOKS=1
 
 before_install:
     - python -m pip install --upgrade pip
