@@ -10,7 +10,10 @@
 # AtlasReader
 
 This package provides a Python interface for generating coordinate tables and
-region labels from statistical MRI images.
+region labels from statistical MRI images. It is intended for neuroscience
+researchers and neuroimaging enthusiasts who are looking for a quick and easy way
+to localize and extract relevant peak and cluster information and create
+informative and nice looking overview figures.
 
 If you are using `atlasreader` in your publication, please cite the following paper:
 
