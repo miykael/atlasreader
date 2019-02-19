@@ -177,4 +177,4 @@ def test_table_output(tmpdir):
         '{}_peaks.csv'.format(stat_img_name)), 'rb').read()).hexdigest()
 
     assert cluster_checksum == '5d85805d58f8fbe22ef4e34ec75d8f42'
-    assert peak_checksum == '061b505b6a505053e4e8e4e25d051b1a'
+    assert peak_checksum == 'f7cd664571413fe964eef0c45cd6f033'
