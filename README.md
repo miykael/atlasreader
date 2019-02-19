@@ -15,6 +15,9 @@ researchers and neuroimaging enthusiasts who are looking for a quick and easy wa
 to localize and extract relevant peak and cluster information and create
 informative and nice looking overview figures.
 
+Please check out our interactive notebook on mybinder.org to see `atlasreader`
+in action: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb)
+
 If you are using `atlasreader` in your publication, please cite the following paper:
 
 Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whitaker K. (2019). AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images. *Zenodo*, [https://doi.org/10.5281/zenodo.2552310](https://doi.org/10.5281/zenodo.2552310).
@@ -117,6 +120,7 @@ the clusters are generated and what kind of outputs are generated:
 
 For a more detailed explanation about the toolbox and the effect of the
 parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
+You can checkout the notebook either interactively via [mybinder.org](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb) or explore a read-only version on [nbviewer.jupyter.org](https://nbviewer.jupyter.org/github/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
 
 
 ## How to get involved
