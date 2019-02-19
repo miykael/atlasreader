@@ -3,6 +3,7 @@ sudo: false
 
 python:
     - 3.6
+    - 3.7
 
 matrix:
   include:
@@ -13,6 +14,9 @@ matrix:
       env:
         - COVERAGE=1
     - python: 3.6
+      env:
+        - NOTEBOOKS=1
+    - python: 3.7
       env:
         - NOTEBOOKS=1
 
