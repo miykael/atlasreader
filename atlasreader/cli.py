@@ -46,11 +46,16 @@ def _atlasreader_parser():
                              'delineation of clusters in provided statistical '
                              'map. Default: AAL, Desikan-Killiany & '
                              'Harvard-Oxford.')
-    parser.add_argument('-t', '--threshold', type=float, default=2,
+    parser.add_argument('-t', '--threshold', type=float, default=1.96,
                         dest='voxel_thresh', metavar='threshold',
                         help='Value threshold that voxels in provided file '
                              'must surpass in order to be considered in '
-                             'cluster extraction. Default: 2')
+                             'cluster extraction. The same threshold value is '
+                             'applied in both directions, positive and '
+                             'negative. If a negative number is provided a '
+                             'percentile threshold is used instead, where the '
+                             'percentile is determined by the equation '
+                             '`100 - voxel_thresh`. Default: 1.96')
     parser.add_argument('-p', '--probability', type=_check_limit, default=5,
                         dest='prob_thresh', metavar='threshold',
                         help='Threshold to consider when using a '
