@@ -105,6 +105,9 @@ def test_process_image():
     # check that defaults for processing image work
     img = atlasreader.process_img(stat_img, cluster_extent=20)
     assert isinstance(img, nb.Nifti1Image)
+    # check that one-sided thresholding works
+    img = atlasreader.process_img(stat_img, direction='neg', cluster_extent=20)
+    assert isinstance(img, nb.Nifti1Image)
     # check that negative voxel threshold works
     img = atlasreader.process_img(stat_img, cluster_extent=20,
                                   voxel_thresh=-10)

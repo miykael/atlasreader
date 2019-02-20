@@ -99,10 +99,14 @@ the clusters are generated and what kind of outputs are generated:
     Minimum number of contiguous voxels required to consider a cluster in `filename`
 - **atlas**: str or list, optional  
     Name of atlas(es) to consider for cluster analysis. ***Default***: `'default'`
-- **voxel_thresh**: int, optional  
-    Threshold to apply to `stat_img`. If a negative number is provided a
-    percentile threshold is used instead, where the percentile is
-    determined by the equation `100 - voxel_thresh`. ***Default***: `1.96`
+- **voxel_thresh**: float, optional
+    Threshold to apply to `stat_img`.  Use `direction` to specify the 
+    directionality of the threshold. If a negative number is provided a
+    percentile threshold is used instead, where the percentile is determined
+    by the equation `100 - voxel_thresh`. ***Default***: `1.96`
+- **direction**: str, optional
+    Specifies the direction in which `voxel_thresh` should be applied. Possible
+    values are `'both'`, `'pos'` or `'neg'`. ***Default***: `'both'`
 - **prob_thresh**: int, optional  
     Probability (percentage) threshold to apply to `atlas`, if it is
     probabilistic. ***Default***: `5`
@@ -115,8 +119,10 @@ the clusters are generated and what kind of outputs are generated:
     saved to the same folder as `filename`. ***Default***: `None`
 - **glass_plot_kws**: dict or None, optional  
     Additional keyword arguments to pass to `nilearn.plotting.plot_glass_brain`.
+    ***Default***: `None`
 - **stat_plot_kws**: dict or None, optional  
     Additional keyword arguments to pass to `nilearn.plotting.plot_stat_map`.
+    ***Default***: `None`
 
 For a more detailed explanation about the toolbox and the effect of the
 parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
