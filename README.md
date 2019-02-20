@@ -44,9 +44,9 @@ python setup.py install
 
 ## Usage
 
-`atlasreader` can either be run through the command line interface or directly
+AtlasReader can either be run through the command line interface or directly
 within Python. The commands to do so are rather straight forward. Let's say you
-want to apply `atlasreader` to a statistical image called
+want to apply AtlasReader to a statistical image called
 `file_name = 'stat_img.nii'`, and only want to keep clusters if they have more
 than 5 voxels:
 
@@ -64,7 +64,7 @@ atlasreader file_name 5
 
 ### Outputs
 
-After executing `atlasreader` on a given image, four kinds of outputs are generated:
+After executing AtlasReader on a given image, four kinds of outputs are generated:
 
 1. An **overview figure** that shows the results within the whole brain at once  
    ![Overview Figure](paper/fig_overview_figure.png)
@@ -90,7 +90,7 @@ After executing `atlasreader` on a given image, four kinds of outputs are genera
 
 ### Additional parameters
 
-`atlasreader` has many additional parameters that allow you to change the way
+`atlasreader.create_output` has many additional parameters that allow you to change the way
 the clusters are generated and what kind of outputs are generated:
 
 - **filename**: Niimg_like  
@@ -141,8 +141,8 @@ about it!
 
 ## Licence
 
-`atlasreader` is licensed under the BSD-3 license; however, the atlases it uses 
+AtlasReader is licensed under the BSD-3 license; however, the atlases it uses 
 are separately licensed under more restrictive frameworks.
-By using `atlasreader`, you agree to abide by the license terms of the
+By using AtlasReader, you agree to abide by the license terms of the
 individual atlases. Information on these terms can be found online at:
 https://github.com/miykael/atlasreader/tree/master/atlasreader/data
