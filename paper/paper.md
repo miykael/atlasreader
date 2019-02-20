@@ -51,9 +51,9 @@ bibliography: paper.bib
 A major advantage of magnetic resonance imaging (MRI) over other neuroimaging
 methods is its capability to noninvasively locate a region of interest (ROI) in
 the human brain. For example, using functional MRI, we are able to pinpoint
-where in the brain a certain cognitive process shows higher activation than
-usual. But just knowing the Cartesian coordinate of such a ROI is not useful if
-we cannot assign it a neuroanatomical label. For this reason, MRI images
+where in the brain a cognitive task elicits higher activation relative to a
+control. But just knowing the Cartesian coordinate of such a ROI is not useful
+if we cannot assign it a neuroanatomical label. For this reason, MRI images
 are usually normalized into a common template space [@fonov2011unbiased], where
 well-established atlases can be used to associate a given coordinate with the
 label of a brain region. Most major neuroimaging software packages provide some
