@@ -437,8 +437,9 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
         Thresholded statistical map image
     cluster_extent : int
         Minimum number of voxels required to consider a cluster
-    voxel_thresh : int, optional
-        Threshold to apply to `stat_img`. If a negative number is provided a
+    voxel_thresh : float, optional
+        Threshold to apply to `stat_img`. The same threshold is applied in both
+        directions, positive and negative. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
 
@@ -606,8 +607,9 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
         `stat_img`
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'default'
-    voxel_thresh : int, optional
-        Threshold to apply to `stat_img`. If a negative number is provided a
+    voxel_thresh : float, optional
+        Threshold to apply to `stat_img`. The same threshold is applied in both
+        directions, positive and negative. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
     prob_thresh : [0, 100] int, optional
@@ -694,8 +696,9 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         `filename`
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'default'
-    voxel_thresh : int, optional
-        Threshold to apply to `stat_img`. If a negative number is provided a
+    voxel_thresh : float, optional
+        Threshold to apply to `stat_img`. The same threshold is applied in both
+        directions, positive and negative. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
     prob_thresh : int, optional
@@ -744,6 +747,13 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
                             cluster_extent=cluster_extent)
     thresh_img = image.math_img('np.sum(img, axis=-1)', img=clust_img)
 
+    # Extract threshold value for plotting
+    thr_values = np.unique(np.abs(thresh_img.get_data()))
+    if len(thr_values) > 1:
+        plot_thresh = thr_values[1]
+    else:
+        plot_thresh = 0
+
     # plot glass brain
     color_max = np.abs(thresh_img.get_data()).max()
     glass_fname = op.join(outdir, '{}.png'.format(out_fname))
@@ -757,7 +767,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
             'colorbar': True,
             'black_bg': True,
             'cmap': plotting.cm.cold_hot,
-            'threshold': voxel_thresh,
+            'threshold': plot_thresh,
             'vmax': color_max,
             'plot_abs': False,
             'symmetric_cbar': False
@@ -791,6 +801,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
                 'data/templates/MNI152_T1_1mm_brain.nii.gz'
             )
         )
+
         # plot clusters
         coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
         for idx, coord in enumerate(coords):
@@ -802,7 +813,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
                 'output_file': op.join(outdir, clust_fname),
                 'colorbar': True,
                 'title': clust_fname[:-4],
-                'threshold': voxel_thresh,
+                'threshold': plot_thresh,
                 'black_bg': True,
                 'symmetric_cbar': False,
                 'vmax': color_max
