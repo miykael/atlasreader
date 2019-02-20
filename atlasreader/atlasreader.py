@@ -713,10 +713,10 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         saved to the same folder as `filename`. Default: None
     glass_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
-        `nilearn.plotting.plot_glass_brain`.
+        `nilearn.plotting.plot_glass_brain`. Default: None
     stat_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
-        `nilearn.plotting.plot_stat_map`.
+        `nilearn.plotting.plot_stat_map`. Default: None
     """
 
     # confirm input data is niimg_like to raise error as early as possible
