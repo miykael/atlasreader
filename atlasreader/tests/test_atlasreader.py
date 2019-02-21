@@ -143,6 +143,7 @@ def test_create_output(tmpdir):
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
@@ -162,6 +163,7 @@ def test_plotting(tmpdir):
 
     # overwrite some default params
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'display_mode': 'ortho'},
@@ -169,6 +171,7 @@ def test_plotting(tmpdir):
 
     # add new parameter not already set by default
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'alpha': .4})
