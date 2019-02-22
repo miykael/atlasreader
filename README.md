@@ -44,9 +44,9 @@ python setup.py install
 
 ## Usage
 
-`atlasreader` can either be run through the command line interface or directly
+AtlasReader can either be run through the command line interface or directly
 within Python. The commands to do so are rather straight forward. Let's say you
-want to apply `atlasreader` to a statistical image called
+want to apply AtlasReader to a statistical image called
 `file_name = 'stat_img.nii'`, and only want to keep clusters if they have more
 than 5 voxels:
 
@@ -64,7 +64,7 @@ atlasreader file_name 5
 
 ### Outputs
 
-After executing `atlasreader` on a given image, four kinds of outputs are generated:
+After executing AtlasReader on a given image, four kinds of outputs are generated:
 
 1. An **overview figure** that shows the results within the whole brain at once  
    ![Overview Figure](paper/fig_overview_figure.png)
@@ -90,7 +90,7 @@ After executing `atlasreader` on a given image, four kinds of outputs are genera
 
 ### Additional parameters
 
-`atlasreader` has many additional parameters that allow you to change the way
+`atlasreader.create_output` has many additional parameters that allow you to change the way
 the clusters are generated and what kind of outputs are generated:
 
 - **filename**: Niimg_like  
@@ -99,10 +99,14 @@ the clusters are generated and what kind of outputs are generated:
     Minimum number of contiguous voxels required to consider a cluster in `filename`
 - **atlas**: str or list, optional  
     Name of atlas(es) to consider for cluster analysis. ***Default***: `'default'`
-- **voxel_thresh**: int, optional  
-    Threshold to apply to `stat_img`. If a negative number is provided a
-    percentile threshold is used instead, where the percentile is
-    determined by the equation `100 - voxel_thresh`. ***Default***: `1.96`
+- **voxel_thresh**: float, optional
+    Threshold to apply to `stat_img`.  Use `direction` to specify the 
+    directionality of the threshold. If a negative number is provided a
+    percentile threshold is used instead, where the percentile is determined
+    by the equation `100 - voxel_thresh`. ***Default***: `1.96`
+- **direction**: str, optional
+    Specifies the direction in which `voxel_thresh` should be applied. Possible
+    values are `'both'`, `'pos'` or `'neg'`. ***Default***: `'both'`
 - **prob_thresh**: int, optional  
     Probability (percentage) threshold to apply to `atlas`, if it is
     probabilistic. ***Default***: `5`
@@ -115,8 +119,10 @@ the clusters are generated and what kind of outputs are generated:
     saved to the same folder as `filename`. ***Default***: `None`
 - **glass_plot_kws**: dict or None, optional  
     Additional keyword arguments to pass to `nilearn.plotting.plot_glass_brain`.
+    ***Default***: `None`
 - **stat_plot_kws**: dict or None, optional  
     Additional keyword arguments to pass to `nilearn.plotting.plot_stat_map`.
+    ***Default***: `None`
 
 For a more detailed explanation about the toolbox and the effect of the
 parameters above, see the [example notebook](https://github.com/miykael/atlasreader/blob/master/notebooks/atlasreader.ipynb).
@@ -141,8 +147,8 @@ about it!
 
 ## Licence
 
-`atlasreader` is licensed under the BSD-3 license; however, the atlases it uses 
+AtlasReader is licensed under the BSD-3 license; however, the atlases it uses 
 are separately licensed under more restrictive frameworks.
-By using `atlasreader`, you agree to abide by the license terms of the
+By using AtlasReader, you agree to abide by the license terms of the
 individual atlases. Information on these terms can be found online at:
 https://github.com/miykael/atlasreader/tree/master/atlasreader/data

@@ -12,7 +12,7 @@ def test_cli(tmpdir):
     output_dir = tmpdir.mkdir('mni_test')
     ret = subprocess.run(['atlasreader',
                           '--atlas', 'harvard_oxford', 'aal',
-                          '--threshold', '1.96',
+                          '--threshold', '7.0',
                           '--probability', '5',
                           '--mindist', '20',
                           '--outdir', output_dir,

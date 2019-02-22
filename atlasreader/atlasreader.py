@@ -429,7 +429,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
             percentage[s] >= prob_thresh]
 
 
-def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
+def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
     """
     Parameters
     ----------
@@ -438,10 +438,13 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
     cluster_extent : int
         Minimum number of voxels required to consider a cluster
     voxel_thresh : float, optional
-        Threshold to apply to `stat_img`. The same threshold is applied in both
-        directions, positive and negative. If a negative number is provided a
+        Threshold to apply to `stat_img`. Use `direction` to specify the
+        directionality of the threshold. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
+    direction : str, optional
+        Specifies the direction in which `voxel_thresh` should be applied.
+        Possible values are 'both', 'pos' or 'neg'. Default: 'both'
 
     Returns
     -------
@@ -468,7 +471,15 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96):
     # extract clusters
     min_region_size = cluster_extent * np.prod(thresh_img.header.get_zooms())
     clusters = []
-    for sign in ['pos', 'neg']:
+
+    if direction == 'both':
+        direction_list = ['pos', 'neg']
+    elif direction == 'pos':
+        direction_list = ['pos']
+    elif direction == 'neg':
+        direction_list = ['neg']
+
+    for sign in direction_list:
         # keep only data of given sign
         data = thresh_img.get_data().copy()
         data[(data < 0) if sign == 'pos' else (data > 0)] = 0
@@ -594,7 +605,8 @@ def get_cluster_data(clust_img, atlas='default', prob_thresh=5):
 
 
 def get_statmap_info(stat_img, cluster_extent, atlas='default',
-                     voxel_thresh=1.96, prob_thresh=5, min_distance=None):
+                     voxel_thresh=1.96, direction='both', prob_thresh=5,
+                     min_distance=None):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
 
@@ -608,10 +620,13 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'default'
     voxel_thresh : float, optional
-        Threshold to apply to `stat_img`. The same threshold is applied in both
-        directions, positive and negative. If a negative number is provided a
+        Threshold to apply to `stat_img`. Use `direction` to specify the
+        directionality of the threshold. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
+    direction : str, optional
+        Specifies the direction in which `voxel_thresh` should be applied.
+        Possible values are 'both', 'pos' or 'neg'. Default: 'both'
     prob_thresh : [0, 100] int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
@@ -637,6 +652,7 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
     # threshold + clusterize image
     clust_img = process_img(stat_img,
                             voxel_thresh=voxel_thresh,
+                            direction=direction,
                             cluster_extent=cluster_extent)
 
     clust_info, peaks_info = [], []
@@ -674,8 +690,8 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
 
 
 def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
-                  prob_thresh=5, min_distance=None, outdir=None,
-                  glass_plot_kws=None, stat_plot_kws=None):
+                  direction='both', prob_thresh=5, min_distance=None,
+                  outdir=None, glass_plot_kws=None, stat_plot_kws=None):
     """
     Performs full cluster / peak analysis on `filename`
 
@@ -697,10 +713,13 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     atlas : str or list, optional
         Name of atlas(es) to consider for cluster analysis. Default: 'default'
     voxel_thresh : float, optional
-        Threshold to apply to `stat_img`. The same threshold is applied in both
-        directions, positive and negative. If a negative number is provided a
+        Threshold to apply to `stat_img`. Use `direction` to specify the
+        directionality of the threshold. If a negative number is provided a
         percentile threshold is used instead, where the percentile is
         determined by the equation `100 - voxel_thresh`. Default: 1.96
+    direction : str, optional
+        Specifies the direction in which `voxel_thresh` should be applied.
+        Possible values are 'both', 'pos' or 'neg'. Default: 'both'
     prob_thresh : int, optional
         Probability (percentage) threshold to apply to `atlas`, if it is
         probabilistic. Default: 5
@@ -713,10 +732,10 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         saved to the same folder as `filename`. Default: None
     glass_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
-        `nilearn.plotting.plot_glass_brain`.
+        `nilearn.plotting.plot_glass_brain`. Default: None
     stat_plot_kws : dict or None, optional
         Additional keyword arguments to pass to
-        `nilearn.plotting.plot_stat_map`.
+        `nilearn.plotting.plot_stat_map`. Default: None
     """
 
     # confirm input data is niimg_like to raise error as early as possible
@@ -744,6 +763,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     # generate stat map for plotting by collapsing all clusters into one image
     clust_img = process_img(stat_img,
                             voxel_thresh=voxel_thresh,
+                            direction=direction,
                             cluster_extent=cluster_extent)
     thresh_img = image.math_img('np.sum(img, axis=-1)', img=clust_img)
 
@@ -783,8 +803,8 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         # get cluster + peak information from image
         clust_frame, peaks_frame = get_statmap_info(
             stat_img, atlas=atlas, voxel_thresh=voxel_thresh,
-            cluster_extent=cluster_extent, prob_thresh=prob_thresh,
-            min_distance=min_distance)
+            direction=direction, cluster_extent=cluster_extent,
+            prob_thresh=prob_thresh, min_distance=min_distance)
 
         # write output .csv files
         clust_frame.to_csv(op.join(

@@ -4,7 +4,7 @@ from atlasreader import atlasreader
 import nibabel as nb
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
-import hashlib
+import pandas as pd
 
 STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
@@ -40,6 +40,20 @@ EXAMPLE_COORDS = dict(
         )
     ],
     bounding_shape=np.array([90, 90, 90])
+)
+EXPECTED_TABLES = dict(
+    cluster=np.array([[42,  -25,  58,  6.66003, 36936],
+                      [-36, -25,  55, -6.63604, 15012],
+                      [45,  -19,  16,  5.76538,  7722],
+                      [-15, -52, -26,  6.11673,  7101],
+                      [18,  -55, -23, -5.90086,  5184],
+                      [-36, -19,  19, -5.00687,   648]]),
+    peak=np.array([[42,  -25,  58,  7.94135, 36936],
+                   [-36, -25,  55, -7.94144, 15012],
+                   [45,  -19,  16,  7.94135,  7722],
+                   [-15, -52, -26,  7.94135,  7101],
+                   [18,  -55, -23, -7.94144,  5184],
+                   [-36, -19,  19, -6.21808,   648]])
 )
 
 
@@ -105,6 +119,9 @@ def test_process_image():
     # check that defaults for processing image work
     img = atlasreader.process_img(stat_img, cluster_extent=20)
     assert isinstance(img, nb.Nifti1Image)
+    # check that one-sided thresholding works
+    img = atlasreader.process_img(stat_img, direction='neg', cluster_extent=20)
+    assert isinstance(img, nb.Nifti1Image)
     # check that negative voxel threshold works
     img = atlasreader.process_img(stat_img, cluster_extent=20,
                                   voxel_thresh=-10)
@@ -127,6 +144,7 @@ def test_create_output(tmpdir):
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
@@ -146,6 +164,7 @@ def test_plotting(tmpdir):
 
     # overwrite some default params
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'display_mode': 'ortho'},
@@ -153,6 +172,7 @@ def test_plotting(tmpdir):
 
     # add new parameter not already set by default
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
+                              voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'alpha': .4})
@@ -165,16 +185,11 @@ def test_table_output(tmpdir):
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
     atlasreader.create_output(STAT_IMG, cluster_extent=20,
-                              atlas=['AAL', 'desikan_killiany',
-                                     'Harvard_Oxford'],
+                              voxel_thresh=4, atlas='default',
                               outdir=output_dir)
 
     # test if output tables contain expected output
-    cluster_checksum = hashlib.md5(open(output_dir.join(
-        '{}_clusters.csv'.format(stat_img_name)), 'rb').read()).hexdigest()
-
-    peak_checksum = hashlib.md5(open(output_dir.join(
-        '{}_peaks.csv'.format(stat_img_name)), 'rb').read()).hexdigest()
-
-    assert cluster_checksum == '5d85805d58f8fbe22ef4e34ec75d8f42'
-    assert peak_checksum == 'f7cd664571413fe964eef0c45cd6f033'
+    df = pd.read_csv(output_dir.join('{}_clusters.csv'.format(stat_img_name)))
+    assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['cluster'])
+    df = pd.read_csv(output_dir.join('{}_peaks.csv'.format(stat_img_name)))
+    assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['peak'])
