@@ -74,14 +74,13 @@ comparable neuroimaging software package.
 
 Executing AtlasReader on an MRI image will create the following four outputs:
 
-1. An **overview figure** showing the ROIs throughout the whole brain at once
-   (Fig. 1).
+1. An **overview figure** showing all ROIs throughout the whole brain (Fig. 1).
 2. For each ROI, an **informative figure** showing the sagittal, coronal and
    transversal plane centered on the main peak of the ROI (Fig. 2).
-3. A **table** containing relevant information about the main **peaks** in each
-   ROI (Fig. 3).
-4. A **table** containing relevant information about the **cluster extent** of
-   each ROI (Fig. 4).
+3. A **table** containing information about the main **peaks** in each ROI
+   (Fig. 3).
+4. A **table** containing information about the **cluster extent** of each ROI
+   (Fig. 4).
 
 Users have many parameters available to guide the creation of these outputs. For
 example, with `cluster_extent` a user can specify the minimum number of
