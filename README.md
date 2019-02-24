@@ -16,11 +16,13 @@ to localize and extract relevant peak and cluster information and create
 informative and nice looking overview figures.
 
 Please check out our interactive notebook on mybinder.org to see `atlasreader`
-in action: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb)
+in action:  
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb)
 
-If you are using `atlasreader` in your publication, please cite the following paper:
+If you are using `atlasreader` in your publication, please cite the following paper:  
+[![DOI](http://joss.theoj.org/papers/10.21105/joss.01257/status.svg)](https://doi.org/10.21105/joss.01257)
 
-Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whitaker K. (2019). AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images. *Zenodo*, [https://doi.org/10.5281/zenodo.2552310](https://doi.org/10.5281/zenodo.2552310).
+Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whitaker K. (2019). AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images. *Journal of Open Source Software, 4(34), 1257*, [https://doi.org/10.21105/joss.01257](https://doi.org/10.21105/joss.01257).
 
 
 ## Installation
