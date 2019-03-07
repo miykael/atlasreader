@@ -339,7 +339,14 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
     """
 
     # get atlas data
-    atlastype = check_atlases(atlastype)
+    checked_atlastype = check_atlases(atlastype)
+    if type(checked_atlastype) == list:
+        if not len(checked_atlastype) == 1:
+            raise ValueError(
+                '\'{}\' is not a string or a single atlas. \'all\' '
+                'and \'default\' or not valid inputs.'.format(atlastype))
+        else:
+            atlastype = checked_atlastype[0]
     data = atlastype.image.get_data()
 
     # get voxel index
@@ -398,7 +405,14 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     """
 
     # get atlas data
-    atlastype = check_atlases(atlastype)
+    checked_atlastype = check_atlases(atlastype)
+    if type(checked_atlastype) == list:
+        if not len(checked_atlastype) == 1:
+            raise ValueError(
+                '\'{}\' is not a string or a single atlas. \'all\' '
+                'and \'default\' or not valid inputs.'.format(atlastype))
+        else:
+            atlastype = checked_atlastype[0]
     data = atlastype.image.get_data()
 
     # get coordinates of each voxel in cluster

@@ -114,6 +114,17 @@ def test_get_statmap_info():
     assert len(pdf) == 0
 
 
+def test_read_atlas_preaks():
+    # Load a correct atlas
+    atlasreader.read_atlas_peak('aal', [10, 10, 10])
+    # Load a list of atlases
+    with pytest.raises(ValueError):
+        atlasreader.read_atlas_peak(2*['aal'], [10, 10, 10])
+    # Load 'all' atlas
+    with pytest.raises(ValueError):
+        atlasreader.read_atlas_peak('all', [10, 10, 10])
+
+
 def test_process_image():
     stat_img = nb.load(STAT_IMG)
     # check that defaults for processing image work
