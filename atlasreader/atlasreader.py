@@ -439,8 +439,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
 
     sortID = np.argsort(percentage)[::-1]
 
-    return [[percentage[s], labels[s]] for s in sortID if
-            percentage[s] >= prob_thresh]
+    return [[percentage[s], labels[s]] for s in sortID]
 
 
 def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
