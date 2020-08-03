@@ -194,7 +194,8 @@ def coord_xyz_to_ijk(affine, coords):
         Provided `coords` in cartesian space
     """
     coords = _check_coord_inputs(coords)
-    vox_coords = np.linalg.solve(affine, coords)[:3].T.astype(int)
+    vox_coords = np.linalg.solve(affine, coords)[:3].T
+    vox_coords = np.round(vox_coords).astype(int)
     return vox_coords
 
 
@@ -227,7 +228,7 @@ def get_peak_coords(clust_img):
         maxcoords[n] = center_of_mass(cluster == cluster.max())
 
     # sort peak coordinates by cluster size
-    maxcoords = np.floor(maxcoords)[np.argsort(clust_size)[::-1]]
+    maxcoords = np.floor(maxcoords).astype(int)[np.argsort(clust_size)[::-1]]
 
     # convert coordinates to MNI space
     coords = coord_ijk_to_xyz(clust_img.affine, maxcoords)
@@ -260,7 +261,7 @@ def get_subpeak_coords(clust_img, min_distance=20):
     # make new clusters to check for "flat" peaks + find CoM of those clusters
     labels, nl = label(local_max)
     ijk = center_of_mass(data, labels=labels, index=range(1, nl + 1))
-    ijk = np.asarray(ijk, dtype=int)
+    ijk = np.round(ijk).astype(int)
 
     if len(ijk) > 1:
         # sort coordinates based on peak value
