@@ -74,7 +74,7 @@ def get_atlas(atlastype, cache=True):
                   image=nb.load(atlas_path),
                   labels=pd.read_csv(label_path))
     if cache:
-        atlas.image.get_data()
+        atlas.image.get_fdata()
 
     return atlas
 
@@ -222,7 +222,7 @@ def get_peak_coords(clust_img):
 
     # iterate through clusters and get info
     for n, cluster in enumerate(image.iter_img(clust_img)):
-        cluster = np.abs(cluster.get_data())
+        cluster = np.abs(cluster.get_fdata())
         clust_size[n] = np.sum(cluster != 0)
         maxcoords[n] = center_of_mass(cluster == cluster.max())
 
@@ -252,7 +252,7 @@ def get_subpeak_coords(clust_img, min_distance=20):
     peaks : (N, 3) numpy.ndarray
         Coordiantes of (sub)peak voxels in `clust_img`
     """
-    data = check_niimg(clust_img).get_data()
+    data = check_niimg(clust_img).get_fdata()
 
     # find local maxima, excluding peaks that are on the border of the cluster
     local_max = peak_local_max(data, exclude_border=1, indices=False)
@@ -347,7 +347,7 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
                 'and \'default\' or not valid inputs.'.format(atlastype))
         else:
             atlastype = checked_atlastype[0]
-    data = atlastype.image.get_data()
+    data = atlastype.image.get_fdata()
 
     # get voxel index
     voxID = coord_xyz_to_ijk(atlastype.image.affine, coordinate).squeeze()
@@ -413,7 +413,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
                 'and \'default\' or not valid inputs.'.format(atlastype))
         else:
             atlastype = checked_atlastype[0]
-    data = atlastype.image.get_data()
+    data = atlastype.image.get_fdata()
 
     # get coordinates of each voxel in cluster
     coords_vox = np.rollaxis(np.array(np.where(cluster)), 1)
@@ -477,7 +477,7 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
         voxel_thresh = '{}%'.format(100 + voxel_thresh)
     else:
         # ensure that threshold is not greater than most extreme value in image
-        if voxel_thresh > np.nan_to_num(np.abs(stat_img.get_data())).max():
+        if voxel_thresh > np.nan_to_num(np.abs(stat_img.get_fdata())).max():
             empty = np.zeros(stat_img.shape + (1,))
             return image.new_img_like(stat_img, empty)
     thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
@@ -495,7 +495,7 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
 
     for sign in direction_list:
         # keep only data of given sign
-        data = thresh_img.get_data().copy()
+        data = thresh_img.get_fdata().copy()
         data[(data < 0) if sign == 'pos' else (data > 0)] = 0
 
         # Do nothing if data array contains only zeros
@@ -516,7 +516,7 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
 
     # Reorder clusters by their size
     clust_img = image.concat_imgs(clusters)
-    cluster_size = (clust_img.get_data() != 0).sum(axis=(0, 1, 2))
+    cluster_size = (clust_img.get_fdata() != 0).sum(axis=(0, 1, 2))
     new_order = np.argsort(cluster_size)[::-1]
     clust_img_ordered = image.index_img(clust_img, new_order)
 
@@ -547,7 +547,7 @@ def get_peak_data(clust_img, atlas='default', prob_thresh=5,
         values, volume of cluster that peaks belong to, and neuroanatomical
         locations defined in `atlas`
     """
-    data = check_niimg(clust_img).get_data()
+    data = check_niimg(clust_img).get_fdata()
 
     # get voxel volume information
     voxel_volume = np.prod(clust_img.header.get_zooms())
@@ -597,7 +597,7 @@ def get_cluster_data(clust_img, atlas='default', prob_thresh=5):
         average cluster value, volume of cluster, and percent overlap with
         neuroanatomical regions defined in `atlas`
     """
-    data = check_niimg(clust_img).get_data()
+    data = check_niimg(clust_img).get_fdata()
     voxel_volume = np.prod(clust_img.header.get_zooms())
 
     coord = get_peak_coords(clust_img).squeeze().tolist()
@@ -670,7 +670,7 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
                             cluster_extent=cluster_extent)
 
     clust_info, peaks_info = [], []
-    if clust_img.get_data().any():
+    if clust_img.get_fdata().any():
         for n, cluster in enumerate(image.iter_img(clust_img)):
             peak_data = get_peak_data(cluster, atlas=atlas,
                                       prob_thresh=prob_thresh,
@@ -782,14 +782,14 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     thresh_img = image.math_img('np.sum(img, axis=-1)', img=clust_img)
 
     # Extract threshold value for plotting
-    thr_values = np.unique(np.abs(thresh_img.get_data()))
+    thr_values = np.unique(np.abs(thresh_img.get_fdata()))
     if len(thr_values) > 1:
         plot_thresh = thr_values[1]
     else:
         plot_thresh = 0
 
     # plot glass brain
-    color_max = np.abs(thresh_img.get_data()).max()
+    color_max = np.abs(thresh_img.get_fdata()).max()
     glass_fname = op.join(outdir, '{}.png'.format(out_fname))
     with warnings.catch_warnings():  # get rid of pesky warnings
         warnings.filterwarnings('ignore', category=FutureWarning)
@@ -812,7 +812,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         plotting.plot_glass_brain(**glass_plot_params)
 
     # Check if thresholded image contains only zeros
-    if np.any(thresh_img.get_data()):
+    if np.any(thresh_img.get_fdata()):
 
         # get cluster + peak information from image
         clust_frame, peaks_frame = get_statmap_info(
@@ -837,7 +837,7 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
         )
 
         # plot clusters
-        coords = clust_frame[['peak_x', 'peak_y', 'peak_z']].get_values()
+        coords = np.array(clust_frame[['peak_x', 'peak_y', 'peak_z']])
         for idx, coord in enumerate(coords):
             clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
             stat_plot_params = {

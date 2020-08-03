@@ -18,7 +18,7 @@ for fname in atlases:
     img = crop_img(fname)
 
     # Get data array
-    data = img.get_data()
+    data = img.get_fdata()
 
     # Decide which datatype to use
     if data.max() <= 255 and data.min() >= 0:

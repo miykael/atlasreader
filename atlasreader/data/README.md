@@ -164,7 +164,7 @@ import nibabel as nb
 
 # Load the image and the data
 img = nb.load('atlas_harvard_oxford.nii.gz')
-data = img.get_data()
+data = img.get_fdata()
 
 # Remove labels 96, 97, 107 and 108
 new_data = np.delete(data, [96, 97, 107, 108], axis=-1)
