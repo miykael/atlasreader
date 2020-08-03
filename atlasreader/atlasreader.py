@@ -228,7 +228,7 @@ def get_peak_coords(clust_img):
         maxcoords[n] = center_of_mass(cluster == cluster.max())
 
     # sort peak coordinates by cluster size
-    maxcoords = np.round(maxcoords).astype(int)[np.argsort(clust_size)[::-1]]
+    maxcoords = np.floor(maxcoords).astype(int)[np.argsort(clust_size)[::-1]]
 
     # convert coordinates to MNI space
     coords = coord_ijk_to_xyz(clust_img.affine, maxcoords)
@@ -440,8 +440,8 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
 
     sortID = np.argsort(percentage)[::-1]
 
-    return [[percentage[s], labels[s]] for s in sortID]
-
+    return [[percentage[s], labels[s]] for s in sortID if
+            percentage[s] >= prob_thresh]
 
 def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
     """
