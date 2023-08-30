@@ -56,7 +56,7 @@ EXPECTED_TABLES = dict(
                    [-36, -19,  19, -6.21808,   648]])
 )
 
-@pytest.mark.skip(reason="just checking")
+
 def test_get_atlases():
     for atlas in atlasreader._ATLASES:
         a = atlasreader.get_atlas(atlas, cache=False)
@@ -64,7 +64,7 @@ def test_get_atlases():
     with pytest.raises(ValueError):
         atlasreader.get_atlas('not_an_atlas')
 
-
+@pytest.mark.skip(reason="just checking")
 def test_check_atlases():
     atlases = atlasreader.check_atlases('all')
     assert len(atlases) == len(atlasreader._ATLASES)
