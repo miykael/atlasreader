@@ -256,7 +256,7 @@ def get_subpeak_coords(clust_img, min_distance=20):
     data = check_niimg(clust_img).get_fdata()
 
     # find local maxima, excluding peaks that are on the border of the cluster
-    local_max = peak_local_max(data, exclude_border=1, indices=False)
+    local_max = peak_local_max(data, exclude_border=1)
 
     # make new clusters to check for "flat" peaks + find CoM of those clusters
     labels, nl = label(local_max)

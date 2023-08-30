@@ -35,10 +35,10 @@ jobs:
         -   name: Install dependencies
             run: |
                 sudo apt-get update
-                python -m pip install --upgrade pip pytest jupyter nbval coverage coveralls codecov pytest-cov
+                python -m pip install --upgrade pip nbval
 
         -   name: Install
-            run: pip install .
+            run: pip install .[test]
 
         -   name: Test
             run: pytest --cov=atlasreader

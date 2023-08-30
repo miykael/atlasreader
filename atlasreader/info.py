@@ -25,7 +25,8 @@ INSTALL_REQUIRES = [
 
 TESTS_REQUIRE = [
     'pytest',
-    'pytest-cov'
+    'pytest-cov',
+    'nbval'
 ]
 
 PACKAGE_DATA = {
