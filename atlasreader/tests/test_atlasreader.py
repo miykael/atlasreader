@@ -56,9 +56,11 @@ EXPECTED_TABLES = dict(
                    [-36, -19,  19, -6.21808,   648]])
 )
 
+
 @pytest.mark.parametrize('atlas', atlasreader._ATLASES)
 def test_check_atlases_each(atlas):
     atlasreader.check_atlases(atlas)
+
 
 def test_get_atlases():
     for atlas in atlasreader._ATLASES:
@@ -67,15 +69,18 @@ def test_get_atlases():
     with pytest.raises(ValueError):
         atlasreader.get_atlas('not_an_atlas')
 
+
 def test_check_atlases_all():
     atlases = atlasreader.check_atlases('all')
     assert len(atlases) == len(atlasreader._ATLASES)
+
 
 def test_check_atlases_default():
     atlases = atlasreader.check_atlases('default')
     assert len(atlases) == len(atlasreader._DEFAULT)
 
-def test_check_atlases_default():
+
+def test_check_atlases_as_list():
     atlases = atlasreader.check_atlases(['aal', 'destrieux'])
     assert atlasreader.check_atlases(atlases) == atlases
     assert atlasreader.check_atlases(atlases[0]) == atlases[0]
@@ -118,6 +123,7 @@ def test_get_statmap_info():
                                             cluster_extent=20)
     assert len(cdf) == 0
     assert len(pdf) == 0
+
 
 def test_read_atlas_peaks():
     # Load a correct atlas
