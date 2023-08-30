@@ -41,7 +41,7 @@ jobs:
             run: pip install .
 
         -   name: Test
-            run: pytest --cov=atlasreader
+            run: pytest --cov-report term-missing --cov=atlasreader atlasreader
             
         -   name: Coveralls
             uses: coverallsapp/github-action@v2
