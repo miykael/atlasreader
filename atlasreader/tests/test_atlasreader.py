@@ -119,7 +119,6 @@ def test_get_statmap_info():
     assert len(cdf) == 0
     assert len(pdf) == 0
 
-@pytest.mark.skip(reason="skip test that cancels workflow")
 def test_read_atlas_peaks():
     # Load a correct atlas
     atlasreader.read_atlas_peak('aal', [10, 10, 10])
