@@ -19,7 +19,7 @@ INSTALL_REQUIRES = [
     'numpy',
     'pandas',
     'scipy',
-    'scikit-image',
+    'scikit-image<0.20',
     'scikit-learn'
 ]
 
