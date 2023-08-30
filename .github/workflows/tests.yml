@@ -35,7 +35,7 @@ jobs:
         -   name: Install dependencies
             run: |
                 sudo apt-get update
-                python -m pip install --upgrade pip pytest pytest-cov nbval
+                python -m pip install --upgrade pip pytest pytest-cov
 
         -   name: Install
             run: pip install .
@@ -48,6 +48,7 @@ jobs:
 
         -   name: Test notebooks
             run: |
+                pip install nbval 
                 for n in `ls notebooks/*ipynb`
                 do
                     pytest --nbval-lax -v -s ${n};
