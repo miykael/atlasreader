@@ -121,10 +121,10 @@ def test_get_statmap_info():
 
 def test_read_atlas_peaks():
     # Load a correct atlas
-    atlasreader.read_atlas_peak('aal', [10, 10, 10])
+    atlasreader.read_atlas_peak('aicha', [10, 10, 10])
     # Load a list of atlases
     with pytest.raises(ValueError):
-        atlasreader.read_atlas_peak(2*['aal'], [10, 10, 10])
+        atlasreader.read_atlas_peak(2*['aicha'], [10, 10, 10])
     # Load 'all' atlas
     with pytest.raises(ValueError):
         atlasreader.read_atlas_peak('all', [10, 10, 10])
