@@ -35,13 +35,13 @@ jobs:
         -   name: Install dependencies
             run: |
                 sudo apt-get update
-                python -m pip install --upgrade pip pytest jupyter nbval
+                python -m pip install --upgrade pip pytest jupyter nbval coverage coveralls codecov pytest-cov
 
         -   name: Install
             run: pip install .
 
         -   name: Test
-            run: pytest --cov-report term-missing --cov=atlasreader
+            run: pytest --cov=atlasreader
 
         -   name: Test notebooks
             run: |
