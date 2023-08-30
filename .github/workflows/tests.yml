@@ -41,7 +41,7 @@ jobs:
             run: pip install .
 
         -   name: Test
-            run: pytest atlasreader
+            run: pytest -vvv atlasreader
             
         -   name: Coveralls
             uses: coverallsapp/github-action@v2
