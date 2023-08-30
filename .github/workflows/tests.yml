@@ -1,0 +1,51 @@
+
+name: test
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: ['*']
+
+jobs:
+
+    unit_test:
+
+        strategy:
+            fail-fast: false
+            matrix:
+                python-version: ['3.8', '3.9', '3.10', '3.11']
+
+        runs-on: ubuntu-latest
+
+        steps:
+        -   uses: actions/checkout@v3
+            with:
+                fetch-depth: 0
+
+        -   name: Set up Python ${{ matrix.python-version }}
+            uses: actions/setup-python@v4
+            with:
+                python-version: ${{ matrix.python-version }}
+
+        -   name: Install dependencies
+            run: |
+                sudo apt-get update
+                python -m pip install --upgrade pip pytest jupyter nbval
+
+        -   name: Install
+            run: pip install .
+
+        -   name: Test
+            run: pytest --cov-report term-missing --cov=atlasreader
+
+        -   name: Test notebooks
+            run: |
+                for n in `ls notebooks/*ipynb`
+                do
+                    pytest --nbval-lax -v -s ${n};
+                done
