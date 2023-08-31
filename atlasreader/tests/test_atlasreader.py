@@ -132,13 +132,10 @@ def test_read_atlas_peaks():
     atlasreader.read_atlas_peak('aicha', [10, 10, 10])
 
 
-def test_read_atlas_peaks_errors():
+def test_read_atlas_peaks_error_type():
     # Load a list of atlases
     with pytest.raises(ValueError):
         atlasreader.read_atlas_peak(2*['aicha'], [10, 10, 10])
-    # Load 'all' atlas
-    with pytest.raises(ValueError):
-        atlasreader.read_atlas_peak('all', [10, 10, 10])
 
 
 def test_process_image(stat_img):
@@ -220,3 +217,9 @@ def test_table_output(tmpdir, stat_img):
     assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['cluster'])
     df = pd.read_csv(output_dir.join('{}_peaks.csv'.format(stat_img_name)))
     assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['peak'])
+
+
+def test_read_atlas_peaks_error_all():
+    # Load 'all' atlas
+    with pytest.raises(ValueError):
+        atlasreader.read_atlas_peak('all', [10, 10, 10])
