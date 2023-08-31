@@ -1,12 +1,8 @@
 import os
-from nilearn.datasets import fetch_neurovault_motor_task
 import subprocess
 
-STAT_IMG = fetch_neurovault_motor_task().images[0]
-
-
-def test_cli(tmpdir):
-    stat_img_name = os.path.basename(STAT_IMG)[:-7]
+def test_cli(tmpdir, stat_img):
+    stat_img_name = os.path.basename(stat_img)[:-7]
 
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
@@ -16,7 +12,7 @@ def test_cli(tmpdir):
                           '--probability', '5',
                           '--mindist', '20',
                           '--outdir', output_dir,
-                          STAT_IMG, '20'])
+                          stat_img, '20'])
     assert ret.returncode == 0
 
     # test if output exists and if the key .csv and .png files were created
