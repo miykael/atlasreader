@@ -161,23 +161,23 @@ def test_process_image(stat_img):
     assert np.allclose(img.get_fdata(), 0)
 
 
-def test_create_output(tmpdir, stat_img):
-    # create mock data
-    stat_img_name = os.path.basename(stat_img)[:-7]
+def test_create_output(tmp_path, stat_img):
 
-    # temporary output
-    output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(stat_img, cluster_extent=20,
+    output_dir = tmp_path / 'mni_test'
+    output_dir.mkdir()
+
+    atlasreader.create_output(str(stat_img), cluster_extent=20,
                               voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
     # test if output exists and if the key .csv and .png files were created
     assert output_dir.exists()
-    assert len(output_dir.listdir()) > 0
-    assert output_dir.join('{}_clusters.csv'.format(stat_img_name)).isfile()
-    assert output_dir.join('{}_peaks.csv'.format(stat_img_name)).isfile()
-    assert output_dir.join('{}.png'.format(stat_img_name)).isfile()
+    assert len([x for x in output_dir.iterdir()]) > 0
+
+    stat_img_name = stat_img.stem[:11]
+    for ending in ['_clusters.csv', '_peaks.csv', '.png']:
+        assert (output_dir / f'{stat_img_name}{ending}').exists()
 
 
 def test_plotting(tmpdir, stat_img):
