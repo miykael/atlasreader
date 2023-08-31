@@ -1,4 +1,3 @@
-import os
 import numpy as np
 from atlasreader import atlasreader
 import nibabel as nb
@@ -202,20 +201,22 @@ def test_plotting(tmpdir, stat_img):
                               glass_plot_kws={'alpha': .4})
 
 
-def test_table_output(tmpdir, stat_img):
-    # create mock data
-    stat_img_name = os.path.basename(stat_img)[:-7]
+def test_table_output(tmp_path, stat_img):
 
-    # temporary output
-    output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(stat_img, cluster_extent=20,
+    output_dir = tmp_path / 'mni_test'
+    output_dir.mkdir()
+
+    atlasreader.create_output(str(stat_img), cluster_extent=20,
                               voxel_thresh=4, atlas='default',
                               outdir=output_dir)
 
     # test if output tables contain expected output
-    df = pd.read_csv(output_dir.join('{}_clusters.csv'.format(stat_img_name)))
+    stat_img_name = stat_img.stem[:11]
+
+    df = pd.read_csv(output_dir / f'{stat_img_name}_clusters.csv')
     assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['cluster'])
-    df = pd.read_csv(output_dir.join('{}_peaks.csv'.format(stat_img_name)))
+
+    df = pd.read_csv(output_dir / f'{stat_img_name}_peaks.csv')
     assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['peak'])
 
 
