@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+
 def test_cli(tmpdir, stat_img):
     stat_img_name = os.path.basename(stat_img)[:-7]
 

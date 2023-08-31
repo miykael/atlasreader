@@ -5,7 +5,6 @@ import nibabel as nb
 from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 import pandas as pd
-from pathlib import Path
 
 STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
