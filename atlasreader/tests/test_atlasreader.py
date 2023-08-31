@@ -1,11 +1,9 @@
 import numpy as np
 from atlasreader import atlasreader
 import nibabel as nb
-from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 import pandas as pd
 
-STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
     affine=np.array([[1, 0, 0, -90],
                      [0, 1, 0, -150],
