@@ -4,8 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/issues/)
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/pulls/)
 [![GitHub contributors](https://img.shields.io/github/contributors/miykael/atlasreader.svg)](https://GitHub.com/miykael/atlasreader/graphs/contributors/)
-[![GitHub Commits](https://github-basic-badges.herokuapp.com/commits/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/commits/master)
-[![GitHub size](https://github-size-badge.herokuapp.com/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/archive/master.zip)
+![GitHub repo size](https://img.shields.io/github/repo-size/miykael/atlasreader)
 
 # AtlasReader
 
