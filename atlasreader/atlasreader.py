@@ -260,6 +260,11 @@ def get_subpeak_coords(clust_img, min_distance=20):
 
     # make new clusters to check for "flat" peaks + find CoM of those clusters
     labels, nl = label(local_max)
+    labels_img = np.zeros_like(data)
+    for ldx in range(len(labels)):
+        labels_img[tuple(local_max[ldx])] = np.mean(labels[ldx])
+    labels = labels_img.astype('int')
+
     ijk = center_of_mass(data, labels=labels, index=range(1, nl + 1))
     ijk = np.round(ijk).astype(int)
 
