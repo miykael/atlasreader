@@ -8,6 +8,9 @@ dist/*
 *.egg-info
 .cache
 
+# hatchling
+atlasreader/_version.py
+
 env
 
 .coverage
