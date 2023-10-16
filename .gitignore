@@ -8,7 +8,7 @@ dist/*
 *.egg-info
 .cache
 
-# hatchling
+# hatchling: do not track version file
 atlasreader/_version.py
 
 env
