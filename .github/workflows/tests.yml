@@ -18,7 +18,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                python-version: ['3.8', '3.9', '3.10', '3.11']
+                python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
         runs-on: ubuntu-latest
 
@@ -35,16 +35,20 @@ jobs:
         -   name: Install dependencies
             run: |
                 sudo apt-get update
-                python -m pip install --upgrade pip pytest jupyter nbval
+                python -m pip install --upgrade pip setuptools pytest pytest-cov
 
         -   name: Install
             run: pip install .
 
         -   name: Test
-            run: pytest --cov-report term-missing --cov=atlasreader
+            run: python -m pytest -vvv --pyargs atlasreader --cov=atlasreader 
+            
+        -   name: Coveralls
+            uses: coverallsapp/github-action@v2
 
         -   name: Test notebooks
             run: |
+                pip install nbval 
                 for n in `ls notebooks/*ipynb`
                 do
                     pytest --nbval-lax -v -s ${n};

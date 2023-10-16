@@ -1,10 +1,10 @@
 [![codecov](https://codecov.io/gh/miykael/atlasreader/branch/master/graph/badge.svg)](https://codecov.io/gh/miykael/atlasreader)
+[![Coverage Status](https://coveralls.io/repos/github/miykael/atlasreader/badge.svg?branch=master)](https://coveralls.io/github/miykael/atlasreader?branch=master)
 [![Build Status](https://travis-ci.org/miykael/atlasreader.svg?branch=master)](https://travis-ci.org/miykael/atlasreader)
 [![GitHub issues](https://img.shields.io/github/issues/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/issues/)
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/pulls/)
 [![GitHub contributors](https://img.shields.io/github/contributors/miykael/atlasreader.svg)](https://GitHub.com/miykael/atlasreader/graphs/contributors/)
-[![GitHub Commits](https://github-basic-badges.herokuapp.com/commits/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/commits/master)
-[![GitHub size](https://github-size-badge.herokuapp.com/miykael/atlasreader.svg)](https://github.com/miykael/atlasreader/archive/master.zip)
+![GitHub repo size](https://img.shields.io/github/repo-size/miykael/atlasreader)
 
 # AtlasReader
 
@@ -15,10 +15,10 @@ to localize and extract relevant peak and cluster information and create
 informative and nice looking overview figures.
 
 Please check out our interactive notebook on mybinder.org to see `atlasreader`
-in action:  
+in action:
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/miykael/atlasreader/master?filepath=notebooks%2Fatlasreader.ipynb)
 
-If you are using `atlasreader` in your publication, please cite the following paper:  
+If you are using `atlasreader` in your publication, please cite the following paper:
 [![DOI](http://joss.theoj.org/papers/10.21105/joss.01257/status.svg)](https://doi.org/10.21105/joss.01257)
 
 Notter M. P., Gale D., Herholz P., Markello R. D., Notter-Bielser M.-L., & Whitaker K. (2019). AtlasReader: A Python package to generate coordinate tables, region labels, and informative figures from statistical MRI images. *Journal of Open Source Software, 4(34), 1257*, [https://doi.org/10.21105/joss.01257](https://doi.org/10.21105/joss.01257).
@@ -33,7 +33,7 @@ installing `atlasreader` is as simple as this:
 pip install atlasreader
 ```
 
-If you want to build `atlasreader` directly from source code, use the 
+If you want to build `atlasreader` directly from source code, use the
 following code:
 
 ```bash
@@ -67,25 +67,25 @@ atlasreader file_name 5
 
 After executing AtlasReader on a given image, four kinds of outputs are generated:
 
-1. An **overview figure** that shows the results within the whole brain at once  
+1. An **overview figure** that shows the results within the whole brain at once
    ![Overview Figure](paper/fig_overview_figure.png)
 
 2. **For each cluster**, an **informative figure** showing the sagittal, coronal
-   and transversal plane centered on the main peak of the cluster  
+   and transversal plane centered on the main peak of the cluster
    ![Cluster Figure](paper/fig_cluster_figure.png)
 
 3. A **csv file** containing relevant information about the **peak** of each
    cluster. This table contains the cluster association and location of each
    peak, its signal value at this location, the cluster extent (in mm, not in
    number of voxels), as well as the membership of each peak, given a
-   particular atlas.  
+   particular atlas.
    ![Table Peak](paper/table_peak.png)
 
 4. A **csv** file containing relevant information about each **cluster**. Table
    showing relevant information for the cluster extent of each ROI. This table
    contains the cluster association and location of each peak, the mean value
    within the cluster, the cluster extent (in mm, not in number of voxels), as
-   well as the membership of each cluster, given a particular atlas.  
+   well as the membership of each cluster, given a particular atlas.
    ![Table Cluster](paper/table_cluster.png)
 
 
@@ -94,34 +94,34 @@ After executing AtlasReader on a given image, four kinds of outputs are generate
 `atlasreader.create_output` has many additional parameters that allow you to change the way
 the clusters are generated and what kind of outputs are generated:
 
-- **filename**: Niimg_like  
+- **filename**: Niimg_like
     A 3D statistical image.
-- **cluster_extent**: int  
+- **cluster_extent**: int
     Minimum number of contiguous voxels required to consider a cluster in `filename`
-- **atlas**: str or list, optional  
+- **atlas**: str or list, optional
     Name of atlas(es) to consider for cluster analysis. ***Default***: `'default'`
 - **voxel_thresh**: float, optional
-    Threshold to apply to `stat_img`.  Use `direction` to specify the 
+    Threshold to apply to `stat_img`.  Use `direction` to specify the
     directionality of the threshold. If a negative number is provided a
     percentile threshold is used instead, where the percentile is determined
     by the equation `100 - voxel_thresh`. ***Default***: `1.96`
 - **direction**: str, optional
     Specifies the direction in which `voxel_thresh` should be applied. Possible
     values are `'both'`, `'pos'` or `'neg'`. ***Default***: `'both'`
-- **prob_thresh**: int, optional  
+- **prob_thresh**: int, optional
     Probability (percentage) threshold to apply to `atlas`, if it is
     probabilistic. ***Default***: `5`
-- **min_distance**: float, optional  
+- **min_distance**: float, optional
     Specifies the minimum distance (in mm) required between sub-peaks in a
     cluster. If None, sub-peaks will not be examined and only the primary
     cluster peak will be reported. ***Default***: `None`
-- **outdir**: str or None, optional  
+- **outdir**: str or None, optional
     Path to desired output directory. If None, generated files will be
     saved to the same folder as `filename`. ***Default***: `None`
-- **glass_plot_kws**: dict or None, optional  
+- **glass_plot_kws**: dict or None, optional
     Additional keyword arguments to pass to `nilearn.plotting.plot_glass_brain`.
     ***Default***: `None`
-- **stat_plot_kws**: dict or None, optional  
+- **stat_plot_kws**: dict or None, optional
     Additional keyword arguments to pass to `nilearn.plotting.plot_stat_map`.
     ***Default***: `None`
 
@@ -148,7 +148,7 @@ about it!
 
 ## Licence
 
-AtlasReader is licensed under the BSD-3 license; however, the atlases it uses 
+AtlasReader is licensed under the BSD-3 license; however, the atlases it uses
 are separately licensed under more restrictive frameworks.
 By using AtlasReader, you agree to abide by the license terms of the
 individual atlases. Information on these terms can be found online at:

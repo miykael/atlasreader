@@ -1,12 +1,9 @@
-import os
 import numpy as np
 from atlasreader import atlasreader
 import nibabel as nb
-from nilearn.datasets import fetch_neurovault_motor_task
 import pytest
 import pandas as pd
 
-STAT_IMG = fetch_neurovault_motor_task().images[0]
 EXAMPLE_COORDS = dict(
     affine=np.array([[1, 0, 0, -90],
                      [0, 1, 0, -150],
@@ -57,6 +54,11 @@ EXPECTED_TABLES = dict(
 )
 
 
+@pytest.mark.parametrize('atlas', atlasreader._ATLASES)
+def test_check_atlases_each(atlas):
+    atlasreader.check_atlases(atlas)
+
+
 def test_get_atlases():
     for atlas in atlasreader._ATLASES:
         a = atlasreader.get_atlas(atlas, cache=False)
@@ -65,11 +67,17 @@ def test_get_atlases():
         atlasreader.get_atlas('not_an_atlas')
 
 
-def test_check_atlases():
+def test_check_atlases_all():
     atlases = atlasreader.check_atlases('all')
     assert len(atlases) == len(atlasreader._ATLASES)
+
+
+def test_check_atlases_default():
     atlases = atlasreader.check_atlases('default')
     assert len(atlases) == len(atlasreader._DEFAULT)
+
+
+def test_check_atlases_as_list():
     atlases = atlasreader.check_atlases(['aal', 'destrieux'])
     assert atlasreader.check_atlases(atlases) == atlases
     assert atlasreader.check_atlases(atlases[0]) == atlases[0]
@@ -94,18 +102,20 @@ def test_bounding_box_check():
         assert np.all(ijk_out == coords['ijk_out'])
 
 
-def test_get_statmap_info():
+@pytest.mark.parametrize('min_distance', [None, 20])
+def test_get_statmap_info(stat_img, min_distance):
     # general integration test to check that min_distance works
     # this will take a little while since it's running it twice
-    stat_img = nb.load(STAT_IMG)
-    for min_distance in [None, 20]:
-        cdf, pdf = atlasreader.get_statmap_info(stat_img,
-                                                cluster_extent=20,
-                                                atlas=['Harvard_Oxford',
-                                                       'AAL'],
-                                                min_distance=min_distance)
+    stat_img = nb.load(stat_img)
+    atlasreader.get_statmap_info(stat_img,
+                                 cluster_extent=20,
+                                 atlas=['Harvard_Oxford', 'AAL'],
+                                 min_distance=min_distance)
 
+
+def test_get_statmap_info_empty_image(stat_img):
     # test that empty image return empty dataframes
+    stat_img = nb.load(stat_img)
     zero_img = nb.Nifti1Image(np.zeros(stat_img.shape), stat_img.affine,
                               header=stat_img.header)
     cdf, pdf = atlasreader.get_statmap_info(zero_img,
@@ -114,19 +124,19 @@ def test_get_statmap_info():
     assert len(pdf) == 0
 
 
-def test_read_atlas_preaks():
+def test_read_atlas_peaks():
     # Load a correct atlas
-    atlasreader.read_atlas_peak('aal', [10, 10, 10])
+    atlasreader.read_atlas_peak('aicha', [10, 10, 10])
+
+
+def test_read_atlas_peaks_error_type():
     # Load a list of atlases
     with pytest.raises(ValueError):
-        atlasreader.read_atlas_peak(2*['aal'], [10, 10, 10])
-    # Load 'all' atlas
-    with pytest.raises(ValueError):
-        atlasreader.read_atlas_peak('all', [10, 10, 10])
+        atlasreader.read_atlas_peak(2*['aicha'], [10, 10, 10])
 
 
-def test_process_image():
-    stat_img = nb.load(STAT_IMG)
+def test_process_image(stat_img):
+    stat_img = nb.load(stat_img)
     # check that defaults for processing image work
     img = atlasreader.process_img(stat_img, cluster_extent=20)
     assert isinstance(img, nb.Nifti1Image)
@@ -148,33 +158,33 @@ def test_process_image():
     assert np.allclose(img.get_fdata(), 0)
 
 
-def test_create_output(tmpdir):
-    # create mock data
-    stat_img_name = os.path.basename(STAT_IMG)[:-7]
+def test_create_output(tmp_path, stat_img):
 
-    # temporary output
-    output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(STAT_IMG, cluster_extent=20,
+    output_dir = tmp_path / 'mni_test'
+    output_dir.mkdir()
+
+    atlasreader.create_output(str(stat_img), cluster_extent=20,
                               voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir)
 
     # test if output exists and if the key .csv and .png files were created
     assert output_dir.exists()
-    assert len(output_dir.listdir()) > 0
-    assert output_dir.join('{}_clusters.csv'.format(stat_img_name)).isfile()
-    assert output_dir.join('{}_peaks.csv'.format(stat_img_name)).isfile()
-    assert output_dir.join('{}.png'.format(stat_img_name)).isfile()
+    assert len([x for x in output_dir.iterdir()]) > 0
+
+    stat_img_name = stat_img.stem[:11]
+    for ending in ['_clusters.csv', '_peaks.csv', '.png']:
+        assert (output_dir / f'{stat_img_name}{ending}').exists()
 
 
-def test_plotting(tmpdir):
+def test_plotting(tmpdir, stat_img):
     """Test functionality of kwarg implementation"""
 
     # temporary output
     output_dir = tmpdir.mkdir('mni_test')
 
     # overwrite some default params
-    atlasreader.create_output(STAT_IMG, cluster_extent=20,
+    atlasreader.create_output(stat_img, cluster_extent=20,
                               voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
@@ -182,25 +192,33 @@ def test_plotting(tmpdir):
                               stat_plot_kws={'black_bg': False})
 
     # add new parameter not already set by default
-    atlasreader.create_output(STAT_IMG, cluster_extent=20,
+    atlasreader.create_output(stat_img, cluster_extent=20,
                               voxel_thresh=7,
                               atlas=['Harvard_Oxford'],
                               outdir=output_dir,
                               glass_plot_kws={'alpha': .4})
 
 
-def test_table_output(tmpdir):
-    # create mock data
-    stat_img_name = os.path.basename(STAT_IMG)[:-7]
+def test_table_output(tmp_path, stat_img):
 
-    # temporary output
-    output_dir = tmpdir.mkdir('mni_test')
-    atlasreader.create_output(STAT_IMG, cluster_extent=20,
+    output_dir = tmp_path / 'mni_test'
+    output_dir.mkdir()
+
+    atlasreader.create_output(str(stat_img), cluster_extent=20,
                               voxel_thresh=4, atlas='default',
                               outdir=output_dir)
 
     # test if output tables contain expected output
-    df = pd.read_csv(output_dir.join('{}_clusters.csv'.format(stat_img_name)))
+    stat_img_name = stat_img.stem[:11]
+
+    df = pd.read_csv(output_dir / f'{stat_img_name}_clusters.csv')
     assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['cluster'])
-    df = pd.read_csv(output_dir.join('{}_peaks.csv'.format(stat_img_name)))
+
+    df = pd.read_csv(output_dir / f'{stat_img_name}_peaks.csv')
     assert np.allclose(df[df.keys()[1:6]].values, EXPECTED_TABLES['peak'])
+
+
+def test_read_atlas_peaks_error_all():
+    # Load 'all' atlas
+    with pytest.raises(ValueError):
+        atlasreader.read_atlas_peak('all', [10, 10, 10])

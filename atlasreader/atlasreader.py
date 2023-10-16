@@ -256,10 +256,15 @@ def get_subpeak_coords(clust_img, min_distance=20):
     data = check_niimg(clust_img).get_fdata()
 
     # find local maxima, excluding peaks that are on the border of the cluster
-    local_max = peak_local_max(data, exclude_border=1, indices=False)
+    local_max = peak_local_max(data, exclude_border=1)
 
     # make new clusters to check for "flat" peaks + find CoM of those clusters
     labels, nl = label(local_max)
+    labels_img = np.zeros_like(data)
+    for ldx in range(len(labels)):
+        labels_img[tuple(local_max[ldx])] = np.mean(labels[ldx])
+    labels = labels_img.astype('int')
+
     ijk = center_of_mass(data, labels=labels, index=range(1, nl + 1))
     ijk = np.round(ijk).astype(int)
 
@@ -341,7 +346,7 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
 
     # get atlas data
     checked_atlastype = check_atlases(atlastype)
-    if type(checked_atlastype) == list:
+    if isinstance(checked_atlastype, list):
         if not len(checked_atlastype) == 1:
             raise ValueError(
                 '\'{}\' is not a string or a single atlas. \'all\' '
@@ -407,7 +412,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
 
     # get atlas data
     checked_atlastype = check_atlases(atlastype)
-    if type(checked_atlastype) == list:
+    if isinstance(checked_atlastype, list):
         if not len(checked_atlastype) == 1:
             raise ValueError(
                 '\'{}\' is not a string or a single atlas. \'all\' '
@@ -572,8 +577,9 @@ def get_peak_data(clust_img, atlas='default', prob_thresh=5,
             segment = read_atlas_peak(atype, coord, prob_thresh)
             coord_info.append([atype.atlas, segment])
 
-        peak_info += [[peak if type(peak) != list else
-                       '; '.join(['{}% {}'.format(*e) for e in peak])
+        peak_info += [['; '.join(['{}% {}'.format(*e) for e in peak])
+                       if isinstance(peak, list)
+                       else peak
                        for (_, peak) in coord_info]]
 
     return np.column_stack([coords, peak_values, cluster_volume, peak_info])
