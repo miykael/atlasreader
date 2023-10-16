@@ -1,0 +1,5 @@
+[flake8]
+exclude =
+    .git,
+    build,
+max-line-length = 90
