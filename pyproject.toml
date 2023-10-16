@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 79
+
+[tool.codespell]
+skip = "./.git"
+
+[tool.isort]
+combine_as_imports = true
+line_length = 79
+profile = "black"
+skip_gitignore = true
