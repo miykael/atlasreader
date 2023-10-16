@@ -2,32 +2,32 @@
 name: validation
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
 
-  validate_cff:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Check whether the citation metadata from CITATION.cff is valid
-      uses: citation-file-format/cffconvert-github-action@2.0.0
-      with:
-        args: --validate
+    validate_cff:
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v4
+        -   name: Check whether the citation metadata from CITATION.cff is valid
+            uses: citation-file-format/cffconvert-github-action@2.0.0
+            with:
+                args: --validate
 
-  markdown-link-check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - uses: gaurav-nelson/github-action-markdown-link-check@v1
-      with:
-        use-quiet-mode: yes
-        use-verbose-mode: yes
-        config-file: .github/workflows/mlc_config.json
+    markdown-link-check:
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@master
+        -   uses: gaurav-nelson/github-action-markdown-link-check@v1
+            with:
+                use-quiet-mode: yes
+                use-verbose-mode: yes
+                config-file: .github/workflows/mlc_config.json

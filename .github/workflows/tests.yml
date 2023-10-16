@@ -1,4 +1,4 @@
-
+---
 name: test
 
 concurrency:
@@ -41,14 +41,14 @@ jobs:
             run: pip install .
 
         -   name: Test
-            run: python -m pytest -vvv --pyargs atlasreader --cov=atlasreader 
-            
+            run: python -m pytest -vvv --pyargs atlasreader --cov=atlasreader
+
         -   name: Coveralls
             uses: coverallsapp/github-action@v2
 
         -   name: Test notebooks
             run: |
-                pip install nbval 
+                pip install nbval
                 for n in `ls notebooks/*ipynb`
                 do
                     pytest --nbval-lax -v -s ${n};

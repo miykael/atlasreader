@@ -3,37 +3,37 @@ Primary functions of atlasreader
 """
 import os
 import os.path as op
-from pkg_resources import resource_filename
 import warnings
+
 import nibabel as nb
-from nilearn import image, plotting
-from nilearn.regions import connected_regions
-from nilearn._utils import check_niimg
 import numpy as np
 import pandas as pd
-from scipy.ndimage import label, center_of_mass
+from nilearn import image, plotting
+from nilearn._utils import check_niimg
+from nilearn.regions import connected_regions
+from pkg_resources import resource_filename
+from scipy.ndimage import center_of_mass, label
 from scipy.spatial.distance import cdist
 from skimage.feature import peak_local_max
 from sklearn.utils import Bunch
 
-
 _ATLASES = [
-    'aal',
-    'aicha',
-    'desikan_killiany',
-    'destrieux',
-    'harvard_oxford',
-    'juelich',
-    'marsatlas',
-    'neuromorphometrics',
-    'talairach_ba',
-    'talairach_gyrus',
+    "aal",
+    "aicha",
+    "desikan_killiany",
+    "destrieux",
+    "harvard_oxford",
+    "juelich",
+    "marsatlas",
+    "neuromorphometrics",
+    "talairach_ba",
+    "talairach_gyrus",
 ]
 
 _DEFAULT = [
-    'aal',
-    'desikan_killiany',
-    'harvard_oxford',
+    "aal",
+    "desikan_killiany",
+    "harvard_oxford",
 ]
 
 
@@ -62,17 +62,20 @@ def get_atlas(atlastype, cache=True):
 
     # get the path to atlas + label files shipped with package
     # resource_filename ensures that we're getting the correct path
-    data_dir = resource_filename('atlasreader', 'data/atlases')
-    atlas_path = op.join(data_dir, 'atlas_{0}.nii.gz'.format(atlastype))
-    label_path = op.join(data_dir, 'labels_{0}.csv'.format(atlastype))
+    data_dir = resource_filename("atlasreader", "data/atlases")
+    atlas_path = op.join(data_dir, f"atlas_{atlastype}.nii.gz")
+    label_path = op.join(data_dir, f"labels_{atlastype}.csv")
 
     if not all(op.exists(p) for p in [atlas_path, label_path]):
-        raise ValueError('{} is not a valid atlas. Please check inputs and '
-                         'try again.'.format(atlastype))
+        raise ValueError(
+            f"{atlastype} is not a valid atlas. Please check inputs and try again."
+        )
 
-    atlas = Bunch(atlas=atlastype,
-                  image=nb.load(atlas_path),
-                  labels=pd.read_csv(label_path))
+    atlas = Bunch(
+        atlas=atlastype,
+        image=nb.load(atlas_path),
+        labels=pd.read_csv(label_path),
+    )
     if cache:
         atlas.image.get_fdata()
 
@@ -96,11 +99,11 @@ def check_atlases(atlases):
     if isinstance(atlases, str):
         atlases = [atlases]
     elif isinstance(atlases, dict):
-        if all(hasattr(atlases, i) for i in ['image', 'atlas', 'labels']):
+        if all(hasattr(atlases, i) for i in ["image", "atlas", "labels"]):
             return atlases
-    if 'all' in atlases:
+    if "all" in atlases:
         draw = _ATLASES
-    elif 'default' in atlases:
+    elif "default" in atlases:
         draw = _DEFAULT
     else:
         draw = atlases
@@ -126,9 +129,9 @@ def get_label(atlastype, label_id):
     """
     labels = check_atlases(atlastype).labels
     try:
-        return labels.query('index == {}'.format(label_id)).name.iloc[0]
+        return labels.query(f"index == {label_id}").name.iloc[0]
     except IndexError:
-        return 'no_label'
+        return "no_label"
 
 
 def _check_coord_inputs(coords):
@@ -145,8 +148,10 @@ def _check_coord_inputs(coords):
     """
     coords = np.atleast_2d(coords).T
     if 3 not in coords.shape:
-        raise ValueError('Input coordinates must be of shape (3 x N). '
-                         'Provided coordinate shape: {}'.format(coords.shape))
+        raise ValueError(
+            "Input coordinates must be of shape (3 x N). "
+            f"Provided coordinate shape: {coords.shape}"
+        )
     if coords.shape[0] != 3:
         coords = coords.T
     # add constant term to coords to make 4 x N
@@ -251,7 +256,7 @@ def get_subpeak_coords(clust_img, min_distance=20):
     Returns
     -------
     peaks : (N, 3) numpy.ndarray
-        Coordiantes of (sub)peak voxels in `clust_img`
+        Coordinates of (sub)peak voxels in `clust_img`
     """
     data = check_niimg(clust_img).get_fdata()
 
@@ -263,7 +268,7 @@ def get_subpeak_coords(clust_img, min_distance=20):
     labels_img = np.zeros_like(data)
     for ldx in range(len(labels)):
         labels_img[tuple(local_max[ldx])] = np.mean(labels[ldx])
-    labels = labels_img.astype('int')
+    labels = labels_img.astype("int")
 
     ijk = center_of_mass(data, labels=labels, index=range(1, nl + 1))
     ijk = np.round(ijk).astype(int)
@@ -280,7 +285,7 @@ def get_subpeak_coords(clust_img, min_distance=20):
         keep = np.ones(len(xyz), dtype=bool)
         for r_idx, dist in enumerate(distances):
             if keep[r_idx] == 1:
-                ind, = np.where(dist < min_distance)
+                (ind,) = np.where(dist < min_distance)
                 keep[np.setdiff1d(ind, r_idx)] = 0
 
         ijk = ijk[keep]
@@ -310,10 +315,11 @@ def check_atlas_bounding_box(voxIDs, box_shape):
 
     # Detect voxels that are outside the atlas bounding box
     vox_outside_box = np.sum(
-        (voxIDs < 0) + (voxIDs >= box_shape[:3]), axis=-1, dtype='bool')
+        (voxIDs < 0) + (voxIDs >= box_shape[:3]), axis=-1, dtype="bool"
+    )
 
     # Set those voxels to the origin (i.e. a voxel outside the brain)
-    voxIDs[vox_outside_box] = np.zeros(3, dtype='int')
+    voxIDs[vox_outside_box] = np.zeros(3, dtype="int")
 
     return voxIDs
 
@@ -347,10 +353,11 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
     # get atlas data
     checked_atlastype = check_atlases(atlastype)
     if isinstance(checked_atlastype, list):
-        if not len(checked_atlastype) == 1:
+        if len(checked_atlastype) != 1:
             raise ValueError(
-                '\'{}\' is not a string or a single atlas. \'all\' '
-                'and \'default\' or not valid inputs.'.format(atlastype))
+                f"'{atlastype}' is not a string or a single atlas. "
+                "'all' and 'default' or not valid inputs."
+            )
         else:
             atlastype = checked_atlastype[0]
     data = atlastype.image.get_fdata()
@@ -361,14 +368,14 @@ def read_atlas_peak(atlastype, coordinate, prob_thresh=5):
 
     # get label information
     # probabilistic atlas is requested
-    if atlastype.atlas.lower() in ['juelich', 'harvard_oxford']:
+    if atlastype.atlas.lower() in ["juelich", "harvard_oxford"]:
         probs = data[voxID[0], voxID[1], voxID[2]]
         probs[probs < prob_thresh] = 0
-        idx, = np.where(probs)
+        (idx,) = np.where(probs)
 
         # if no labels found
         if len(idx) == 0:
-            return [[0, 'no_label']]
+            return [[0, "no_label"]]
 
         # sort list by probability
         idx = idx[np.argsort(probs[idx])][::-1]
@@ -413,10 +420,11 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     # get atlas data
     checked_atlastype = check_atlases(atlastype)
     if isinstance(checked_atlastype, list):
-        if not len(checked_atlastype) == 1:
+        if len(checked_atlastype) != 1:
             raise ValueError(
-                '\'{}\' is not a string or a single atlas. \'all\' '
-                'and \'default\' or not valid inputs.'.format(atlastype))
+                f"'{atlastype}' is not a string or a single atlas. "
+                "'all' and 'default' or not valid inputs."
+            )
         else:
             atlastype = checked_atlastype[0]
     data = atlastype.image.get_fdata()
@@ -431,7 +439,7 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     voxIDs = tuple(map(tuple, voxIDs.T))
 
     # get label information
-    if atlastype.atlas.lower() in ['juelich', 'harvard_oxford']:
+    if atlastype.atlas.lower() in ["juelich", "harvard_oxford"]:
         labelIDs = np.argmax(data[voxIDs], axis=1)
         labelIDs[data[voxIDs].sum(-1) == 0] = -1
     else:
@@ -440,16 +448,14 @@ def read_atlas_cluster(atlastype, cluster, affine, prob_thresh=5):
     unique_labels = np.unique(labelIDs)
     labels = np.array([get_label(atlastype, u) for u in unique_labels])
     N = float(len(labelIDs))
-    percentage = np.array(
-        [100 * np.sum(labelIDs == u) / N for u in unique_labels])
+    percentage = np.array([100 * np.sum(labelIDs == u) / N for u in unique_labels])
 
     sortID = np.argsort(percentage)[::-1]
 
-    return [[percentage[s], labels[s]] for s in sortID if
-            percentage[s] >= prob_thresh]
+    return [[percentage[s], labels[s]] for s in sortID if percentage[s] >= prob_thresh]
 
 
-def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
+def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction="both"):
     """
     Parameters
     ----------
@@ -480,7 +486,7 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
 
     # threshold image
     if voxel_thresh < 0:
-        voxel_thresh = '{}%'.format(100 + voxel_thresh)
+        voxel_thresh = f"{100 + voxel_thresh}%"
     else:
         # ensure that threshold is not greater than most extreme value in image
         if voxel_thresh > np.nan_to_num(np.abs(stat_img.get_fdata())).max():
@@ -492,27 +498,30 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
     min_region_size = cluster_extent * np.prod(thresh_img.header.get_zooms())
     clusters = []
 
-    if direction == 'both':
-        direction_list = ['pos', 'neg']
-    elif direction == 'pos':
-        direction_list = ['pos']
-    elif direction == 'neg':
-        direction_list = ['neg']
+    if direction == "both":
+        direction_list = ["pos", "neg"]
+    elif direction == "pos":
+        direction_list = ["pos"]
+    elif direction == "neg":
+        direction_list = ["neg"]
 
     for sign in direction_list:
         # keep only data of given sign
         data = thresh_img.get_fdata().copy()
-        data[(data < 0) if sign == 'pos' else (data > 0)] = 0
+        data[(data < 0) if sign == "pos" else (data > 0)] = 0
 
         # Do nothing if data array contains only zeros
         if np.any(data):
             try:
                 if min_region_size != 0.0:
                     min_region_size -= 1e-8
-                clusters += [connected_regions(
-                    image.new_img_like(thresh_img, data),
-                    min_region_size=min_region_size,
-                    extract_type='connected_components')[0]]
+                clusters += [
+                    connected_regions(
+                        image.new_img_like(thresh_img, data),
+                        min_region_size=min_region_size,
+                        extract_type="connected_components",
+                    )[0]
+                ]
             except TypeError:  # for no clusters
                 pass
 
@@ -529,8 +538,7 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction='both'):
     return clust_img_ordered
 
 
-def get_peak_data(clust_img, atlas='default', prob_thresh=5,
-                  min_distance=None):
+def get_peak_data(clust_img, atlas="default", prob_thresh=5, min_distance=None):
     """
     Parameters
     ----------
@@ -562,7 +570,7 @@ def get_peak_data(clust_img, atlas='default', prob_thresh=5,
     if min_distance is None:
         peaks = get_peak_coords(clust_img)
     else:
-        peak_img = image.math_img('np.abs(img)', img=clust_img)
+        peak_img = image.math_img("np.abs(img)", img=clust_img)
         peaks = get_subpeak_coords(peak_img, min_distance=min_distance)
     peaks = coord_xyz_to_ijk(clust_img.affine, peaks)
 
@@ -577,15 +585,19 @@ def get_peak_data(clust_img, atlas='default', prob_thresh=5,
             segment = read_atlas_peak(atype, coord, prob_thresh)
             coord_info.append([atype.atlas, segment])
 
-        peak_info += [['; '.join(['{}% {}'.format(*e) for e in peak])
-                       if isinstance(peak, list)
-                       else peak
-                       for (_, peak) in coord_info]]
+        peak_info += [
+            [
+                "; ".join(["{}% {}".format(*e) for e in peak])
+                if isinstance(peak, list)
+                else peak
+                for (_, peak) in coord_info
+            ]
+        ]
 
     return np.column_stack([coords, peak_values, cluster_volume, peak_info])
 
 
-def get_cluster_data(clust_img, atlas='default', prob_thresh=5):
+def get_cluster_data(clust_img, atlas="default", prob_thresh=5):
     """
     Parameters
     ----------
@@ -615,19 +627,26 @@ def get_cluster_data(clust_img, atlas='default', prob_thresh=5):
     # atlas info on cluster
     cluster_info = []
     for atype in check_atlases(atlas):
-        segment = read_atlas_cluster(atype, clust_mask,
-                                     clust_img.affine, prob_thresh)
+        segment = read_atlas_cluster(atype, clust_mask, clust_img.affine, prob_thresh)
         cluster_info.append([atype, segment])
 
-    cluster_info = ['; '.join(['{:.02f}% {}'.format(*e) for e in cluster])
-                    for (_, cluster) in cluster_info]
+    cluster_info = [
+        "; ".join(["{:.02f}% {}".format(*e) for e in cluster])
+        for (_, cluster) in cluster_info
+    ]
 
     return coord + [clust_mean, cluster_volume] + cluster_info
 
 
-def get_statmap_info(stat_img, cluster_extent, atlas='default',
-                     voxel_thresh=1.96, direction='both', prob_thresh=5,
-                     min_distance=None):
+def get_statmap_info(
+    stat_img,
+    cluster_extent,
+    atlas="default",
+    voxel_thresh=1.96,
+    direction="both",
+    prob_thresh=5,
+    min_distance=None,
+):
     """
     Extract peaks and cluster information from `clust_img` for `atlas`
 
@@ -659,7 +678,7 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
     Returns
     -------
     clust_frame : pandas.DataFrame
-        Dataframe wih information on clusters, including peak coordinates,
+        Dataframe with information on clusters, including peak coordinates,
         average cluster value, volume of cluster, and percent overlap with
         neuroanatomical regions defined in `atlas`
     peaks_frame : pandas.DataFrame
@@ -671,19 +690,23 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
     atlas = check_atlases(atlas)  # loading in the atlases takes the longest
 
     # threshold + clusterize image
-    clust_img = process_img(stat_img,
-                            voxel_thresh=voxel_thresh,
-                            direction=direction,
-                            cluster_extent=cluster_extent)
+    clust_img = process_img(
+        stat_img,
+        voxel_thresh=voxel_thresh,
+        direction=direction,
+        cluster_extent=cluster_extent,
+    )
 
     clust_info, peaks_info = [], []
     if clust_img.get_fdata().any():
         for n, cluster in enumerate(image.iter_img(clust_img)):
-            peak_data = get_peak_data(cluster, atlas=atlas,
-                                      prob_thresh=prob_thresh,
-                                      min_distance=min_distance)
-            clust_data = get_cluster_data(cluster, atlas=atlas,
-                                          prob_thresh=prob_thresh)
+            peak_data = get_peak_data(
+                cluster,
+                atlas=atlas,
+                prob_thresh=prob_thresh,
+                min_distance=min_distance,
+            )
+            clust_data = get_cluster_data(cluster, atlas=atlas, prob_thresh=prob_thresh)
 
             cluster_id = np.repeat(n + 1, len(peak_data))
             peaks_info += [np.column_stack([cluster_id, peak_data])]
@@ -693,16 +716,30 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
 
     # construct dataframes and reset floats
     atlasnames = [a.atlas for a in atlas]
-    clust_frame = pd.DataFrame(clust_info,
-                               columns=['cluster_id',
-                                        'peak_x', 'peak_y', 'peak_z',
-                                        'cluster_mean', 'volume_mm']
-                               + atlasnames)
-    peaks_frame = pd.DataFrame(peaks_info,
-                               columns=['cluster_id',
-                                        'peak_x', 'peak_y', 'peak_z',
-                                        'peak_value', 'volume_mm']
-                               + atlasnames)
+    clust_frame = pd.DataFrame(
+        clust_info,
+        columns=[
+            "cluster_id",
+            "peak_x",
+            "peak_y",
+            "peak_z",
+            "cluster_mean",
+            "volume_mm",
+        ]
+        + atlasnames,
+    )
+    peaks_frame = pd.DataFrame(
+        peaks_info,
+        columns=[
+            "cluster_id",
+            "peak_x",
+            "peak_y",
+            "peak_z",
+            "peak_value",
+            "volume_mm",
+        ]
+        + atlasnames,
+    )
     for col in range(6):
         clust_frame.iloc[:, col] = clust_frame.iloc[:, col].astype(float)
         peaks_frame.iloc[:, col] = peaks_frame.iloc[:, col].astype(float)
@@ -710,9 +747,18 @@ def get_statmap_info(stat_img, cluster_extent, atlas='default',
     return clust_frame, peaks_frame
 
 
-def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
-                  direction='both', prob_thresh=5, min_distance=None,
-                  outdir=None, glass_plot_kws=None, stat_plot_kws=None):
+def create_output(
+    filename,
+    cluster_extent,
+    atlas="default",
+    voxel_thresh=1.96,
+    direction="both",
+    prob_thresh=5,
+    min_distance=None,
+    outdir=None,
+    glass_plot_kws=None,
+    stat_plot_kws=None,
+):
     """
     Performs full cluster / peak analysis on `filename`
 
@@ -765,16 +811,16 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     # get info for saving outputs
     if isinstance(filename, str):
         filename = op.abspath(filename)
-        if filename.endswith('.nii.gz'):
+        if filename.endswith(".nii.gz"):
             out_fname = op.basename(filename)[:-7]
-        elif filename.endswith('.nii'):
+        elif filename.endswith(".nii"):
             out_fname = op.basename(filename)[:-4]
-        elif filename.endswith('.img'):
+        elif filename.endswith(".img"):
             out_fname = op.basename(filename)[:-4]
         if outdir is None:
             outdir = op.dirname(filename)
     else:
-        out_fname = 'atlasreader'
+        out_fname = "atlasreader"
         if outdir is None:
             outdir = os.getcwd()
 
@@ -782,11 +828,13 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
     os.makedirs(outdir, exist_ok=True)
 
     # generate stat map for plotting by collapsing all clusters into one image
-    clust_img = process_img(stat_img,
-                            voxel_thresh=voxel_thresh,
-                            direction=direction,
-                            cluster_extent=cluster_extent)
-    thresh_img = image.math_img('np.sum(img, axis=-1)', img=clust_img)
+    clust_img = process_img(
+        stat_img,
+        voxel_thresh=voxel_thresh,
+        direction=direction,
+        cluster_extent=cluster_extent,
+    )
+    thresh_img = image.math_img("np.sum(img, axis=-1)", img=clust_img)
 
     # Extract threshold value for plotting
     thr_values = np.unique(np.abs(thresh_img.get_fdata()))
@@ -797,21 +845,21 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
 
     # plot glass brain
     color_max = np.abs(thresh_img.get_fdata()).max()
-    glass_fname = op.join(outdir, '{}.png'.format(out_fname))
+    glass_fname = op.join(outdir, f"{out_fname}.png")
     with warnings.catch_warnings():  # get rid of pesky warnings
-        warnings.filterwarnings('ignore', category=FutureWarning)
+        warnings.filterwarnings("ignore", category=FutureWarning)
 
         glass_plot_params = {
-            'stat_map_img': thresh_img,
-            'output_file': glass_fname,
-            'display_mode': 'lyrz',
-            'colorbar': True,
-            'black_bg': True,
-            'cmap': plotting.cm.cold_hot,
-            'threshold': plot_thresh,
-            'vmax': color_max,
-            'plot_abs': False,
-            'symmetric_cbar': False
+            "stat_map_img": thresh_img,
+            "output_file": glass_fname,
+            "display_mode": "lyrz",
+            "colorbar": True,
+            "black_bg": True,
+            "cmap": plotting.cm.cold_hot,
+            "threshold": plot_thresh,
+            "vmax": color_max,
+            "plot_abs": False,
+            "symmetric_cbar": False,
         }
         if glass_plot_kws is None:
             glass_plot_kws = {}
@@ -820,44 +868,49 @@ def create_output(filename, cluster_extent, atlas='default', voxel_thresh=1.96,
 
     # Check if thresholded image contains only zeros
     if np.any(thresh_img.get_fdata()):
-
         # get cluster + peak information from image
         clust_frame, peaks_frame = get_statmap_info(
-            stat_img, atlas=atlas, voxel_thresh=voxel_thresh,
-            direction=direction, cluster_extent=cluster_extent,
-            prob_thresh=prob_thresh, min_distance=min_distance)
+            stat_img,
+            atlas=atlas,
+            voxel_thresh=voxel_thresh,
+            direction=direction,
+            cluster_extent=cluster_extent,
+            prob_thresh=prob_thresh,
+            min_distance=min_distance,
+        )
 
         # write output .csv files
-        clust_frame.to_csv(op.join(
-            outdir, '{}_clusters.csv'.format(out_fname)),
-            index=False, float_format='%5g')
-        peaks_frame.to_csv(op.join(
-            outdir, '{}_peaks.csv'.format(out_fname)),
-            index=False, float_format='%5g')
+        clust_frame.to_csv(
+            op.join(outdir, f"{out_fname}_clusters.csv"),
+            index=False,
+            float_format="%5g",
+        )
+        peaks_frame.to_csv(
+            op.join(outdir, f"{out_fname}_peaks.csv"),
+            index=False,
+            float_format="%5g",
+        )
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
-            resource_filename(
-                'atlasreader',
-                'data/templates/MNI152_T1_1mm_brain.nii.gz'
-            )
+            resource_filename("atlasreader", "data/templates/MNI152_T1_1mm_brain.nii.gz")
         )
 
         # plot clusters
-        coords = np.array(clust_frame[['peak_x', 'peak_y', 'peak_z']])
+        coords = np.array(clust_frame[["peak_x", "peak_y", "peak_z"]])
         for idx, coord in enumerate(coords):
-            clust_fname = '{}_cluster{:02d}.png'.format(out_fname, idx + 1)
+            clust_fname = f"{out_fname}_cluster{idx + 1:02d}.png"
             stat_plot_params = {
-                'stat_map_img': thresh_img,
-                'bg_img': bgimg,
-                'cut_coords': coord,
-                'output_file': op.join(outdir, clust_fname),
-                'colorbar': True,
-                'title': clust_fname[:-4],
-                'threshold': plot_thresh,
-                'black_bg': True,
-                'symmetric_cbar': False,
-                'vmax': color_max
+                "stat_map_img": thresh_img,
+                "bg_img": bgimg,
+                "cut_coords": coord,
+                "output_file": op.join(outdir, clust_fname),
+                "colorbar": True,
+                "title": clust_fname[:-4],
+                "threshold": plot_thresh,
+                "black_bg": True,
+                "symmetric_cbar": False,
+                "vmax": color_max,
             }
             if stat_plot_kws is None:
                 stat_plot_kws = {}

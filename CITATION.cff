@@ -5,7 +5,7 @@ cff-version: 1.2.0
 title: atlasreader
 
 abstract: |
-    A Python package to generate coordinate tables, region labels, 
+    A Python package to generate coordinate tables, region labels,
     and informative figures from statistical MRI images
 
 message: If you use this software, please cite it as below.
@@ -31,12 +31,12 @@ authors:
     affiliation: The Laboratory for Investigative Neurophysiology (The LINE), Department of Radiology and Department of Clinical Neurosciences, Lausanne, Switzerland; Center for Biomedical Imaging (CIBM), Lausanne, Switzerlan
 
   - given-names: Dan
-    family-names: Gale  
+    family-names: Gale
     affiliation: "Centre for Neuroscience Studies, Queen's University, Kingston, Canada"
     orcid: https://orcid.org/0000-0002-9082-1659
 
   - given-names: Peer
-    family-names:  Herholz 
+    family-names:  Herholz
     affiliation: "Laboratory for Multimodal Neuroimaging, Philipps-University Marburg, Hesse, Germany; International Laboratory for Brain, Music and Sound Research, Université de Montréal & McGill University, Montréal, Canada; McConnell Brain Imaging Centre, Montréal Neurological Institute, McGill University, Montréal, Canada"
     orcid: https://orcid.org/0000-0002-9840-6257
 
@@ -46,12 +46,12 @@ authors:
     orcid: https://orcid.org/0000-0003-1057-1336
 
   - given-names: Marie-Laure
-    family-names: Notter-Bielser  
+    family-names: Notter-Bielser
     affiliation: "Centre Leenaards de la Mémoire, Centre Hospitalier Universitaire Vaudois, Lausanne, Switzerland"
     orcid: https://orcid.org/0000-0001-5507-4304
 
   - given-names: Anna
-    family-names: Doll    
+    family-names: Doll
     affiliation: "Department of Psychology, University of Bielefeld, Bielefeld, Germany."
     orcid: https://orcid.org/0000-0002-0799-0831
 
@@ -64,4 +64,4 @@ authors:
   - given-names: Kirstie
     family-names: Whitaker
     affiliation: "Alan Turing Institute, London, UK; Department of Psychiatry, University of Cambridge, Cambridge, UK"
-    orcid: https://orcid.org/0000-0001-8498-4059    
+    orcid: https://orcid.org/0000-0001-8498-4059

@@ -4,7 +4,7 @@
 
 The MNI152 T1 template is taken from FSL 5.0. It's kindly supplied by Andrew
 Janke. This template is derived from 152 structural images, averaged together
-after high-dimensional nonlinear registration into the common MNI152 co-ordinate
+after high-dimensional nonlinear registration into the common MNI152 coordinate
 system. It corresponds to the "[152 nonlinear 6th generation](http://www.bic.mni.mcgill.ca/ServicesAtlases/HomePage)" atlas.
 
 ### Creation of template
@@ -57,7 +57,7 @@ from the use or misuse of this software package.
 # Atlas Information
 
 `atlasreader` contains many different atlases that each are under their own
-license and related to specific publications. This README file acknoledges those
+license and related to specific publications. This README file acknowledges those
 licenses, describes the origin of the atlases and how they were acquired and
 explains how the atlases were adapted to fit into the `atlasreader` framework.
 Many of those atlases were downloaded with `nilearn.datasets`'s `fetch_`
@@ -212,7 +212,7 @@ This is a digitised version of the original (coarsely sliced) Talairach atlas
 (Lancaster 2000) after the application of a correcting affine transform
 (Lancaster 2007) to register it into MNI152 space. For more see http://talairach.org/about.html#Labels.
 
-The atlas was split into two separat atlases. The `talairach_gyurs` atlas
+The atlas was split into two separate atlases. The `talairach_gyurs` atlas
 contains the labels listed under **Gyrus** and the `talairach_ba` atlas contains
 the labels listed under **Cell type** and the **Brodmann Areas**, as listed
 [here](http://www.talairach.org/labels.html).
@@ -246,7 +246,7 @@ and sub-cortical (http://meca-brain.org/software/marsatlas-subcortical/) regions
 For cortical regions, the label name is a combination of the "Full Name" and the
 "Brodman Area" label.
 
-### Licesne
+### License
 
 For more information about the license and copyright of the `MarsAtlas-Colin27-MNI`
 atlas, go to https://meca-brain.org/software/marsatlas-colin27/.
@@ -268,7 +268,7 @@ final publications.
 The Neuromorphometrics atlas is a direct copy of the file `labels_Neuromorphometrics.nii`
 in the folder `spm12/tpm`, available within SPM12.
 
-### Licesne
+### License
 
 The direct license of the atlas can be found here: http://www.neuromorphometrics.com/wp-content/uploads/2013/06/NVM_Demo_License2013_v1.txt
 

@@ -104,23 +104,23 @@ how to install the software on your system, see https://github.com/miykael/atlas
 
 ![Overview figure showing the ROIs throughout the whole brain at once.](fig_overview_figure.png){width=100%}
 
-![Eight cluster figures, each centered on the main peak of the ROI, showing the sagittal, coronal and transversal plane of the ROI.](fig_cluster_figure.png){width=100%}  
+![Eight cluster figures, each centered on the main peak of the ROI, showing the sagittal, coronal and transversal plane of the ROI.](fig_cluster_figure.png){width=100%}
 
-![Example of a peak table showing relevant information for the main peaks of each ROI. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.](table_peak.png){width=100%}  
+![Example of a peak table showing relevant information for the main peaks of each ROI. This table contains the cluster association and location of each peak, its signal value at this location, the cluster extent (in mm, not in number of voxels), as well as the membership of each peak, given a particular atlas.](table_peak.png){width=100%}
 
-![Example of a cluster table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.](table_cluster.png){width=100%}  
+![Example of a cluster table showing relevant information for the cluster extent of each ROI. This table contains the cluster association and location of each peak, the mean value within the cluster, the cluster extent (in mm, not in number of voxels), as well as the membership of each cluster, given a particular atlas.](table_cluster.png){width=100%}
 
 
-![Depiction of AtlasReader's default atlases. Individually colored label of the three default atlases, AAL, Desikan-Killiany and Harvard-Oxford, overlaid on the ICBM 2009c nonlinear asymmetric atlas. The Harvard-Oxford atlas is visualized differently because it is a probability atlas and therefore has overlapping regions.](fig_default_atlases.png){width=75%}  
+![Depiction of AtlasReader's default atlases. Individually colored label of the three default atlases, AAL, Desikan-Killiany and Harvard-Oxford, overlaid on the ICBM 2009c nonlinear asymmetric atlas. The Harvard-Oxford atlas is visualized differently because it is a probability atlas and therefore has overlapping regions.](fig_default_atlases.png){width=75%}
 
 
 # Acknowledgement
 
 Michael Philipp Notter is grateful for the support of the Swiss National Science
 Foundation grants, awarded to M. Murray (320030-149982, 320030-169206,
-and 51NF40-158776). Kirstie Whitaker is funded through an Alan Turing Institute 
-Research Fellowship under EPSRC Research grant (TU/A/000017). This project 
-was started at Neurohackademy 2018 which is funded by the National Institute 
+and 51NF40-158776). Kirstie Whitaker is funded through an Alan Turing Institute
+Research Fellowship under EPSRC Research grant (TU/A/000017). This project
+was started at Neurohackademy 2018 which is funded by the National Institute
 of Mental Health through a grant to Ariel Rokem and Tal Yarkoni (R25MH112480).
 
 

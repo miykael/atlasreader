@@ -1,0 +1,12 @@
+[tool.black]
+line-length = 90
+
+[tool.codespell]
+ignore-words-list = "te,fo,mapp,ois,nd,vor,dne,ue,fof,doed,vai"
+skip = "./.git"
+
+[tool.isort]
+combine_as_imports = true
+line_length = 90
+profile = "black"
+skip_gitignore = true
