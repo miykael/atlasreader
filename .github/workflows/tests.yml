@@ -35,7 +35,7 @@ jobs:
         -   name: Install dependencies
             run: |
                 sudo apt-get update
-                python -m pip install --upgrade pip pytest pytest-cov
+                python -m pip install --upgrade pip setuptools pytest pytest-cov
 
         -   name: Install
             run: pip install .
