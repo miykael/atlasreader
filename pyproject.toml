@@ -1,3 +1,75 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-vcs"]
+
+[project]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved",
+    "Programming Language :: Python",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+dependencies = [
+    "matplotlib>=3.7",
+    "nibabel>=5.0",
+    "nilearn>=0.10",
+    "numpy>=1.22.0",
+    "pandas>=2.0",
+    "scikit-image>=0.21.0",
+    "scikit-learn>=1.0",
+    "scipy>=1.10"
+]
+description = "A toolbox for generating cluster reports from statistical maps"
+dynamic = ["version"]
+license = {text = "BSD-3-Clause"}
+maintainers = [{name = "Michael Notter", email = "michaelnotter@hotmail.com"}]
+name = "atlasreader"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+# A combination of dependencies useful for developers
+dev = [
+    "atlasreader[style,test]"
+]
+style = [
+    "isort",
+    "black",
+    "flake8",
+    'codespell',
+    'tomli',
+    'pre-commit'
+]
+# For running unit and docstring tests
+test = [
+    "coverage",
+    "pytest>=6.0.0",
+    "pytest-cov",
+    "nbval"
+]
+tests = [
+    "atlasreader[test]"
+]
+
+[project.scripts]
+atlasreader = "atlasreader.cli:atlasreader_main"
+queryatlas = "atlasreader.cli:queryatlas_main"
+
+[project.urls]
+Downloads = "https://github.com/miykael/atlasreader/releases"
+Homepage = "http://github.com/miykael/atlasreader"
+
 [tool.black]
 line-length = 90
 
@@ -5,8 +77,22 @@ line-length = 90
 ignore-words-list = "te,fo,mapp,ois,nd,vor,dne,ue,fof,doed,vai"
 skip = "./.git"
 
+[tool.hatch.build.hooks.vcs]
+version-file = "atlasreader/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["atlasreader"]
+
+[tool.hatch.version]
+source = "vcs"
+
 [tool.isort]
 combine_as_imports = true
 line_length = 90
 profile = "black"
 skip_gitignore = true
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers --doctest-modules -s -vv --durations=0"
+minversion = "6.0"
+xfail_strict = true

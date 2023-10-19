@@ -1,13 +1,22 @@
 *.pyc
 *.DS_Store
 *~
+
 build/
 dist
 dist/*
 *.egg-info
 .cache
+
+# hatchling: do not track version file
+atlasreader/_version.py
+
+env
+
 .coverage
 localtest
 .pytest_cache/
+
 .ipynb_checkpoints
+
 .vscode/

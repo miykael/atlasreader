@@ -1,7 +1,7 @@
 __all__ = ["__version__", "create_output", "get_statmap_info"]
 
+from atlasreader._version import __version__
 from atlasreader.atlasreader import create_output, get_statmap_info
-from atlasreader.info import __version__
 
 _LICENSE_MESSAGE = """\
 The Python package you are importing, AtlasReader, is licensed under the
