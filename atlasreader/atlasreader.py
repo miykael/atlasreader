@@ -587,9 +587,11 @@ def get_peak_data(clust_img, atlas="default", prob_thresh=5, min_distance=None):
 
         peak_info += [
             [
-                "; ".join(["{}% {}".format(*e) for e in peak])
-                if isinstance(peak, list)
-                else peak
+                (
+                    "; ".join(["{}% {}".format(*e) for e in peak])
+                    if isinstance(peak, list)
+                    else peak
+                )
                 for (_, peak) in coord_info
             ]
         ]
