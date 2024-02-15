@@ -1,6 +1,7 @@
 """
 Primary functions of atlasreader
 """
+
 import os
 import os.path as op
 import warnings

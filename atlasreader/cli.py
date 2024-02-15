@@ -1,6 +1,7 @@
 """
 Functions for command line interface to generate cluster / peak summary
 """
+
 import argparse
 import os.path as op
 
