@@ -31,7 +31,7 @@ INSTALL_REQUIRES = [
     "pandas>=2.0",
     "scikit-image>=0.21.0",
     "scikit-learn>=1.0",
-    "scipy>=1.10"
+    "scipy>=1.10",
 ]
 
 # Package data to include
@@ -40,12 +40,7 @@ PACKAGE_DATA = {
 }
 
 # Dependencies for running tests
-TESTS_REQUIRE = [
-    "coverage",
-    "pytest>=6.0.0",
-    "pytest-cov",
-    "nbval"
-]
+TESTS_REQUIRE = ["coverage", "pytest>=6.0.0", "pytest-cov", "nbval"]
 
 # License of the package
 LICENSE = "BSD-3-Clause"
