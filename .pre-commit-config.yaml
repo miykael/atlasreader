@@ -17,7 +17,7 @@ repos:
     -   id: trailing-whitespace
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
     -   id: isort
         args: [--profile, black]
@@ -29,7 +29,7 @@ repos:
         args: [--py38-plus]
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.11.0
+    rev: 24.1.1
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
@@ -48,13 +48,13 @@ repos:
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.11.0
+    rev: v2.12.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
 -   repo: https://github.com/pyCQA/flake8
-    rev: 6.1.0
+    rev: 7.0.0
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose]
