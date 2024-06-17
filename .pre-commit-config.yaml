@@ -54,7 +54,7 @@ repos:
         args: [--autofix, --indent, '4']
 
 -   repo: https://github.com/pyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.0
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose]
