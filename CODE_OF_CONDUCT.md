@@ -2,7 +2,7 @@
 
 In the interest of fostering an open and welcoming environment we want participation in our project and our community to be a harassment-free experience for everyone.
 
-Although no list can hope to be all-encompassing, we explicitly honor diversity in age, body size, disability, ethnicity, gender identity and expression, level of experience, native language, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+Although no list can hope to be all-encompassing, we explicitly honor diversity in age, body size, disability, ethnicity, gender identity and expression, level of experience, native language, education, socioeconomic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 ## Our Standards
 
