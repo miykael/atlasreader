@@ -492,7 +492,9 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction="both"):
         # ensure that threshold is not greater than most extreme value in image
         max_data_val = np.nan_to_num(np.abs(stat_img.get_fdata())).max()
         if voxel_thresh > max_data_val:
-            warnings.warn(f"Threshold value '{voxel_thresh}' is greater than max value in image '{max_data_val}'. Will select zero voxels.")
+            warn_msg = f"Threshold value '{voxel_thresh}' is greater than max value in image '{max_data_val}'."
+            warn_msg += " Will select zero voxels."
+            warnings.warn(warn_msg)
             empty = np.zeros(stat_img.shape + (1,))
             return image.new_img_like(stat_img, empty)
     thresh_img = image.threshold_img(stat_img, threshold=voxel_thresh)
