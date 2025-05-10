@@ -27,6 +27,7 @@ _ATLASES = [
     "juelich",
     "marsatlas",
     "neuromorphometrics",
+    "schaefer_200",
     "talairach_ba",
     "talairach_gyrus",
 ]
@@ -900,7 +901,9 @@ def create_output(
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
-            resource_filename("atlasreader", "data/templates/MNI152_T1_1mm_brain.nii.gz")
+            resource_filename(
+                "atlasreader", "data/templates/MNI152_T1_1mm_brain.nii.gz"
+            )
         )
 
         # plot clusters

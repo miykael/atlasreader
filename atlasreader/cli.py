@@ -208,7 +208,9 @@ def queryatlas_main():
     for atlas in check_atlases(opts.atlas):
         label = read_atlas_peak(atlas, opts.coordinate, opts.prob_thresh)
         if isinstance(label, list):
-            label = "\n{}".format(" " * 26).join(["{:>2}% {}".format(*e) for e in label])
+            label = "\n{}".format(" " * 26).join(
+                ["{:>2}% {}".format(*e) for e in label]
+            )
         print(f"{atlas.atlas:<25} {label}")
 
 
