@@ -766,6 +766,7 @@ def create_output(
     outdir=None,
     glass_plot_kws=None,
     stat_plot_kws=None,
+    black_bg=True
 ):
     """
     Performs full cluster / peak analysis on `filename`
@@ -862,7 +863,7 @@ def create_output(
             "output_file": glass_fname,
             "display_mode": "lyrz",
             "colorbar": True,
-            "black_bg": True,
+            "black_bg": black_bg,
             "cmap": plotting.cm.cold_hot,
             "threshold": plot_thresh,
             "vmax": color_max,
@@ -916,7 +917,7 @@ def create_output(
                 "colorbar": True,
                 "title": clust_fname[:-4],
                 "threshold": plot_thresh,
-                "black_bg": True,
+                "black_bg": black_bg,
                 "symmetric_cbar": False,
                 "vmax": color_max,
             }
