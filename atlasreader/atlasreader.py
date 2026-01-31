@@ -5,14 +5,14 @@ Primary functions of atlasreader
 import os
 import os.path as op
 import warnings
+from importlib.resources import files
 
 import nibabel as nb
 import numpy as np
 import pandas as pd
 from nilearn import image, plotting
-from nilearn._utils import check_niimg
+from nilearn.image import check_niimg
 from nilearn.regions import connected_regions
-from pkg_resources import resource_filename
 from scipy.ndimage import center_of_mass, label
 from scipy.spatial.distance import cdist
 from skimage.feature import peak_local_max
@@ -63,8 +63,7 @@ def get_atlas(atlastype, cache=True):
     atlastype = atlastype.lower()
 
     # get the path to atlas + label files shipped with package
-    # resource_filename ensures that we're getting the correct path
-    data_dir = resource_filename("atlasreader", "data/atlases")
+    data_dir = str(files("atlasreader").joinpath("data/atlases"))
     atlas_path = op.join(data_dir, f"atlas_{atlastype}.nii.gz")
     label_path = op.join(data_dir, f"labels_{atlastype}.csv")
 
@@ -901,7 +900,7 @@ def create_output(
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
-            resource_filename("atlasreader", "data/templates/MNI152_T1_1mm_brain.nii.gz")
+            str(files("atlasreader").joinpath("data/templates/MNI152_T1_1mm_brain.nii.gz"))
         )
 
         # plot clusters
