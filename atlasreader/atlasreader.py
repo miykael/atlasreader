@@ -156,7 +156,7 @@ def _check_coord_inputs(coords):
     if coords.shape[0] != 3:
         coords = coords.T
     # add constant term to coords to make 4 x N
-    coords = np.row_stack([coords, np.ones_like(coords[0])])
+    coords = np.vstack([coords, np.ones_like(coords[0])])
     return coords
 
 
@@ -520,13 +520,14 @@ def process_img(stat_img, cluster_extent, voxel_thresh=1.96, direction="both"):
             try:
                 if min_region_size != 0.0:
                     min_region_size -= 1e-8
-                clusters += [
-                    connected_regions(
-                        image.new_img_like(thresh_img, data),
-                        min_region_size=min_region_size,
-                        extract_type="connected_components",
-                    )[0]
-                ]
+                result = connected_regions(
+                    image.new_img_like(thresh_img, data),
+                    min_region_size=min_region_size,
+                    extract_type="connected_components",
+                )[0]
+                # connected_regions may return None when no clusters found
+                if result is not None:
+                    clusters += [result]
             except TypeError:  # for no clusters
                 pass
 
@@ -718,38 +719,43 @@ def get_statmap_info(
             cluster_id = np.repeat(n + 1, len(peak_data))
             peaks_info += [np.column_stack([cluster_id, peak_data])]
             clust_info += [[n + 1] + clust_data]
-        clust_info = np.row_stack(clust_info)
-        peaks_info = np.row_stack(peaks_info)
+        clust_info = np.vstack(clust_info)
+        peaks_info = np.vstack(peaks_info)
 
     # construct dataframes and reset floats
     atlasnames = [a.atlas for a in atlas]
-    clust_frame = pd.DataFrame(
-        clust_info,
-        columns=[
-            "cluster_id",
-            "peak_x",
-            "peak_y",
-            "peak_z",
-            "cluster_mean",
-            "volume_mm",
-        ]
-        + atlasnames,
-    )
-    peaks_frame = pd.DataFrame(
-        peaks_info,
-        columns=[
-            "cluster_id",
-            "peak_x",
-            "peak_y",
-            "peak_z",
-            "peak_value",
-            "volume_mm",
-        ]
-        + atlasnames,
-    )
-    for col in range(6):
-        clust_frame.iloc[:, col] = clust_frame.iloc[:, col].astype(float)
-        peaks_frame.iloc[:, col] = peaks_frame.iloc[:, col].astype(float)
+    clust_columns = [
+        "cluster_id",
+        "peak_x",
+        "peak_y",
+        "peak_z",
+        "cluster_mean",
+        "volume_mm",
+    ] + atlasnames
+    peaks_columns = [
+        "cluster_id",
+        "peak_x",
+        "peak_y",
+        "peak_z",
+        "peak_value",
+        "volume_mm",
+    ] + atlasnames
+
+    if len(clust_info) > 0:
+        clust_frame = pd.DataFrame(clust_info, columns=clust_columns)
+        # Convert numeric columns explicitly
+        for col in clust_columns[:6]:
+            clust_frame[col] = pd.to_numeric(clust_frame[col])
+    else:
+        clust_frame = pd.DataFrame(columns=clust_columns)
+
+    if len(peaks_info) > 0:
+        peaks_frame = pd.DataFrame(peaks_info, columns=peaks_columns)
+        # Convert numeric columns explicitly
+        for col in peaks_columns[:6]:
+            peaks_frame[col] = pd.to_numeric(peaks_frame[col])
+    else:
+        peaks_frame = pd.DataFrame(columns=peaks_columns)
 
     return clust_frame, peaks_frame
 
