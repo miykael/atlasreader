@@ -765,7 +765,7 @@ def create_output(
     outdir=None,
     glass_plot_kws=None,
     stat_plot_kws=None,
-    black_bg=True
+    black_bg=True,
 ):
     """
     Performs full cluster / peak analysis on `filename`
@@ -901,7 +901,9 @@ def create_output(
 
         # get template image for plotting cluster maps
         bgimg = nb.load(
-            str(files("atlasreader").joinpath("data/templates/MNI152_T1_1mm_brain.nii.gz"))
+            str(
+                files("atlasreader").joinpath("data/templates/MNI152_T1_1mm_brain.nii.gz")
+            )
         )
 
         # plot clusters
