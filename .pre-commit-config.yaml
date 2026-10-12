@@ -17,25 +17,25 @@ repos:
     -   id: trailing-whitespace
 
 -   repo: https://github.com/pycqa/isort
-    rev: 8.0.0
+    rev: 9.0.2
     hooks:
     -   id: isort
         args: [--profile, black]
 
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.2
+    rev: v3.22.0
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
 
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.1.0
+    rev: 26.10.1
     hooks:
     -   id: black
         args: [--config, pyproject.toml]
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.3
     hooks:
     -   id: codespell
         args: [--toml, pyproject.toml]
@@ -54,7 +54,7 @@ repos:
         args: [--autofix, --indent, '4']
 
 -   repo: https://github.com/pyCQA/flake8
-    rev: 7.3.0
+    rev: 7.4.1
     hooks:
     -   id: flake8
         args: [--config, .flake8, --verbose]
